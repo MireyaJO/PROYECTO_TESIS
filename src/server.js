@@ -22,7 +22,7 @@ app.use(express.json())
 
 // Rutas 
 app.get('/',(req,res)=>{
-    res.send("Server on")
+    res.send("El servidor del sistema de recorridos para la gestión de asistencias y alerta de la llegada del bus escolar Cooperativa Ciudad de Quito de la Unidad Educativa Particular EMAÚS")
 })
 
 // Exportar la instancia de express por medio de app
