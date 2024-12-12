@@ -3,6 +3,10 @@ import express from 'express'
 import dotenv from 'dotenv'
 import cors from 'cors';
 
+//Para las imagenes de perfiles 
+import cloudinary from 'cloudinary';
+import fileUpload from 'express-fileupload';
+import Conductoresrouter from './routers/admin_routers.js';
 
 
 // Inicializaciones
@@ -11,19 +15,31 @@ dotenv.config()
 
 // Configuraciones 
 app.set('port',process.env.port || 3000)
+//Cargar las variables de entorno 
+dotenv.config();
+
+//Las creedenciales para usar Cloudinary 
+cloudinary.config({ 
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME , 
+    api_key: process.env.CLOUDINARY_API_KEY, 
+    api_secret: process.env.CLOUDINARY_API_SECRET
+});
+//Configuración de un middleware "express-fileupload" para la subida de archivos
+app.use(fileUpload({
+    useTempFiles: true,
+    tempFileDir: '/conductores/',
+}));
+
+//Compatibilidad entre dominios 
 app.use(cors())
 
 // Middlewares 
 app.use(express.json())
 
-
-// Variables globales
-
-
 // Rutas 
 app.get('/',(req,res)=>{
     res.send("El servidor del sistema de recorridos para la gestión de asistencias y alerta de la llegada del bus escolar Cooperativa Ciudad de Quito de la Unidad Educativa Particular EMAÚS")
 })
-
+app.use('/api', Conductoresrouter)
 // Exportar la instancia de express por medio de app
 export default  app
