@@ -129,7 +129,7 @@ const BuscarConductor = async (req, res) => {
     if (!conductor) return res.status(400).json({ msg: "Lo sentimos, el conductor no se encuentra trabajando en la Unidad Educativa Particular EMAÚS" });
 
     //Mensaje de exito
-    res.status(200).json({ msg: `El conductor ${conductor.nombreConductor} se ha encontrado exitosamente`, conductor});
+    res.status(200).json({ msg: `El conductor ${conductor.nombreConductor} ${conductor.apellidoConductor} se ha encontrado exitosamente`, conductor});
 };
 
 const ActualizarRutasYSectores = async (req, res) => {
@@ -143,7 +143,7 @@ const ActualizarRutasYSectores = async (req, res) => {
     if (!conductor) return res.status(400).json({ msg: "Lo sentimos, el conductor no se encuentra trabajando en la Unidad Educativa Particular EMAÚS" });
 
     // Para conocer el nombre del conductor que posee ese número de cédula
-    const { nombreConductor } = conductor;
+    const { nombreConductor, apellidoConductor} = conductor;
 
     // Actualización de los datos
     await Conductores.findOneAndUpdate(
@@ -153,7 +153,7 @@ const ActualizarRutasYSectores = async (req, res) => {
     );
 
     res.status(200).json({
-        msg: `La ruta y sectores objetivo del conductor ${nombreConductor} han sido actualizados exitosamente`
+        msg: `La ruta y sectores objetivo del conductor ${nombreConductor} ${pellidoConductor} han sido actualizados exitosamente`
     });
 };
 
@@ -162,14 +162,14 @@ const EliminarConductor = async (req, res) => {
     const { id } = req.params;
     
     //Verificación de la existencia del conductor
-    const conductor = await Conductores.findOne({numeroDeCedula});
+    const conductor = await Conductores.findOne({id});
     if(!conductor) return res.status(400).json({msg:"Lo sentimos, el conductor no se encuentra trabajando en la Unidad Educativa Particular EMAÚS"})
     
     //Eliminación del conductor
-    await Conductores.findOneAndDelete({numeroDeCedula});
+    await Conductores.findOneAndDelete({id});
 
     //Mensaje de exito
-    res.status(200).json({msg:`El conductor ${conductor.nombreConductor} ha sido eliminado exitosamente`})
+    res.status(200).json({msg:`El conductor ${conductor.nombreConductor} ${conductor.apellidoConductor} ha sido eliminado exitosamente`})
 };
 
 export {
