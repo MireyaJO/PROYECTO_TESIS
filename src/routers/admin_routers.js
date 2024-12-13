@@ -1,11 +1,13 @@
 import {Router} from 'express';
 import {RegistroDeLosConductores, LoginAdministrador, ActualizarRutasYSectores, BuscarConductor, EliminarConductor} from '../controllers/admin_controller.js'
-import {verifyToken} from '../middlewares/autho.js'
+import {verificacionAdminRol, verificacionToken} from '../middlewares/autho.js'
 const router = Router()
-router.post('/registro/conductores', RegistroDeLosConductores)
+//Ruta pública
 router.post('/login', LoginAdministrador)
-router.get('/buscar/conductor/:id', BuscarConductor)
-router.patch('/actualizar/conductor', ActualizarRutasYSectores)
-router.delete('/eliminar/conductor/:id', EliminarConductor)
+//Rutas privadas
+router.post('/registro/conductores', verificacionToken, verificacionAdminRol, RegistroDeLosConductores)
+router.get('/buscar/conductor/:id', verificacionToken, verificacionAdminRol, BuscarConductor)
+router.patch('/actualizar/conductor', verificacionToken, verificacionAdminRol, ActualizarRutasYSectores)
+router.delete('/eliminar/conductor/:id', verificacionToken, verificacionAdminRol, EliminarConductor)
 
 export default router

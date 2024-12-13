@@ -6,7 +6,8 @@ import cors from 'cors';
 //Para las imagenes de perfiles 
 import cloudinary from 'cloudinary';
 import fileUpload from 'express-fileupload';
-import Conductoresrouter from './routers/admin_routers.js';
+import Adminrouter from './routers/admin_routers.js';
+import Conductoresrouter from './routers/conductor_routers.js';
 
 
 // Inicializaciones
@@ -40,6 +41,11 @@ app.use(express.json())
 app.get('/',(req,res)=>{
     res.send("El servidor del sistema de recorridos para la gestión de asistencias y alerta de la llegada del bus escolar Cooperativa Ciudad de Quito de la Unidad Educativa Particular EMAÚS")
 })
+//Rutas de los Administradores
+app.use('/api', Adminrouter)
+
+//Rutas de los Conductores
 app.use('/api', Conductoresrouter)
+
 // Exportar la instancia de express por medio de app
 export default  app

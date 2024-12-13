@@ -7,7 +7,7 @@ const createToken = (userInfo) => {
 }
 
 //Verificación del token para el acceso a las rutas privadas
-const verifyToken = (req, res, next) => {
+const verificacionToken = (req, res, next) => {
     //Se obtiene de la cabezera de la petición el token
   const authHeader = req.headers.authorization
   //Si no se proporciona el token o si no comienza con la palabra "Bearer " se envía un mensaje de error
@@ -26,7 +26,26 @@ const verifyToken = (req, res, next) => {
 })
 }
 
+// Middleware para verificar el rol de conductor
+const verificacionConductorRol = (req, res, next) => {
+  if (req.user.role !== 'conductor') {
+      return res.status(403).json({ message: "Acceso denegado. Solo los conductores pueden acceder a esta ruta." });
+  }
+  next();
+}
+
+// Middleware para verificar el rol de admin
+const verificacionAdminRol = (req, res, next) => {
+  if (req.user.role !== 'admin') {
+      return res.status(403).json({ message: "Acceso denegado. Solo los administradores pueden acceder a esta ruta." });
+  }
+  next();
+}
+
+
 export {
   createToken, 
-  verifyToken
+  verificacionToken, 
+  verificacionConductorRol,
+  verificacionAdminRol
 }

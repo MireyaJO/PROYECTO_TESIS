@@ -79,7 +79,7 @@ paraElRegistroDeLosConductores.methods.encrypPassword = async function(password)
 
 // Método para verificar si el password ingresado es el mismo de la BDD
 paraElRegistroDeLosConductores.methods.matchPassword = async function(password){
-    const response = await bcrypt.compare(password,this.password)
+    const response = await bcrypt.compare(password,this.passwordParaElConductor)
     return response
 }
 

@@ -1,5 +1,6 @@
 import {Schema, model} from 'mongoose'
 
+
 //Definición de la estructura en la base de datos 
 //Esquema para el registro de los estudiantes
 const paraElRegistroDeLosEstudiantes= new Schema(
