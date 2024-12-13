@@ -54,8 +54,8 @@ const RegistroDeLosConductores = async (req, res) => {
     const nuevoConductor = new Conductores(req.body);
 
     // Verificar si se envió un archivo de imagen
-    if (req.files && req.files.fotografiaDelEstudiante) {
-        const file = req.files.fotografiaDelEstudiante;
+    if (req.files && req.files.fotografiaDelConductor) {
+        const file = req.files.fotografiaDelConductor;
 
         try {
             // Subir la imagen a Cloudinary con el nombre del conductor como public_id
@@ -66,7 +66,7 @@ const RegistroDeLosConductores = async (req, res) => {
 
             // Guardar la URL de la imagen en la base de datos
             console.log(result.secure_url);
-            nuevoConductor.fotografiaDelEstudiante = result.secure_url;
+            nuevoConductor.fotografiaDelConductor = result.secure_url;
 
             // Eliminar el archivo local después de subirlo
             await fs.unlink(file.tempFilePath);
@@ -153,7 +153,7 @@ const ActualizarRutasYSectores = async (req, res) => {
     );
 
     res.status(200).json({
-        msg: `La ruta y sectores objetivo del conductor ${nombreConductor} ${pellidoConductor} han sido actualizados exitosamente`
+        msg: `La ruta y sectores objetivo del conductor ${nombreConductor} ${apellidoConductor} han sido actualizados exitosamente`
     });
 };
 

@@ -46,7 +46,7 @@ const paraElRegistroDeLosConductores= new Schema(
             type: String, 
             require: true, 
         }, 
-        fotografiaDelEstudiante:{
+        fotografiaDelConductor:{
             type: String, 
             require: true
         }, 
@@ -60,7 +60,12 @@ const paraElRegistroDeLosConductores= new Schema(
             type: String, 
             require: true, 
             trim: true 
-        }                                                                              
+        },   
+        numeroDeEstudianteseEnLaRuta: {
+            type: Number, 
+            trim: true
+        },
+                                                                                   
     }
 , { timestamps: true}
 );
