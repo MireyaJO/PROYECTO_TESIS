@@ -125,7 +125,7 @@ const BuscarConductor = async (req, res) => {
     const { id } = req.params;
 
     // Verificación de la existencia del conductor
-    const conductor = await Conductores.findById(id);
+    const conductor = await Conductores.findById(id).select("-updatedAt -createdAt -__v");
     if (!conductor) return res.status(400).json({ msg: "Lo sentimos, el conductor no se encuentra trabajando en la Unidad Educativa Particular EMAÚS" });
 
     //Mensaje de exito

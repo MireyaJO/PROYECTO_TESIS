@@ -61,10 +61,14 @@ const paraElRegistroDeLosConductores= new Schema(
             require: true, 
             trim: true 
         },   
-        numeroDeEstudianteseEnLaRuta: {
+        numeroDeEstudiantes: {
             type: Number, 
-            trim: true
+            default: 0
         },
+        estudiantesRegistrados:{
+            type: [String],
+            default: []
+        }
                                                                                    
     }
 , { timestamps: true}

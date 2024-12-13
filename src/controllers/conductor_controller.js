@@ -69,6 +69,12 @@ const RegistroDeLosEstudiantes = async (req, res) => {
 
         //Se guarda en la base de datos el nuevo estudiante
         await nuevoEstudiante.save();
+
+        // Actualizar el número de estudiantes registrados por el conductor
+        conductor.numeroDeEstudiantes += 1;
+        conductor.estudiantesRegistrados.push(`${nombreEstudiante} ${apellidoEstudiante} - ${nivelEscolar} ${paralelo}`);
+        await conductor.save();
+
         res.status(201).json({ msg: "Estudiante registrado exitosamente", nuevoEstudiante });
     } catch (error) {
         console.error(error);

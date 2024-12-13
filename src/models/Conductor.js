@@ -33,8 +33,7 @@ const paraElRegistroDeLosEstudiantes= new Schema(
         }, 
         rutaDelEstudiante:{
             type: Number, 
-            require: true, 
-            unique: true, 
+            require: true
         }, 
         ubicacionEstudiante:{
             type: String, 
