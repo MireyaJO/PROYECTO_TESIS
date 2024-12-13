@@ -1,7 +1,7 @@
 import cloudinary from 'cloudinary';
 import fs from 'fs-extra';
 import Conductores from '../models/Administrador.js';
-import enviarCorreoConductor from "../config/nodemailer.js"; 
+import {enviarCorreoConductor, actualizacionDeConductor, eliminacionDelConductor} from "../config/nodemailer.js"; 
 import { createToken } from '../middlewares/autho.js';
 
 const RegistroDeLosConductores = async (req, res) => {
@@ -152,6 +152,9 @@ const ActualizarRutasYSectores = async (req, res) => {
         { new: true } // Esta opción devuelve el documento actualizado
     );
 
+    //Envio del correo al conductor 
+    actualizacionDeConductor(conductor.emailDelConductor, conductor.passwordParaElConductor, numeroDeRutaAsignada, sectoresDeLaRutaAsignada);
+
     res.status(200).json({
         msg: `La ruta y sectores objetivo del conductor ${nombreConductor} ${apellidoConductor} han sido actualizados exitosamente`
     });
@@ -167,6 +170,9 @@ const EliminarConductor = async (req, res) => {
     
     //Eliminación del conductor
     await Conductores.findOneAndDelete({id});
+
+    //Envio del correo al conductor
+    eliminacionDelConductor(conductor.emailDelConductor, conductor.nombreConductor, conductor.apellidoConductor);
 
     //Mensaje de exito
     res.status(200).json({msg:`El conductor ${conductor.nombreConductor} ${conductor.apellidoConductor} ha sido eliminado exitosamente`})

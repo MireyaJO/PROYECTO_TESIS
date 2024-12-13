@@ -3,7 +3,7 @@ import {RegistroDeLosConductores, LoginAdministrador, ActualizarRutasYSectores, 
 import {verificacionAdminRol, verificacionToken} from '../middlewares/autho.js'
 const router = Router()
 //Ruta pública
-router.post('/login', LoginAdministrador)
+router.post('/login/admin', LoginAdministrador)
 //Rutas privadas
 router.post('/registro/conductores', verificacionToken, verificacionAdminRol, RegistroDeLosConductores)
 router.get('/buscar/conductor/:id', verificacionToken, verificacionAdminRol, BuscarConductor)

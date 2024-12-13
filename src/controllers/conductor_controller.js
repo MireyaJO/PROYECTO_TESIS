@@ -107,7 +107,7 @@ const LoginConductor = async (req, res) => {
         }
 
         // Creación del token para el logeo del conductor
-        const token = createToken({ id: conductor._id, email: conductor.emailConductor, role: 'conductor' });
+        const token = createToken({ id: conductor._id, email: conductor.emailDelConductor, role: 'conductor' });
 
         // Mensaje de éxito
         return res.status(200).json({ token, msg: "Bienvenido conductor" });
