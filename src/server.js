@@ -39,7 +39,7 @@ app.use(express.json())
 
 // Rutas 
 app.get('/',(req,res)=>{
-    res.send("El servidor del sistema de recorridos para la gestión de asistencias y alerta de la llegada del bus escolar Cooperativa Ciudad de Quito de la Unidad Educativa Particular EMAÚS")
+    res.send("El servidor del sistema de recorridos para la alerta de la llegada del bus escolar Cooperativa Ciudad de Quito de la Unidad Educativa Particular EMAÚS")
 })
 //Rutas de los Administradores
 app.use('/api', Adminrouter)
