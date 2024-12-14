@@ -3,6 +3,7 @@ import fs from 'fs-extra';
 import Conductores from '../models/Administrador.js';
 import {enviarCorreoConductor, actualizacionDeConductor, eliminacionDelConductor} from "../config/nodemailer.js"; 
 import { createToken } from '../middlewares/autho.js';
+import crypto from 'crypto';
 
 const RegistroDeLosConductores = async (req, res) => {
     // Extraer los campos del cuerpo de la solicitud
@@ -76,21 +77,12 @@ const RegistroDeLosConductores = async (req, res) => {
         }
     }
 
-    //Verificación de la contraseña
-    if(passwordParaElConductor.length < 6 || passwordParaElConductor.length >10){
-        return res.status(400).json({ msg: "Lo sentimos, la contraseña debe tener al menos 6 caracteres" });
-    }
-    
-    //La contraserña debe tener al menos 2 caracteres especiales 
-    const caracteresEspeciales = /[^a-zA-Z0-9]/g;
-    const specialCharCount = (passwordParaElConductor.match(caracteresEspeciales) || []).length;
-    if(specialCharCount < 2){
-        return res.status(400).json({ msg: "Lo sentimos, la contraseña necesita minimo dos caracteres especiales" })
-    };
+    // Generar una contraseña aleatoria
+    const randomPassword = crypto.randomBytes(8).toString('hex');
 
     // Encriptar la contraseña antes de guardarla
-    nuevoConductor.passwordParaElConductor = await nuevoConductor.encrypPassword(passwordParaElConductor);
-    enviarCorreoConductor(emailDelConductor, passwordParaElConductor, numeroDeRutaAsignada, sectoresDeLaRutaAsignada); 
+    nuevoConductor.passwordParaElConductor = await nuevoConductor.encrypPassword(randomPassword);
+    enviarCorreoConductor(emailDelConductor, randomPassword, numeroDeRutaAsignada, sectoresDeLaRutaAsignada); 
 
     //No se crea un token de confirmación, ya que, al conductor solo se le necesita enviar un correo para que se diriga a su cuenta
     try {
@@ -153,7 +145,7 @@ const ActualizarRutasYSectores = async (req, res) => {
     );
 
     //Envio del correo al conductor 
-    actualizacionDeConductor(conductor.emailDelConductor, conductor.passwordParaElConductor, numeroDeRutaAsignada, sectoresDeLaRutaAsignada);
+    actualizacionDeConductor(conductor.emailDelConductor, numeroDeRutaAsignada, sectoresDeLaRutaAsignada);
 
     res.status(200).json({
         msg: `La ruta y sectores objetivo del conductor ${nombreConductor} ${apellidoConductor} han sido actualizados exitosamente`

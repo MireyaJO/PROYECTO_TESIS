@@ -58,7 +58,6 @@ const paraElRegistroDeLosConductores= new Schema(
         }, 
         passwordParaElConductor: {
             type: String, 
-            require: true, 
             trim: true 
         },   
         numeroDeEstudiantes: {

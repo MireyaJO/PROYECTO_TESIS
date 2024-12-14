@@ -25,7 +25,10 @@ const enviarCorreoConductor = (email, password, ruta, sectores) =>{
         html: `<p>Usted es conductor de la Unidad Educativa Particular “Emaús”.<br>
         <strong>Ruta:</strong> ${ruta}<br>
         <strong>Sectores:</strong> ${sectores}<br>
-        Por último, sus credenciales para ingresar a la aplicación son: ${email} y ${password}</p>`
+        Por último, sus credenciales para ingresar a la aplicación son:<br>
+        <strong>Email:</strong> ${email}<br>
+        <strong>Contraseña:</strong> ${password}<br>
+        <strong><i>Atentamente: </i></strong> Un dirigente de la Cooperativa de Transporte Escolar y Turismo Ciudad de Quito</p>`
     }
     //Creación del transportador universal con el email y el password del conductor ingresado por el administrador
     transportador.sendMail(estructuraEmail, (error, info) => {
@@ -38,7 +41,7 @@ const enviarCorreoConductor = (email, password, ruta, sectores) =>{
 }; 
 
 //El envío del correo al conductor para la actualización de la ruta y sectores
-const actualizacionDeConductor = (email, password, ruta, sectores) =>{
+const actualizacionDeConductor = (email, ruta, sectores) =>{
     //Creación de la estuctura que tendrá el correo 
     let estructuraEmail = {
         from: process.env.EMAIL_USER,
@@ -47,7 +50,7 @@ const actualizacionDeConductor = (email, password, ruta, sectores) =>{
         html: `<p>Usted es conductor de la Unidad Educativa Particular “Emaús”.<br>
         <strong>Ruta:</strong> ${ruta}<br>
         <strong>Sectores:</strong> ${sectores}<br>
-        Por último, le recordamos sus credenciales siguen siendo las mismas</p>`
+        Por último, le recordamos que sus credenciales no se han modificado, siguen siendo las mismas </p>`
     }
     //Creación del transportador universal con el email y el password del conductor ingresado por el administrador
     transportador.sendMail(estructuraEmail, (error, info) => {
