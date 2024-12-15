@@ -20,7 +20,7 @@ Este proyecto de tesis solo se enfoca en la parte de backend por el momento en l
 - Thunder Client 
 - Nodemailer para el envio de correo
 
-Esto se expandirá a para la implementación de un Front-end y Móvil, lo cual las Herramientas utilizadas sé irá actualizando conforme se lo implemente.
+Esto se expandirá a futuro para la implementación de un Front-end y Móvil, lo cual las Herramientas utilizadas sé irá actualizando conforme se lo implemente.
 
 ## Estructura
 
