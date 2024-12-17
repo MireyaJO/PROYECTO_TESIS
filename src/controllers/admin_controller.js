@@ -16,7 +16,6 @@ const RegistroDeLosConductores = async (req, res) => {
         sectoresDeLaRutaAsignada,
         institucionALaQueSeRealizaElReco,
         emailDelConductor,
-        passwordParaElConductor
     } = req.body;
 
     // Verificar que no haya campos vacíos
@@ -66,7 +65,6 @@ const RegistroDeLosConductores = async (req, res) => {
             });
 
             // Guardar la URL de la imagen en la base de datos
-            console.log(result.secure_url);
             nuevoConductor.fotografiaDelConductor = result.secure_url;
 
             // Eliminar el archivo local después de subirlo
@@ -113,7 +111,7 @@ const LoginAdministrador = async (req, res) => {
 };
 
 const BuscarConductor = async (req, res) => {
-    //Pbtener el id de los parámetros de la URL
+    //Obtener el id de los parámetros de la URL
     const { id } = req.params;
 
     // Verificación de la existencia del conductor
@@ -123,6 +121,34 @@ const BuscarConductor = async (req, res) => {
     //Mensaje de exito
     res.status(200).json({ msg: `El conductor ${conductor.nombreConductor} ${conductor.apellidoConductor} se ha encontrado exitosamente`, conductor});
 };
+
+const BuscarConductorRuta = async (req, res) => {
+    try {
+        // Obtener el número de la ruta de los parámetros de la URL
+        const { numeroDeRutaAsignada } = req.params;
+
+        // Verificación de la existencia de la ruta
+        const conductores = await Conductores.find({ numeroDeRutaAsignada }).select("-updatedAt -createdAt -__v");
+        if (conductores.length === 0) {
+            return res.status(400).json({ msg: "Lo sentimos, no se ha encontrado ningún conductor trabajando en la Unidad Educativa Particular EMAÚS con esa ruta" });
+        }
+
+        // Mensaje de éxito
+        res.status(200).json({ msg: `El conductor de la ruta ${numeroDeRutaAsignada} se han encontrado exitosamente`, conductores });
+    } catch (error) {
+
+        res.status(500).json({ msg: "Error al buscar conductores por ruta", error: error.message });
+    }
+}
+
+const ListarConductor = async (req, res) => {
+    //Obtener todos los conductores
+    const conductores = await Conductores.find().select("-updatedAt -createdAt -__v");
+    //Validación de que existan conductores
+    if (conductores.length === 0) return res.status(400).json({msg:"El administrador no ha registrado a ningún conductor"});
+    //Mensaje de exito
+    res.status(200).json({ msg: "Los conductores se han encontrado exitosamente", conductores});
+}
 
 const ActualizarRutasYSectores = async (req, res) => {
     const { numeroDeRutaAsignada, sectoresDeLaRutaAsignada, numeroDeCedula } = req.body;
@@ -174,6 +200,8 @@ export {
     RegistroDeLosConductores,
     LoginAdministrador,
     BuscarConductor, 
+    BuscarConductorRuta,
+    ListarConductor,
     ActualizarRutasYSectores, 
     EliminarConductor
 };

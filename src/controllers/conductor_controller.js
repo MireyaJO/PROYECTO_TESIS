@@ -64,7 +64,8 @@ const RegistroDeLosEstudiantes = async (req, res) => {
             rutaDelEstudiante: conductor.numeroDeRutaAsignada,
             ubicacionEstudiante,
             institucionEstudiante: conductor.institucionALaQueSeRealizaElReco,
-            recoCompletoOMedio
+            recoCompletoOMedio, 
+            conductor: conductor._id
         });
 
         //Se guarda en la base de datos el nuevo estudiante

@@ -1,4 +1,4 @@
-import {Schema, model} from 'mongoose'
+import mongoose, {Schema, model} from 'mongoose'
 
 
 //Definición de la estructura en la base de datos 
@@ -47,7 +47,12 @@ const paraElRegistroDeLosEstudiantes= new Schema(
         recoCompletoOMedio:{
             type: String, 
             require: true
-        }                                                                 
+        }, 
+        conductor:{
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Conductores',
+            require: true
+        },                                                                
     }
 , { timestamps: true}
 );
