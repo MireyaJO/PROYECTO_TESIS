@@ -10,44 +10,15 @@ const RegistroDeLosConductores = async (req, res) => {
     const {
         nombreConductor,
         apellidoConductor,
-        numeroDeCedula,
-        numeroDeLaPlacaDelAutomovil, 
         numeroDeRutaAsignada, 
-        sectoresDeLaRutaAsignada,
-        institucionALaQueSeRealizaElReco,
+        sectoresDeLaRuta,
         emailDelConductor,
     } = req.body;
-
-    // Verificar que no haya campos vacíos
-    if (Object.values(req.body).includes("")) {
-        return res.status(400).json({ msg: "Lo sentimos, debes llenar todos los campos" });
-    }
-
-    // Comprobar el tamaño de la cedula
-    if(numeroDeCedula.toString().length !== 10){
-        return res.status(400).json({ msg: "Lo sentimos, el número de cédula debe tener 10 dígitos" });
-    }
-
-    //Comparar el tamaño de la placa
-    if(numeroDeLaPlacaDelAutomovil.length !== 7){
-        return res.status(400).json({ msg: "Lo sentimos, el número de placa debe tener 7 dígitos" });
-    }
 
     // Comprobar si el email ya está registrado
     const verificarEmailBDD = await Conductores.findOne({ emailDelConductor });
     if (verificarEmailBDD) {
         return res.status(400).json({ msg: "Lo sentimos, el email ya se encuentra registrado" });
-    }
-
-    // Comprobar si el email está bien escrito y tiene un dominio permitido
-    const emailRegex = /^[a-zA-Z0-9._%+-]+@(gmail|outlook|hotmail)\.com$/;
-    if (!emailRegex.test(emailDelConductor)) {
-        return res.status(400).json({ msg: "Lo sentimos, el email debe ser de dominio gmail, outlook o hotmail y estar bien escrito" });
-    }
-
-    //Verificación del nombre de la institución en la que se esta trabajando
-    if(institucionALaQueSeRealizaElReco !== "Unidad Educativa Particular EMAÚS"){
-        return res.status(400).json({ msg: "Lo sentimos, el sistema es solo para los recorridos de la Unidad Educativa Particular EMAÚS" });
     }
 
     // Crear un nuevo conductor con los datos proporcionados
@@ -80,7 +51,7 @@ const RegistroDeLosConductores = async (req, res) => {
 
     // Encriptar la contraseña antes de guardarla
     nuevoConductor.passwordParaElConductor = await nuevoConductor.encrypPassword(randomPassword);
-    enviarCorreoConductor(emailDelConductor, randomPassword, numeroDeRutaAsignada, sectoresDeLaRutaAsignada); 
+    await enviarCorreoConductor(emailDelConductor, randomPassword, numeroDeRutaAsignada, sectoresDeLaRuta); 
 
     //No se crea un token de confirmación, ya que, al conductor solo se le necesita enviar un correo para que se diriga a su cuenta
     try {
@@ -106,7 +77,7 @@ const LoginAdministrador = async (req, res) => {
         // Crear un token JWT con un campo adicional que indique que el usuario es un administrador
         const token = createToken({ email: emailAdministrador, role: 'admin' });
         // Enviar el token al cliente
-        return res.status(200).json({ token, msg_admin: "Bienvenido administrador" });
+        return res.status(200).json({ token, msg_login_admin: "Bienvenido administrador" });
     }
 };
 
@@ -171,7 +142,7 @@ const ActualizarRutasYSectores = async (req, res) => {
     );
 
     //Envio del correo al conductor 
-    actualizacionDeConductor(conductor.emailDelConductor, numeroDeRutaAsignada, sectoresDeLaRutaAsignada);
+    await actualizacionDeConductor(conductor.emailDelConductor, numeroDeRutaAsignada, sectoresDeLaRutaAsignada);
 
     res.status(200).json({
         msg: `La ruta y sectores objetivo del conductor ${nombreConductor} ${apellidoConductor} han sido actualizados exitosamente`
@@ -190,7 +161,7 @@ const EliminarConductor = async (req, res) => {
     await Conductores.findOneAndDelete({id});
 
     //Envio del correo al conductor
-    eliminacionDelConductor(conductor.emailDelConductor, conductor.nombreConductor, conductor.apellidoConductor);
+    await eliminacionDelConductor(conductor.emailDelConductor, conductor.nombreConductor, conductor.apellidoConductor);
 
     //Mensaje de exito
     res.status(200).json({msg:`El conductor ${conductor.nombreConductor} ${conductor.apellidoConductor} ha sido eliminado exitosamente`})

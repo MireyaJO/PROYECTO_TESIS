@@ -14,9 +14,13 @@ const paraElRegistroDeLosConductores= new Schema(
             require: true, 
             trim: true 
         }, 
-        generoDelConductor: {
-            type: String, 
+        telefonoConductor:{
+            type: Number, 
             require: true, 
+            trim: true
+        }, 
+        generoDelConductor: {
+            type: String,  
             trim: true
         }, 
         numeroDeCedula:{
@@ -25,7 +29,7 @@ const paraElRegistroDeLosConductores= new Schema(
             unique: true,
             trim: true
         }, 
-        numeroDeLaPlacaDelAutomovil:{
+        placaAutomovil:{
             type: String, 
             require: true, 
             unique: true,
@@ -37,12 +41,12 @@ const paraElRegistroDeLosConductores= new Schema(
             unique: true, 
             trim: true
         }, 
-        sectoresDeLaRutaAsignada:{
+        sectoresDeLaRuta:{
             type: String, 
             require: true, 
             trim: true
         }, 
-        institucionALaQueSeRealizaElReco:{
+        institucion:{
             type: String, 
             require: true, 
         }, 
@@ -67,6 +71,10 @@ const paraElRegistroDeLosConductores= new Schema(
         estudiantesRegistrados:{
             type: [String],
             default: []
+        }, 
+        token: {
+            type: String,
+            default: null
         }
                                                                                    
     }
@@ -84,6 +92,12 @@ paraElRegistroDeLosConductores.methods.encrypPassword = async function(password)
 paraElRegistroDeLosConductores.methods.matchPassword = async function(password){
     const response = await bcrypt.compare(password,this.passwordParaElConductor)
     return response
+}
+
+// Método para crear un token 
+paraElRegistroDeLosConductores.methods.crearToken = function(){
+    const tokenGenerado = this.token = Math.random().toString(36).slice(2)
+    return tokenGenerado
 }
 
 export default model('Conductores',paraElRegistroDeLosConductores)

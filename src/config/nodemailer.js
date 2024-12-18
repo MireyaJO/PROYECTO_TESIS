@@ -79,8 +79,31 @@ const eliminacionDelConductor = (email, nombres, apellidos) =>{
         }
     });
 }; 
+
+const recuperacionContrasenia = (email, nombres, apellidos, token) => {
+    //Creación de la estuctura que tendrá el correo 
+    let estructuraEmail = {
+        from: process.env.EMAIL_USER,
+        to: email,  
+        subject: "Recuperación de contraseña del conductor del Unidad Educativa Particular Emaús",
+        html: `<p>Señor/a ${nombres} ${apellidos} usted desea recuperar su contrseña, para aquello ingrese al siguiente link: </p>
+        <hr>
+        <a href=${process.env.URL_BACKEND}comprobar/token/${token}>Clic aquí para reestablecer tu contraseña</a>
+        <hr>`
+    }
+    //Creación del transportador universal con el email y el password del conductor ingresado por el administrador
+    transportador.sendMail(estructuraEmail, (error, info) => {
+        if(error){
+            console.error(error);
+        } else {
+            console.log('Correo enviado: ' + info.response);
+        }
+    });
+}
+
 export {
     enviarCorreoConductor, 
     actualizacionDeConductor,
+    recuperacionContrasenia,
     eliminacionDelConductor
 }
