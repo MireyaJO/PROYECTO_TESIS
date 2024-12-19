@@ -111,10 +111,10 @@ const LoginConductor = async (req, res) => {
         const token = createToken({ msg_login_conductor: conductor._id, email: conductor.email, role: 'conductor' });
 
         // Mensaje de éxito
-        return res.status(200).json({ token, msg: "Bienvenido conductor" });
+        return res.status(200).json({ token, msg_login_conductor: "Bienvenido conductor" });
     } catch (error) {
         console.error(error);
-        return res.status(500).json({ msg: "Error al autenticar el conductor" });
+        return res.status(500).json({ msg_login_conductor: "Error al autenticar el conductor" });
     }
 };
 

@@ -3,7 +3,7 @@ import { check, validationResult } from 'express-validator'
 //Validaciones para el conductor 
 const validacionesConductor = [
      // Verificar que se encuentren los campos obligatorios y no estén vacíos
-    check(["nombre","apellido","telefono","cedula","placaAutomovil","rutaAsignada", "sectoresRuta", "institucion", "fotografiaDelConductor", 
+    check(["nombre","apellido","telefono","cedula","placaAutomovil","rutaAsignada", "sectoresRuta", "institucion", 
         "email"
     ])
     .exists()

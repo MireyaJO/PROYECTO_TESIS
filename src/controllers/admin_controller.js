@@ -12,6 +12,7 @@ const RegistroDeLosConductores = async (req, res) => {
         apellido,
         rutaAsignada, 
         sectoresRuta,
+        telefono, 
         placaAutomovil,
         cedula,
         email,
@@ -70,7 +71,10 @@ const RegistroDeLosConductores = async (req, res) => {
             console.error(error);
             return res.status(500).json({ msg_registro_conductor: "Error al subir la imagen" });
         }
+    } else {
+        return res.status(400).json({ msg_registro_conductor: "Lo sentimos, debes subir una imagen" });
     }
+
 
     // Generar una contraseña aleatoria
     const randomPassword = crypto.randomBytes(8).toString('hex');
