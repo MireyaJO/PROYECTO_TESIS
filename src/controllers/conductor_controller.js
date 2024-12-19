@@ -62,9 +62,9 @@ const RegistroDeLosEstudiantes = async (req, res) => {
             nivelEscolar,
             paralelo,
             cedula,
-            rutaDelEstudiante: conductor.rutaAsignada,
-            ubicacionEstudiante,
-            institucionEstudiante: conductor.institucion,
+            ruta: conductor.rutaAsignada,
+            ubicacionDomicilio,
+            institucion: conductor.institucion,
             recoCompletoOMedio, 
             conductor: conductor._id
         });
@@ -108,7 +108,7 @@ const LoginConductor = async (req, res) => {
         }
 
         // Creación del token para el logeo del conductor
-        const token = createToken({ msg_login_conductor: conductor._id, email: conductor.email, role: 'conductor' });
+        const token = createToken({ id: conductor._id, email: conductor.email, role: 'conductor' });
 
         // Mensaje de éxito
         return res.status(200).json({ token, msg_login_conductor: "Bienvenido conductor" });
@@ -141,7 +141,7 @@ const ActualizarPassword = async (req, res) => {
         }
 
         // Encriptar la contraseña antes de guardarla
-        conductor.passwordParaElConductor = await conductor.encrypPassword(passwordActual);
+        conductor.password = await conductor.encrypPassword(passwordActual);
         await conductor.save();
         res.status(201).json({ msg_actualizacion_contrasenia: "La contraseña se ha actualizado satisfactoriamente, por favor vuelva a logearse" });
     } catch (error) {
