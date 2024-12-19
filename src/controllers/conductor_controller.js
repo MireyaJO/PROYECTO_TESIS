@@ -270,7 +270,6 @@ const BuscarEstudianteCedula = async (req, res) => {
     }
 }
 
-
 const ActualizarEstudiante = async (req, res) => {
     //Obtención de datos de lo escrito por el conductor
     const {nivelEscolar, paralelo, ubicacionDomicilio, recoCompletoOMedio} = req.body;
@@ -300,6 +299,15 @@ const ActualizarEstudiante = async (req, res) => {
         // Esta opción devuelve el documento actualizado en lugar del original
         { new: true } 
     );
+
+    const conductor = await Conductores.findById(req.user.id);
+    //Actualizar el array de los estudiantes
+    const estudianteAActualizar = `${cedula} - ${nombre} ${apellido} - ${nivelEscolar} ${paralelo}`;
+    conductor.estudiantesRegistrados = conductor.estudiantesRegistrados.map(estudiante => {
+        const [cedulaEstudiante] = estudiante.split(" - ");
+        return cedulaEstudiante === cedula ? estudianteAActualizar : estudiante;
+    });
+    await conductor.save();
 
     res.status(200).json({
         msg_actualizar_estudiantes: `Los datos del estudiante ${nombre} ${apellido} han sido actualizados exitosamente`
