@@ -1,16 +1,15 @@
 import mongoose, {Schema, model} from 'mongoose'
 
-
 //Definición de la estructura en la base de datos 
 //Esquema para el registro de los estudiantes
 const paraElRegistroDeLosEstudiantes= new Schema(
     {
-        nombreEstudiante:{
+        nombre:{
             type: String, 
             require: true, 
             trim: true
         }, 
-        apellidoEstudiante:{
+        apellido:{
             type: String, 
             require: true, 
             trim: true 
@@ -25,22 +24,22 @@ const paraElRegistroDeLosEstudiantes= new Schema(
             require: true, 
             trim: true
         },
-        numeroDeCedula:{
+        cedula:{
             type: Number, 
             require: true, 
             unique: true,
             trim: true
         }, 
-        rutaDelEstudiante:{
+        ruta:{
             type: Number, 
             require: true
         }, 
-        ubicacionEstudiante:{
+        ubicacionDomicilio:{
             type: String, 
             require: true, 
             trim: true
         }, 
-        institucionEstudiante:{
+        institucion:{
             type: String, 
             require: true, 
         },  

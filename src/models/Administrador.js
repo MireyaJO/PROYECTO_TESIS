@@ -4,26 +4,27 @@ import bcrypt from 'bcryptjs'
 //Esquema para el registro de los conductores
 const paraElRegistroDeLosConductores= new Schema(
     {
-        nombreConductor:{
+        nombre:{
             type: String, 
             require: true, 
             trim: true
         }, 
-        apellidoConductor:{
+        apellido:{
             type: String, 
             require: true, 
             trim: true 
         }, 
-        telefonoConductor:{
+        telefono:{
             type: Number, 
             require: true, 
+            unique: true,
             trim: true
         }, 
-        generoDelConductor: {
+        generoConductor: {
             type: String,  
             trim: true
         }, 
-        numeroDeCedula:{
+        cedula:{
             type: Number, 
             require: true, 
             unique: true,
@@ -35,13 +36,13 @@ const paraElRegistroDeLosConductores= new Schema(
             unique: true,
             trim: true
         },
-        numeroDeRutaAsignada:{
+        rutaAsignada:{
             type: Number, 
             require: true, 
             unique: true, 
             trim: true
         }, 
-        sectoresDeLaRuta:{
+        sectoresRuta:{
             type: String, 
             require: true, 
             trim: true
@@ -54,17 +55,17 @@ const paraElRegistroDeLosConductores= new Schema(
             type: String, 
             require: true
         }, 
-        emailDelConductor:{
+        email:{
             type: String, 
             require: true, 
             unique: true,
             trim: true 
         }, 
-        passwordParaElConductor: {
+        password: {
             type: String, 
             trim: true 
         },   
-        numeroDeEstudiantes: {
+        numeroEstudiantes: {
             type: Number, 
             default: 0
         },
@@ -89,8 +90,8 @@ paraElRegistroDeLosConductores.methods.encrypPassword = async function(password)
 }
 
 // Método para verificar si el password ingresado es el mismo de la BDD
-paraElRegistroDeLosConductores.methods.matchPassword = async function(password){
-    const response = await bcrypt.compare(password,this.passwordParaElConductor)
+paraElRegistroDeLosConductores.methods.matchPassword = async function(passwordIngresada){
+    const response = await bcrypt.compare(passwordIngresada,this.password)
     return response
 }
 

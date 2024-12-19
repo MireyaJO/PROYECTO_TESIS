@@ -3,23 +3,23 @@ import { check, validationResult } from 'express-validator'
 //Validaciones para el conductor 
 const validacionesConductor = [
      // Verificar que se encuentren los campos obligatorios y no estén vacíos
-    check(["nombreConductor","apellidoConductor","telefonoConductor","numeroDeCedula","placaAutomovil","numeroDeRutaAsignada", "sectoresDeLaRuta", "institucion", 
-        "emailDelConductor"
+    check(["nombre","apellido","telefono","cedula","placaAutomovil","rutaAsignada", "sectoresRuta", "institucion", "fotografiaDelConductor", 
+        "email"
     ])
     .exists()
-        .withMessage('Los campos "nombreConductor","apellidoConductor","telefonoConductor","numeroDeCedula","placaAutomovil","numeroDeRutaAsignada", "sectoresDeLaRuta", "institucion", "fotografiaDelConductor", "emailDelConductor" y/o "passwordParaElConductor" son obligatorios')
+        .withMessage('Los campos "nombre","apellido","telefono","cedula","placaAutomovil","rutaAsignada", "sectoresRuta", "institucion", "fotografiaDelConductor" y/o "email"  son obligatorios')
     .notEmpty()
-        .withMessage('Los campos "nombreConductor","apellidoConductor","telefonoConductor","numeroDeCedula","placaAutomovil","numeroDeRutaAsignada", "sectoresDeLaRuta", "institucion", "fotografiaDelConductor", "emailDelConductor" y/o "passwordParaElConductor" no pueden estar vacíos')
+        .withMessage('Los campos "nombre","apellido","telefonor","cedula","placaAutomovil","rutaAsignada", "sectoresRuta", "institucion", "fotografiaDelConductor" y/o "email" no pueden estar vacíos')
     .customSanitizer(value => value?.trim()),
 
     //Verificación de que todo sea un string
-    check(["nombreConductor","apellidoConductor","sectoresDeLaRuta"])
-    .isString()
+    check(["nombre","apellido"])
+    .isAlpha('es-ES', { ignore: 'áéíóúÁÉÍÓÚñÑ' })
         .withMessage('El campo debe ser un texto, no se acepta otro tipo de dato')
     .customSanitizer(value => value?.trim()),
 
     // Verificar que el numero de telefono sea de 10 digitos
-    check("telefonoConductor")
+    check("telefono")
     .isLength({ min: 10, max: 10 })
         .withMessage('El teléfono debe ser de 10 digitos')
     .isNumeric()
@@ -27,8 +27,8 @@ const validacionesConductor = [
     .customSanitizer(value => value?.trim()),
 
     // Verificar que el número de cédula tenga 10 dígitos
-    check("numeroDeCedula")
-    .isLength({ min: 3, max: 20 })
+    check("cedula")
+    .isLength({ min: 10, max: 10 })
         .withMessage('La cedula debe ser de 10 digitos')
     .isNumeric()
         .withMessage('El campo "teléfono" debe contener solo números')
@@ -38,18 +38,18 @@ const validacionesConductor = [
     check("placaAutomovil")
     .isLength({ min: 7, max: 7 })
         .withMessage('La placa debe ser de 7 digitos')
-    .isNumeric()
-        .withMessage('El campo "teléfono" debe contener solo números')
     .customSanitizer(value => value?.trim()),
 
-    // Verificar que la ruta sea un número
-    check("numeroDeRutaAsignada")
+    // Verificar que la ruta sea un número y que solo existan 12 rutaa
+    check("rutaAsignada")
     .isNumeric()
         .withMessage('La ruta debe ser un número, no se acepta otro tipo de dato')
+    .isInt({ min: 1, max: 12 })
+        .withMessage('Solo existen 12 rutas disponibles en la Unidad Educativa Particular Emaús')
     .customSanitizer(value => value?.trim()),
 
     // Verificar que el email se enceuntre bien escrito
-    check("emailDelConductor")
+    check("email")
     .isEmail()
         .withMessage('El email debe ser un correo válido')
     .customSanitizer(value => value?.trim()),
