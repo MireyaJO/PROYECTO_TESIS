@@ -349,7 +349,9 @@ const EliminarEstudiante = async (req, res) => {
     await Estudiantes.findOneAndDelete({id});
     const conductor = await Conductores.findById(req.user.id);
     //Eliminación en el array de los conductores
-    conductor.estudiantesRegistrados = conductor.estudiantesRegistrados.filter(estudiante => estudiante !== `${cedula} - ${nombre} ${apellido} - ${nivelEscolar} ${paralelo}`);
+    conductor.numeroEstudiantes -= 1;
+    const estudianteAEliminar = `${cedula} - ${nombre} ${apellido} - ${nivelEscolar} ${paralelo}`;
+    conductor.estudiantesRegistrados = conductor.estudiantesRegistrados.filter(estudiante => estudiante !== estudianteAEliminar);
     await conductor.save();
 
     //Mensaje de exito
