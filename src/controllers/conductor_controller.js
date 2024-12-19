@@ -295,7 +295,7 @@ const ActualizarEstudiante = async (req, res) => {
 
     // Actualización de los datos
     await Estudiantes.findOneAndUpdate(
-        { cedula },
+        { _id: id },
         { nivelEscolar, paralelo, ubicacionDomicilio, recoCompletoOMedio },
         // Esta opción devuelve el documento actualizado en lugar del original
         { new: true } 
@@ -349,7 +349,7 @@ const EliminarEstudiante = async (req, res) => {
     await Estudiantes.findOneAndDelete({id});
 
     //Mensaje de exito
-    res.status(200).json({msg_eliminacion_estudiante:`Los datos del estudiante ${nombre} ${apellido} han sido actualizados exitosamente`})
+    res.status(200).json({msg_eliminacion_estudiante:`Los datos del estudiante ${nombre} ${apellido} han eliminado exitosamente`})
 }
 
 
