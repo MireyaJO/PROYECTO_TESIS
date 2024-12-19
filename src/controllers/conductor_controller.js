@@ -73,8 +73,8 @@ const RegistroDeLosEstudiantes = async (req, res) => {
         await nuevoEstudiante.save();
 
         // Actualizar el número de estudiantes registrados por el conductor
-        conductor.numero += 1;
-        conductor.estudiantesRegistrados.push(`${nombre} ${apellido} - ${nivelEscolar} ${paralelo}`);
+        conductor.numeroEstudiantes += 1;
+        conductor.estudiantesRegistrados.push(`${cedula} - ${nombre} ${apellido} - ${nivelEscolar} ${paralelo}`);
         await conductor.save();
 
         res.status(201).json({ msg_registro_estudiantes: "Estudiante registrado exitosamente", nuevoEstudiante });
@@ -347,6 +347,9 @@ const EliminarEstudiante = async (req, res) => {
 
     //Eliminación del conductor
     await Estudiantes.findOneAndDelete({id});
+    const conductor = await Conductores.findById(req.user.id);
+    //Eliminación en el array de los conductores
+    conductor.estudiantesRegistrados = conductor.estudiantesRegistrados.filter(estudiante => estudiante !== `${cedula} - ${nombre} ${apellido} - ${nivelEscolar} ${paralelo}`);
 
     //Mensaje de exito
     res.status(200).json({msg_eliminacion_estudiante:`Los datos del estudiante ${nombre} ${apellido} han eliminado exitosamente`})
