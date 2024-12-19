@@ -216,7 +216,7 @@ const NuevaPassword = async (req, res) => {
 
         // Encriptar la contraseña antes de guardarla
         const conductor = await Conductores.findOne({token: tokenURL});
-        conductor.passwordParaElConductor = await conductor.encrypPassword(passwordActual);
+        conductor.password = await conductor.encrypPassword(passwordActual);
         conductor.token = null;
         await conductor.save();
         res.status(201).json({msg_recuperacion_contrasenia: "La contraseña se ha actualizado satisfactoriamente, por favor vuelva a logearse"});
