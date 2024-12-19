@@ -120,7 +120,7 @@ const BuscarConductor = async (req, res) => {
     if (!conductor) return res.status(400).json({ msg_buscar_conductor: "Lo sentimos, el conductor no se encuentra trabajando en la Unidad Educativa Particular EMAÚS" });
 
     //Mensaje de exito
-    res.status(200).json({ msg: `El conductor ${conductor.nombreConductor} ${conductor.apellidoConductor} se ha encontrado exitosamente`, conductor});
+    res.status(200).json({ msg: `El conductor ${conductor.nombre} ${conductor.apellido} se ha encontrado exitosamente`, conductor});
 };
 
 const BuscarConductorRuta = async (req, res) => {

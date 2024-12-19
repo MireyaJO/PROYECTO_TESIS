@@ -153,11 +153,11 @@ const ActualizarPassword = async (req, res) => {
 
 const RecuperacionPassword = async (req, res) => {
     //Recepción del email del conductor
-    const {emailDelConductor} = req.body;
+    const {email} = req.body;
 
     //Verificación de que el email no se encuentre vacío
     if (Object.values(req.body).includes("")) return res.status(404).json({msg:"Lo sentimos, debes llenar todos los campos"})
-    const conductor = await Conductores.findOne({emailDelConductor});
+    const conductor = await Conductores.findOne({email: email});
     try{
         //Verificación de que el conductor exista
         if(!conductor){
