@@ -1,7 +1,9 @@
 import Conductores from '../models/Administrador.js';
 import {createToken} from '../middlewares/autho.js';
 import Estudiantes from '../models/Conductor.js';
+import {directionsService} from '../config/mapbox.js';
 import {recuperacionContrasenia} from "../config/nodemailer.js"; 
+import {io} from '../server.js';
 
 //Registro de los estudiantes
 const RegistroDeLosEstudiantes = async (req, res) => {
@@ -283,7 +285,23 @@ const ActualizarEstudiante = async (req, res) => {
     const estudiante = await Estudiantes.findOne({_id:id});
     if (!estudiante) return res.status(400).json({ msg: "Lo sentimos, el conductor no se encuentra trabajando en la Unidad Educativa Particular EMAÚS" });
 
-     //Comprobación de que sea un link de google maps
+    //Comprobar que el nivel escolar se encuentre bien escrito 
+    if(nivelEscolar !== "Nocional" && nivelEscolar !== "Inicial 1" && nivelEscolar !== "Inicial 2"
+        && nivelEscolar !== "Primero de básica" && nivelEscolar !== "Segundo de básica" && nivelEscolar !== "Tercero de básica"
+        && nivelEscolar !== "Cuarto de básica" && nivelEscolar !== "Quinto de básica" && nivelEscolar !== "Sexto de básica"
+        && nivelEscolar !== "Séptimo de básica" && nivelEscolar !== "Octavo de básica" && nivelEscolar !== "Noveno de básica"
+        && nivelEscolar !== "Décimo de básica" && nivelEscolar !== "Primero de bachillerato" && nivelEscolar !== "Segundo de bachillerato"
+        && nivelEscolar !== "Tercero de bachillerato"
+    ){
+        return res.status(400).json({ msg_registro_estudiantes: "Lo sentimos, el nivel escolar debe ser Educación Inicial, Educación General Básica o Educación Media (Bachillerato)" });
+    }
+
+    //Comprobar el paralelo en el que se encuentra el estudiante
+    if(paralelo !== "A" && paralelo !== "B" && paralelo !== "C" ){
+        return res.status(400).json({ msg_registro_estudiantes: "Lo sentimos, el paralelo debe ser de la A a la C" });
+    }
+
+    //Comprobación de que sea un link de google maps
     const carateresGoogleMaps = /^https:\/\/maps\.app\.goo\.gl\/[a-zA-Z0-9]+$/;
     if (!carateresGoogleMaps.test(ubicacionDomicilio)) {
         return res.status(400).json({ msg_actualizar_estudiantes: "Lo sentimos, el link de ubicación debe ser de google maps" });
@@ -326,6 +344,28 @@ const ActualizarEstudianteCedula = async (req, res) => {
     const estudiante = await Estudiantes.findOne({ cedula: cedula });
     if (!estudiante) return res.status(400).json({ msg_actualizacion_estudiante_cedula: "Lo sentimos, el conductor no se encuentra trabajando en la Unidad Educativa Particular EMAÚS" });
 
+   //Comprobar que el nivel escolar se encuentre bien escrito 
+   if(nivelEscolar !== "Nocional" && nivelEscolar !== "Inicial 1" && nivelEscolar !== "Inicial 2"
+    && nivelEscolar !== "Primero de básica" && nivelEscolar !== "Segundo de básica" && nivelEscolar !== "Tercero de básica"
+    && nivelEscolar !== "Cuarto de básica" && nivelEscolar !== "Quinto de básica" && nivelEscolar !== "Sexto de básica"
+    && nivelEscolar !== "Séptimo de básica" && nivelEscolar !== "Octavo de básica" && nivelEscolar !== "Noveno de básica"
+    && nivelEscolar !== "Décimo de básica" && nivelEscolar !== "Primero de bachillerato" && nivelEscolar !== "Segundo de bachillerato"
+    && nivelEscolar !== "Tercero de bachillerato"
+    ){
+        return res.status(400).json({ msg_registro_estudiantes: "Lo sentimos, el nivel escolar debe ser Educación Inicial, Educación General Básica o Educación Media (Bachillerato)" });
+    }
+
+    //Comprobar el paralelo en el que se encuentra el estudiante
+    if(paralelo !== "A" && paralelo !== "B" && paralelo !== "C" ){
+        return res.status(400).json({ msg_registro_estudiantes: "Lo sentimos, el paralelo debe ser de la A a la C" });
+    }
+
+    //Comprobación de que sea un link de google maps
+    const carateresGoogleMaps = /^https:\/\/maps\.app\.goo\.gl\/[a-zA-Z0-9]+$/;
+    if (!carateresGoogleMaps.test(ubicacionDomicilio)) {
+        return res.status(400).json({ msg_actualizar_estudiantes: "Lo sentimos, el link de ubicación debe ser de google maps" });
+    }
+
     //Datos del estudiante 
     const {nombre, apellido} = estudiante;
 
@@ -366,6 +406,62 @@ const EliminarEstudiante = async (req, res) => {
     res.status(200).json({msg_eliminacion_estudiante:`Los datos del estudiante ${nombre} ${apellido} han eliminado exitosamente`})
 }
 
+//Funciones para el manejo de ubicaciones 
+
+//Función que extrae la latitud y longitud de la ubicacion del estudiante
+const ExtraerCoordenadasLinkGoogleMaps = async (url) => {
+    //Linia que se encarga de extraer las coordenadas de un link de google
+    const lineaComparatoria = /@(-?\d+\.\d+),(-?\d+\.\d+)/;
+
+    //Array donde se encientra la longitud y latitud
+    const comparacion = url.match(lineaComparatoria);
+
+    //Verificación de que se haya encontrado la longitud y latitud
+    if (comparacion) {
+        //Extraxión explicita 
+        return {
+            latitud: parseFloat(comparacion[1]),
+            longitud: parseFloat(comparacion[2])
+        };
+    } 
+
+    //Mensaje de error
+    return { msg_extracion_coordenadas_estudiantes: "Lo sentimos, no se ha podido extraer la ubicación" };
+}
+
+//Funcion para calcular la distancia y el tiempo entre dos ubicaciones
+const CalcularDistanciaYTiempo = async (latitudOrigen, longitudOrigen, latitudDestino, longitudDestino) => {
+    try{
+        const respuesta = await mapboxApiKey.getDirections({
+            profile: 'driving-traffic',
+            waypoints: [
+                //Coordeandas de origen
+                {coordinates: [longitudOrigen, latitudOrigen]},
+                //Coordenadas de destino
+                {coordinates: [longitudDestino, latitudDestino]}
+            ],
+        }).send(); 
+
+        //Extraer la información de la distancia y el tiempo
+        //Conversión de metros a kilometros
+        const distancia = respuesta.body.routes[0].distance/1000;
+        //Conversión de segundos a minutos
+        const tiempo = respuesta.body.routes[0].duration/60;
+
+        //Retorno de la distancia y el tiempo
+        return {distancia, tiempo};
+    } catch (error) {
+        console.error(error);
+        return {msg_calculo_distancia_tiempo: "Error al calcular la distancia y el tiempo"};
+    }
+}
+
+// Función para enviar notificaciones por correo electrónico
+const enviarNotificacion = (email, conductorId, estudianteNombre) => {
+    // Aquí puedes implementar la lógica para enviar un correo electrónico
+    // utilizando una biblioteca como nodemailer
+    console.log(`Enviando notificación a ${email} sobre el conductor ${conductorId} que se dirige a la casa de ${estudianteNombre}`);
+}
 
 export {
     RegistroDeLosEstudiantes,
@@ -379,5 +475,7 @@ export {
     BuscarEstudianteCedula,
     ActualizarEstudiante, 
     ActualizarEstudianteCedula,
-    EliminarEstudiante
+    EliminarEstudiante, 
+    ExtraerCoordenadasLinkGoogleMaps, 
+    CalcularDistanciaYTiempo
 }

@@ -47,11 +47,22 @@ const paraElRegistroDeLosEstudiantes= new Schema(
             type: String, 
             require: true
         }, 
+        latitud:{
+            type: Number
+        }, 
+        longitud:{
+            type: Number
+        },
         conductor:{
             type: mongoose.Schema.Types.ObjectId,
             ref: 'Conductores',
             require: true
-        },                                                                
+        },     
+        representante:{
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Representantes',
+            require: true
+        }                                                           
     }
 , { timestamps: true}
 );

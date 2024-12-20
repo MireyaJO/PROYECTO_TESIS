@@ -2,7 +2,7 @@ import cloudinary from 'cloudinary';
 import fs from 'fs-extra';
 import Conductores from '../models/Administrador.js';
 import {enviarCorreoConductor, actualizacionDeConductor, eliminacionDelConductor} from "../config/nodemailer.js"; 
-import { createToken } from '../middlewares/autho.js';
+import {createToken} from '../middlewares/autho.js';
 import crypto from 'crypto';
 
 const RegistroDeLosConductores = async (req, res) => {
