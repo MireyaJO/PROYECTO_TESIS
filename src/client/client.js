@@ -1,3 +1,4 @@
+import io from 'socket.io-client';
 //Establecer conexión con el servidor de socket.io
 const socket = io('http://localhost:3000');
 

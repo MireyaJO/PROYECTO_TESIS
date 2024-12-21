@@ -8,7 +8,7 @@ import cloudinary from 'cloudinary';
 import fileUpload from 'express-fileupload';
 import Adminrouter from './routers/admin_routers.js';
 import Conductoresrouter from './routers/conductor_routers.js';
-import RepresentantesRouter from './models/representantes_routers.js';
+import RepresentantesRouter from './routers/representantes_routers.js';
 import { ManejoActualizacionUbicacion } from './controllers/conductor_controller.js';
 
 // Para la comunicación en tiempo real del cliente y el servidor

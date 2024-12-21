@@ -1,6 +1,6 @@
 import Conductores from '../models/Administrador.js';
 import Estudiantes from '../models/Conductor.js';
-import Representantes from '../models/Representante.js';
+import Representantes from '../models/Representantes.js';
 import {createToken} from '../middlewares/autho.js';
 import {confirmacionDeCorreoRepresentante} from '../config/nodemailer.js';
 

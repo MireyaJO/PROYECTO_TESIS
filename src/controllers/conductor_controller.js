@@ -45,12 +45,6 @@ const RegistroDeLosEstudiantes = async (req, res) => {
         return res.status(400).json({ msg_registro_estudiantes: "Lo sentimos, el paralelo debe ser de la A a la C" });
     }
 
-    //Comprobación de que sea un link de google maps
-    const carateresGoogleMaps = /^https:\/\/maps\.app\.goo\.gl\/[a-zA-Z0-9]+$/;
-    if (!carateresGoogleMaps.test(ubicacionDomicilio)) {
-        return res.status(400).json({ msg_registro_estudiantes: "Lo sentimos, el link de ubicación debe ser de google maps" });
-    }
-
     try {
         //Información del conductor logeado
         const conductor = await Conductores.findById(req.user.id);
@@ -311,20 +305,18 @@ const ActualizarEstudiante = async (req, res) => {
     if(paralelo !== "A" && paralelo !== "B" && paralelo !== "C" ){
         return res.status(400).json({ msg_registro_estudiantes: "Lo sentimos, el paralelo debe ser de la A a la C" });
     }
-
-    //Comprobación de que sea un link de google maps
-    const carateresGoogleMaps = /^https:\/\/maps\.app\.goo\.gl\/[a-zA-Z0-9]+$/;
-    if (!carateresGoogleMaps.test(ubicacionDomicilio)) {
-        return res.status(400).json({ msg_actualizar_estudiantes: "Lo sentimos, el link de ubicación debe ser de google maps" });
-    }
    
+    //Extraer las coordenadas de la direccion del estudiante
+    const coordenadas = await ExtraerCoordenadasLinkGoogleMaps(ubicacionDomicilio);
+    if (coordenadas.msg_extracion_coordenadas_estudiantes) return res.status(400).json({ msg_actualizar_estudiantes: coordenadas.msg_extracion_coordenadas_estudiantes });
+
     //Datos del estudiante 
     const {nombre, apellido} = estudiante;
 
     // Actualización de los datos
     await Estudiantes.findOneAndUpdate(
-        { _id: id },
-        { nivelEscolar, paralelo, ubicacionDomicilio, recoCompletoOMedio },
+        { cedula },
+        { nivelEscolar, paralelo, ubicacionDomicilio, recoCompletoOMedio, latitud: coordenadas.latitud, longitud: coordenadas.longitud },
         // Esta opción devuelve el documento actualizado en lugar del original
         { new: true } 
     );
@@ -371,11 +363,9 @@ const ActualizarEstudianteCedula = async (req, res) => {
         return res.status(400).json({ msg_registro_estudiantes: "Lo sentimos, el paralelo debe ser de la A a la C" });
     }
 
-    //Comprobación de que sea un link de google maps
-    const carateresGoogleMaps = /^https:\/\/maps\.app\.goo\.gl\/[a-zA-Z0-9]+$/;
-    if (!carateresGoogleMaps.test(ubicacionDomicilio)) {
-        return res.status(400).json({ msg_actualizar_estudiantes: "Lo sentimos, el link de ubicación debe ser de google maps" });
-    }
+    //Extraer las coordenadas de la direccion del estudiante
+    const coordenadas = await ExtraerCoordenadasLinkGoogleMaps(ubicacionDomicilio);
+    if (coordenadas.msg_extracion_coordenadas_estudiantes) return res.status(400).json({ msg_actualizar_estudiantes: coordenadas.msg_extracion_coordenadas_estudiantes });
 
     //Datos del estudiante 
     const {nombre, apellido} = estudiante;
@@ -383,7 +373,7 @@ const ActualizarEstudianteCedula = async (req, res) => {
     // Actualización de los datos
     await Estudiantes.findOneAndUpdate(
         { cedula },
-        { nivelEscolar, paralelo, ubicacionDomicilio, recoCompletoOMedio},
+        { nivelEscolar, paralelo, ubicacionDomicilio, recoCompletoOMedio, latitud: coordenadas.latitud, longitud: coordenadas.longitud },
         // Esta opción devuelve el documento actualizado en lugar del original
         { new: true } 
     );
@@ -402,7 +392,7 @@ const EliminarEstudiante = async (req, res) => {
     if(!estudiante) return res.status(400).json({msg_eliminacion_estudiante:"Lo sentimos, el conductor no se encuentra trabajando en la Unidad Educativa Particular EMAÚS"})
     
     //Datos del estudiante 
-    const {nombre, apellido} = estudiante;
+    const {nombre, apellido, cedula, nivelEscolar, paralelo} = estudiante;
 
     //Eliminación del conductor
     await Estudiantes.findOneAndDelete({id});
@@ -442,34 +432,45 @@ const ExtraerCoordenadasLinkGoogleMaps = async (url) => {
 
 //Funcion para calcular la distancia y el tiempo entre dos ubicaciones
 const CalcularDistanciaYTiempo = async (latitudOrigen, longitudOrigen, latitudDestino, longitudDestino) => {
-    try{
+    try {
+        // Las coordenadas deben ser números
+        const latOrigen = parseFloat(latitudOrigen);
+        const lonOrigen = parseFloat(longitudOrigen);
+        const latDestino = parseFloat(latitudDestino);
+        const lonDestino = parseFloat(longitudDestino);
+
+        // Verificar que las coordenadas sean válidas
+        if (isNaN(latOrigen) || isNaN(lonOrigen) || isNaN(latDestino) || isNaN(lonDestino)) {
+            return { msg_calculo_distancia_tiempo: "Error al calcular la distancia y el tiempo" };
+        }
+
         const respuesta = await directionsService.getDirections({
             profile: 'driving-traffic',
             waypoints: [
-                //Coordeandas de origen
-                {coordinates: [longitudOrigen, latitudOrigen]},
-                //Coordenadas de destino
-                {coordinates: [longitudDestino, latitudDestino]}
+                // Coordenadas de origen
+                { coordinates: [lonOrigen, latOrigen] },
+                // Coordenadas de destino
+                { coordinates: [lonDestino, latDestino] }
             ],
-        }).send(); 
+        }).send();
 
-        //Extraer la información de la distancia y el tiempo
-        //Conversión de metros a kilometros
-        const distancia = respuesta.body.routes[0].distance/1000;
-        //Conversión de segundos a minutos
-        const tiempo = respuesta.body.routes[0].duration/60;
+        // Extraer la información de la distancia y el tiempo
+        // Conversión de metros a kilómetros
+        const distancia = parseFloat(respuesta.body.routes[0].distance / 1000);
+        // Conversión de segundos a minutos
+        const tiempo = parseFloat(respuesta.body.routes[0].duration / 60);
 
-        //Retorno de la distancia y el tiempo
-        return {distancia, tiempo};
+        // Retorno de la distancia y el tiempo
+        return { distancia, tiempo };
     } catch (error) {
         console.error(error);
-        return {msg_calculo_distancia_tiempo: "Error al calcular la distancia y el tiempo"};
+        return { msg_calculo_distancia_tiempo: "Error al calcular la distancia y el tiempo" };
     }
 }
 
 // Función para enviar notificaciones a los padres de familia
 const EnviarNotificacion = (conductorId, estudianteNombre, representanteId, distancia, tiempo) => {
-    //Identificaciónd unica de la conexion del representante
+    //Identificacion unica de la conexion del representante
     const socketId = Representantes.get(representanteId);
 
     //Envío de la notificación si existe el socketId

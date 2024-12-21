@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prueba de Notificaciones</title>
+</head>
+<body>
+    <h1>Prueba de Notificaciones</h1>
+    <button id="loginButton">Iniciar Sesión</button>
+
+    <!-- Referencia al archivo client.js -->
+    <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
+    <script src="client.js"></script>
+    <script>
+        document.getElementById('loginButton').addEventListener('click', () => {
+            const email = prompt('Ingrese su email:');
+            const password = prompt('Ingrese su contraseña:');
+            loginRepresentante(email, password);
+        });
+    </script>
+</body>
+</html>
