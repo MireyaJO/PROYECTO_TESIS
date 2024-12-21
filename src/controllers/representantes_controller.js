@@ -1,3 +1,4 @@
+import cloudinary from 'cloudinary';
 import Conductores from '../models/Administrador.js';
 import Estudiantes from '../models/Conductor.js';
 import Representantes from '../models/Representantes.js';
