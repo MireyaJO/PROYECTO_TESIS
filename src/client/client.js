@@ -4,7 +4,7 @@ const socket = io('http://localhost:3000');
 // Función para iniciar sesión y guardar el JWT en localStorage
 const loginRepresentante = async (email, password) => {
     try {
-        const response = await fetch('/api/login/representantes', {
+        const response = await fetch('  /api/login/representante', {
             //Se envia información al servidor
             method: 'POST',
             //En que formato se envía la informacion
