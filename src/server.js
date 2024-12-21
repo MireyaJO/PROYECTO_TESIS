@@ -8,6 +8,7 @@ import cloudinary from 'cloudinary';
 import fileUpload from 'express-fileupload';
 import Adminrouter from './routers/admin_routers.js';
 import Conductoresrouter from './routers/conductor_routers.js';
+import { ManejoActualizacionUbicacion } from './controllers/conductor_controller.js';
 
 // Para la comunicación en tiempo real del cliente y el servidor
 import { Server } from 'socket.io';
@@ -31,8 +32,6 @@ const io = new Server(server, {
 
 // Configuraciones 
 app.set('port',process.env.port || 3000)
-//Cargar las variables de entorno 
-dotenv.config();
 
 //Las creedenciales para usar Cloudinary 
 cloudinary.config({ 
@@ -61,6 +60,21 @@ app.use('/api', Adminrouter)
 
 //Rutas de los Conductores
 app.use('/api', Conductoresrouter)
+
+// Configurar socket.io para manejar conexiones
+io.on('connection', (socket) => {
+    console.log('Nuevo cliente conectado:', socket.id);
+
+    // Manejar la desconexión del cliente
+    socket.on('disconnect', () => {
+        console.log('Cliente desconectado:', socket.id);
+    });
+
+    // Manejar el evento 'actualizarUbicacion' enviado por el cliente
+    socket.on('actualizarUbicacion', ({ conductorId, latitud, longitud }) => {
+        ManejoActualizacionUbicacion(conductorId, latitud, longitud);
+    });
+});
 
 // Exportar la instancia de express por medio de app
 export {app, server, io}

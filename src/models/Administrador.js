@@ -65,6 +65,12 @@ const paraElRegistroDeLosConductores= new Schema(
             type: String, 
             trim: true 
         },   
+        latitud:{
+            type: Number
+        }, 
+        longitud:{
+            type: Number
+        },
         numeroEstudiantes: {
             type: Number, 
             default: 0

@@ -101,9 +101,33 @@ const recuperacionContrasenia = (email, nombres, apellidos, token) => {
     });
 }
 
+const confirmacionDeCorreoRepresentante = async (email, nombre, apellido, token) => {
+    //Creación de la estuctura que tendrá el correo
+    let estructuraEmail = {
+        from: process.env.EMAIL_USER,
+        to: email,  
+        subject: "Confirmación de correo electrónico",
+        html: `<p>Señor/a ${nombre} ${apellido} usted ha sido registrado en el sistema de la Unidad Educativa Particular Emaús, para confirmar su correo electrónico haga clic en el siguiente link: </p>
+        <hr>
+        <a href=${process.env.URL_BACKEND}confirmar/correoRepresentante/${encodeURIComponent(token)}>Clic aquí para confirmar tu correo electrónico</a>
+        <hr>`
+    };
+
+    //Creación del transportador universal con el email y el password del conductor ingresado por el administrador
+    transportador.sendMail(estructuraEmail, (error, info) => {
+        if(error){
+            console.error(error);
+        } else {
+            console.log('Correo enviado: ' + info.response);
+        }
+    });
+}
+
+
 export {
     enviarCorreoConductor, 
     actualizacionDeConductor,
     recuperacionContrasenia,
-    eliminacionDelConductor
+    eliminacionDelConductor, 
+    confirmacionDeCorreoRepresentante
 }

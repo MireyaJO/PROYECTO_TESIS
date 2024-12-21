@@ -1,6 +1,7 @@
 import Conductores from '../models/Administrador.js';
-import {createToken} from '../middlewares/autho.js';
 import Estudiantes from '../models/Conductor.js';
+import Representantes from '../models/Representantes.js';
+import {createToken} from '../middlewares/autho.js';
 import {directionsService} from '../config/mapbox.js';
 import {recuperacionContrasenia} from "../config/nodemailer.js"; 
 import {io} from '../server.js';
@@ -53,10 +54,18 @@ const RegistroDeLosEstudiantes = async (req, res) => {
     try {
         //Información del conductor logeado
         const conductor = await Conductores.findById(req.user.id);
+
         //Verificación de que el conductor exista
         if(!conductor){
             return res.status(404).json({ msg_conductor_logeado: "Conductor no encontrado" });
         }
+
+        //Extraer las coordenadas de la direccion del estudiante
+        const coordenadas = await ExtraerCoordenadasLinkGoogleMaps(ubicacionDomicilio);
+        if (coordenadas.msg_extracion_coordenadas_estudiantes) {
+            return res.status(400).json({ msg_registro_estudiantes: coordenadas.msg_extracion_coordenadas_estudiantes});
+        }
+
         //Creación de un nuevo estudiante
         const nuevoEstudiante = new Estudiantes({
             nombre,
@@ -68,6 +77,8 @@ const RegistroDeLosEstudiantes = async (req, res) => {
             ubicacionDomicilio,
             institucion: conductor.institucion,
             recoCompletoOMedio, 
+            latitud: coordenadas.latitud,
+            longitud: coordenadas.longitud,
             conductor: conductor._id
         });
 
@@ -432,7 +443,7 @@ const ExtraerCoordenadasLinkGoogleMaps = async (url) => {
 //Funcion para calcular la distancia y el tiempo entre dos ubicaciones
 const CalcularDistanciaYTiempo = async (latitudOrigen, longitudOrigen, latitudDestino, longitudDestino) => {
     try{
-        const respuesta = await mapboxApiKey.getDirections({
+        const respuesta = await directionsService.getDirections({
             profile: 'driving-traffic',
             waypoints: [
                 //Coordeandas de origen
@@ -456,12 +467,61 @@ const CalcularDistanciaYTiempo = async (latitudOrigen, longitudOrigen, latitudDe
     }
 }
 
-// Función para enviar notificaciones por correo electrónico
-const enviarNotificacion = (email, conductorId, estudianteNombre) => {
-    // Aquí puedes implementar la lógica para enviar un correo electrónico
-    // utilizando una biblioteca como nodemailer
-    console.log(`Enviando notificación a ${email} sobre el conductor ${conductorId} que se dirige a la casa de ${estudianteNombre}`);
+// Función para enviar notificaciones a los padres de familia
+const EnviarNotificacion = (conductorId, estudianteNombre, representanteId, distancia, tiempo) => {
+    //Identificaciónd unica de la conexion del representante
+    const socketId = Representantes.get(representanteId);
+
+    //Envío de la notificación si existe el socketId
+    if (socketId) {
+        //Se especifica que la notificación es solo para los 
+        io.to(socketId).emit('notificacion', {
+            msg_envio_notificacion: `El conductor ${conductorId} está cerca de la casa de ${estudianteNombre}. Distancia: ${distancia} km, Tiempo: ${tiempo} minutos.`
+        });
+        console.log(`Enviando notificación a representante ${representanteId} sobre el conductor ${conductorId} que se dirige a la casa de ${estudianteNombre}. Distancia: ${distancia} km, Tiempo: ${tiempo} minutos.`);
+    }
 }
+
+const ManejoActualizacionUbicacion = async (conductorId, latitud, longitud) => {
+    try{
+        //Información del conductor
+        const conductor = await Conductores.findById(conductorId);
+
+        //Verificación de que el conductor exista
+        if(!conductor){
+            return {msg_actualizacion_ubicacion: "Conductor no encontrado"};
+        }
+
+        //Actualización de la ubicación del conductor
+        conductor.latitud = latitud;
+        conductor.longitud = longitud;
+        
+        //Guardar los cambios en la base de datos 
+        await conductor.save();
+
+        //Información de los estudiantes viculados al conductor
+        const estudiantes = await Estudiantes.find({conductor: conductorId});
+
+        //Interacion con cada estudiante
+        for (const estudiante of estudiantes) {
+            const { latitud: latitudEstudiante, longitud: longitudEstudiante, cedula } = estudiante;
+            const { distancia, tiempo } = await CalcularDistanciaYTiempo(latitud, longitud, latitudEstudiante, longitudEstudiante);
+
+            //Si la distancia es menor a 1 km, se envía una notificación a los representantes del estudiante
+            if (distancia < 1) { 
+                // Información de los representantes del estudiante
+                const representantes = await Representantes.find({ cedulaRepresentado: cedula });
+                // Envío de notificaciones a los representantes
+                for (const representante of representantes) {
+                    EnviarNotificacion(conductorId, estudiante.nombre, representante._id, distancia, tiempo);
+                }
+            }
+        }
+    } catch(error){
+        console.error(error);
+        return {msg_actualizacion_ubicacion: "Error al actualizar la ubicación"};
+    }
+} 
 
 export {
     RegistroDeLosEstudiantes,
@@ -472,10 +532,9 @@ export {
     NuevaPassword,
     ListarEstudiantes,
     BuscarEstudiante, 
-    BuscarEstudianteCedula,
+    BuscarEstudianteCedula, 
     ActualizarEstudiante, 
     ActualizarEstudianteCedula,
     EliminarEstudiante, 
-    ExtraerCoordenadasLinkGoogleMaps, 
-    CalcularDistanciaYTiempo
+    ManejoActualizacionUbicacion 
 }

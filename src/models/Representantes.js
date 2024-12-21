@@ -55,7 +55,6 @@ const paraElRegistroDeLosRepresentantes = new Schema(
         cedulaRepresentado: [{
             type: Number, 
             require: true, 
-            unique: true,
             trim: true
         }], 
         estadoCuenta:{
@@ -68,5 +67,27 @@ const paraElRegistroDeLosRepresentantes = new Schema(
         }
 
     }
+,{
+    timestamps:true
+}
 )
+/// Método para cifrar el password del veterinario
+paraElRegistroDeLosRepresentantes.methods.encrypPassword = async function(password){
+    const salt = await bcrypt.genSalt(10)
+    const passwordEncryp = await bcrypt.hash(password,salt)
+    return passwordEncryp
+}
+
+// Método para verificar si el password ingresado es el mismo de la BDD
+paraElRegistroDeLosRepresentantes.methods.matchPassword = async function(passwordIngresada){
+    const response = await bcrypt.compare(passwordIngresada,this.password)
+    return response
+}
+
+// Método para crear un token 
+paraElRegistroDeLosRepresentantes.methods.crearToken = function(){
+    const tokenGenerado = this.token = Math.random().toString(36).slice(2)
+    return tokenGenerado
+}
+
 export default model('Representantes',paraElRegistroDeLosRepresentantes)
