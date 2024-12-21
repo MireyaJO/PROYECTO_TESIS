@@ -16,28 +16,51 @@ const RegistroDeRepresentantes = async (req, res) => {
         cedula,
         email,
         password,
+        cedulaRepresentado
     } = req.body;
 
+    // Convertir cedulaRepresentado a un array de números
+    let cedulasRepresentadoArray;
+    try {
+        cedulasRepresentadoArray = cedulaRepresentado.split(',').map(cedula => {
+            const numero = parseInt(cedula.trim(), 10);
+            if (isNaN(numero)) {
+                throw new Error(`La cédula "${cedula}" no es un número válido`);
+            }
+            return numero;
+        });
+    } catch (error) {
+        return res.status(400).json({ msg_registro_representante: error.message });
+    }
+
     // Comprobar si el email ya está registrado
-    const verificarEmailBDD = await Conductores.findOne({email});
+    const verificarEmailBDD = await Representantes.findOne({email});
     if (verificarEmailBDD) {
-        return res.status(400).json({ msg_registro_conductor: "Lo sentimos, el email ya se encuentra registrado" });
+        return res.status(400).json({ msg_registro_representante: "Lo sentimos, el email ya se encuentra registrado" });
     }
 
     // Comprobar si la cédula ya está registrada
-    const verificarCedulaBDD = await Conductores.findOne({cedula});
+    const verificarCedulaBDD = await Representantes.findOne({cedula});
     if (verificarCedulaBDD) {
-        return res.status(400).json({ msg_registro_conductor: "Lo sentimos, la cédula ya se encuentra registrada" })
+        return res.status(400).json({ msg_registro_representante: "Lo sentimos, la cédula ya se encuentra registrada" })
     };
 
     // Comprobar si el telefono ya está registrado
-    const verificarTelefonoBDD = await Conductores.findOne({telefono});
+    const verificarTelefonoBDD = await Representantes.findOne({telefono});
     if (verificarTelefonoBDD) {
-        return res.status(400).json({ msg_registro_conductor: "Lo sentimos, el telefono ya se encuentra registrado" })
+        return res.status(400).json({ msg_registro_representante: "Lo sentimos, el telefono ya se encuentra registrado" })
     };
 
-    // Crear un nuevo conductor con los datos proporcionados
-    const nuevoRepresentante = new Representantes(req.body);  
+    // Crear un nuevo representante con los datos proporcionados
+    const nuevoRepresentante = new Representantes({
+        nombre,
+        apellido,
+        telefono,
+        cedula,
+        email,
+        password,
+        cedulaRepresentado: cedulasRepresentadoArray
+    });
 
     // Verificar si se envió un archivo de imagen
     if (req.files && req.files.fotografia) {
@@ -73,12 +96,30 @@ const RegistroDeRepresentantes = async (req, res) => {
 
     //No se crea un token de confirmación, ya que, al conductor solo se le necesita enviar un correo para que se diriga a su cuenta
     try {
-        // Guardar el nuevo conductor en la base de datos
+
+        // Búsqueda de los estudiantes dueños de las cédulas que el representante ha digitado
+        const estudiantes = await Estudiantes.find({ cedula: { $in: cedulasRepresentadoArray } });
+
+        // Verificar si no se encontraron estudiantes
+        if (estudiantes.length !== cedulasRepresentadoArray.length) {
+            const cedulasEncontradas = estudiantes.map(estudiante => estudiante.cedula);
+            const cedulasNoEncontradas = cedulasRepresentadoArray.filter(cedula => !cedulasEncontradas.includes(cedula));
+            return res.status(404).json({ msg_registro_representante: `No se encontraron estudiantes con las cédulas: ${cedulasNoEncontradas.join(', ')}` });
+        }
+
+        // Recorrer los estudiantes para asignarles el representante
+        await Promise.all(estudiantes.map(async estudiante => {
+            estudiante.representantes = nuevoRepresentante._id,
+            await estudiante.save();
+        }));
+
+        // Guardar el nuevo representante en la base de datos
         await nuevoRepresentante.save();
-        res.status(201).json({ msg_registro_representante: "Conductor registrado exitosamente", nuevoRepresentante});
+        
+        res.status(201).json({ msg_registro_representante: "Representante registrado exitosamente", nuevoRepresentante});
     } catch (error) {
         console.error(error);
-        res.status(500).json({ msg_registro_representante: "Error al registrar el conductor" });
+        res.status(500).json({ msg_registro_representante: "Error al registrar el representante" });
     }
 }
 
@@ -119,8 +160,8 @@ const LoginRepresentante = async (req, res) => {
     try {
         // Verificación de que el conductor exista
         const representante = await Representantes.findOne({email : email});
-        if (!Representantes) {
-            return res.status(404).json({ msg_login_representante: "Lo sentimos, el conductor no se encuentra registrado" });
+        if (!representante) {
+            return res.status(404).json({ msg_login_representante: "Lo sentimos, el representnate no se encuentra registrado" });
         }
     
         // Verificar la contraseña
