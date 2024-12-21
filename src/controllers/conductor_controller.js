@@ -5,6 +5,7 @@ import {createToken} from '../middlewares/autho.js';
 import {directionsService} from '../config/mapbox.js';
 import {recuperacionContrasenia} from "../config/nodemailer.js"; 
 import {io} from '../server.js';
+import axios from 'axios';
 
 //Registro de los estudiantes
 const RegistroDeLosEstudiantes = async (req, res) => {
