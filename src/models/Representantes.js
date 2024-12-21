@@ -1,4 +1,5 @@
 import mongoose, {Schema, model} from 'mongoose'
+import bcrypt from 'bcryptjs'
 
 //Definición de la estructura en la base de datos 
 //Esquema para el registro de los representates de los estudiantes

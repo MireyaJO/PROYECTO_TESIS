@@ -1,4 +1,5 @@
 import cloudinary from 'cloudinary';
+import fs from 'fs-extra';
 import Conductores from '../models/Administrador.js';
 import Estudiantes from '../models/Conductor.js';
 import Representantes from '../models/Representantes.js';
@@ -66,7 +67,7 @@ const RegistroDeRepresentantes = async (req, res) => {
     nuevoRepresentante.password = await nuevoRepresentante.encrypPassword(password);
 
     //Token para la confirmación de la cuenta 
-    const token = nuevoRepresentante.createToken();
+    const token = nuevoRepresentante.crearToken();
     //Enviar el correo de confirmación
     await confirmacionDeCorreoRepresentante(email, nombre, apellido, token);
 

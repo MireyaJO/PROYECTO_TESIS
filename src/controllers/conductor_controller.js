@@ -411,24 +411,46 @@ const EliminarEstudiante = async (req, res) => {
 
 //Función que extrae la latitud y longitud de la ubicacion del estudiante
 const ExtraerCoordenadasLinkGoogleMaps = async (url) => {
-    //Linia que se encarga de extraer las coordenadas de un link de google
-    const lineaComparatoria = /@(-?\d+\.\d+),(-?\d+\.\d+)/;
+    try {
+        // Realizar una solicitud GET para resolver el enlace
+        const response = await axios.get(url, { 
+            maxRedirects: 0, 
+            validateStatus: status => (status >= 200 && status < 400) || status === 302 
+        });
+        const fullUrl = response.headers.location || url;
 
-    //Array donde se encientra la longitud y latitud
-    const comparacion = url.match(lineaComparatoria);
+        if (!fullUrl) {
+            return { msg_extracion_coordenadas_estudiantes: "No se pudo resolver el enlace corto" };
+        }
 
-    //Verificación de que se haya encontrado la longitud y latitud
-    if (comparacion) {
-        //Extraxión explicita 
-        return {
-            latitud: parseFloat(comparacion[1]),
-            longitud: parseFloat(comparacion[2])
-        };
-    } 
+        console.log(`Resolved URL: ${fullUrl}`);
 
-    //Mensaje de error
-    return { msg_extracion_coordenadas_estudiantes: "Lo sentimos, no se ha podido extraer la ubicación" };
-}
+        // Expresión regular para extraer coordenadas de enlaces largos
+        const regexCoordinatesLong = /search\/(-?\d+\.\d+),\+?\s*(-?\d+\.\d+)/;
+        // Expresión regular para extraer coordenadas de enlaces cortos
+        const regexCoordinatesShort = /@(-?\d+\.\d+),\+?\s*(-?\d+\.\d+)/;
+
+        // Intentar extraer coordenadas
+        let match = fullUrl.match(regexCoordinatesLong);
+        if (!match) {
+            match = fullUrl.match(regexCoordinatesShort);
+        }
+        console.log(`Regex Match Result: ${match}`);
+
+        if (match) {
+            return {
+                latitud: parseFloat(match[1]),
+                longitud: parseFloat(match[2])
+            };
+        }
+
+        // Mensaje de error si no se encuentran las coordenadas
+        return { msg_extracion_coordenadas_estudiantes: "Lo sentimos, no se ha podido extraer la ubicación" };
+    } catch (error) {
+        console.error(error);
+        return { msg_extracion_coordenadas_estudiantes: "Error al resolver el enlace de Google Maps" };
+    }
+};
 
 //Funcion para calcular la distancia y el tiempo entre dos ubicaciones
 const CalcularDistanciaYTiempo = async (latitudOrigen, longitudOrigen, latitudDestino, longitudDestino) => {
