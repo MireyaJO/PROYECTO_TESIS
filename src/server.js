@@ -9,8 +9,6 @@ import fileUpload from 'express-fileupload';
 import Adminrouter from './routers/admin_routers.js';
 import Conductoresrouter from './routers/conductor_routers.js';
 import RepresentantesRouter from './routers/representantes_routers.js';
-import { ManejoActualizacionUbicacion } from './controllers/conductor_controller.js';
-
 
 // Inicializaciones
 const app = express()
