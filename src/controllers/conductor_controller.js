@@ -5,6 +5,8 @@ import {createToken} from '../middlewares/autho.js';
 import {directionsService} from '../config/mapbox.js';
 import {recuperacionContrasenia} from "../config/nodemailer.js"; 
 import axios from 'axios';
+import cloudinary from 'cloudinary';
+import fs from 'fs-extra';
 
 //Registro de los estudiantes
 const RegistroDeLosEstudiantes = async (req, res) => {
@@ -512,39 +514,108 @@ const EnviarNotificacion = async (conductorId, estudianteNombre, representanteId
     }
 }
 
-const ManejoActualizacionUbicacion = async (req, res, conductorId, latitud, longitud) => {
+const ManejoActualizacionUbicacion = async (req, res) => {
+    const {latitud, longitud } = req.body;
+    const {id} = req.user;
     try {
         // Usar lean() para obtener un objeto simple
-        const conductor = await Conductores.findById(conductorId).lean(); 
+        const conductor = await Conductores.findById(id).lean(); 
         if (!conductor) {
             return res.json({ msg_actualizacion_ubicacion: "Conductor no encontrado" });
         }
         // Usar updateOne en lugar de save
-        await Conductores.updateOne({ _id: conductorId }, { latitud, longitud }); 
+        await Conductores.updateOne({ _id: id }, { latitud, longitud }); 
         // Usar lean() para obtener objetos simples
-        const estudiantes = await Estudiantes.find({ conductor: conductorId }).lean(); 
+        const estudiantes = await Estudiantes.find({ conductor: id }).lean(); 
         // Crear un array para almacenar las notificaciones
         const notificaciones = [];
 
         for (const estudiante of estudiantes) {
+            // Extraer las coordenadas del estudiante
             const { latitud: latitudEstudiante, longitud: longitudEstudiante, cedula } = estudiante;
-            const { distancia, tiempo } = await CalcularDistanciaYTiempo(req, res, latitud, longitud, latitudEstudiante, longitudEstudiante);
+            // Calcular la distancia y el tiempo entre el conductor y el estudiante
+            const { distancia, tiempo } = await CalcularDistanciaYTiempo( latitud, longitud, latitudEstudiante, longitudEstudiante);
             if (distancia <= 1) {
                 // Usar lean() para obtener objetos simples
                 const representantes = await Representantes.find({ cedulaRepresentado: cedula }).lean(); 
                 for (const representante of representantes) {
-                    const notificacion = await EnviarNotificacion(conductorId, estudiante.nombre, representante._id, distancia, tiempo);
+                    const notificacion = await EnviarNotificacion(id, estudiante.nombre, representante._id, distancia, tiempo);
                     notificaciones.push(notificacion);
                 }
             }
         }
-        return res.json({ msg_actualizacion_ubicacion: "Ubicación actualizada correctamente", notificaciones });
+        return res.status(200).json({ msg_actualizacion_ubicacion: "Ubicación actualizada correctamente", notificaciones });
     } catch (error) {
         console.error(error);
-        return res.json({ msg_actualizacion_ubicacion: "Error al actualizar la ubicación" });
+        return res.status(200).json({ msg_actualizacion_ubicacion: "Error al actualizar la ubicación" });
     }
 }
 
+const VisuallizarPerfil = async (req, res) => {
+    try {
+        // Información del conductor logeado
+        const conductor = await Conductores.findById(req.user.id).select("-password -createdAt -updatedAt -__v");
+        // Verificación de la existencia del conductor
+        if (!conductor) return res.status(404).json({ msg: "Conductor no encontrado" });
+        //Si se encuentra el conductor se envía su información
+        res.status(200).json(conductor);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ msg: "Error al visualizar el perfil del conductor" });
+    }
+}
+
+const ActualizarPerfil = async (req, res) => {
+    //Obtención de datos de lo escrito por el conductor
+    const {placaAutomovil, telefono} = req.body;
+    const {id} = req.user;
+    // Verificación de los campos vacíos
+    if (Object.values(req.body).includes("")) return res.status(400).json({ msg_actualizacion_perfil: "Lo sentimos, debes llenar todos los campos" });
+    try{
+        // Verificación de la existencia del conductor
+        const conductor = await Conductores.findById(id);
+        if (!conductor) return res.status(400).json({ msg: "Lo sentimos, el conductor no se encuentra registrado" });
+        // Comprobar si el telefono ya está registrado
+        const verificarTelefonoBDD = await Conductores.findOne({telefono});
+        if (verificarTelefonoBDD) {
+            return res.status(400).json({ msg_registro_conductor: "Lo sentimos, el telefono ya se encuentra registrado" })
+        };
+        
+        // Comprobar si la placa ya está registrada
+        const verificarPlacaBDD = await Conductores.findOne({placaAutomovil});
+        if (verificarPlacaBDD) {
+            return res.status(400).json({ msg_registro_conductor: "Lo sentimos, la placa ya se encuentra registrada" })
+        };
+        // Verificar si se envió un archivo de imagen
+        if (req.files && req.files.fotografiaDelConductor) {
+            const file = req.files.fotografiaDelConductor;
+        try {
+            // Subir la imagen a Cloudinary con el nombre del conductor como public_id
+            const result = await cloudinary.v2.uploader.upload(file.tempFilePath, {
+                public_id: `conductores/${conductor.nombre} ${conductor.apellido}`,
+                folder: "conductores"
+            });
+            // Guardar la URL de la imagen en la base de datos
+            conductor.fotografiaDelConductor = result.secure_url;
+            // Eliminar el archivo local después de subirlo
+            await fs.unlink(file.tempFilePath);
+        } catch (error) {
+            console.error(error);
+            return res.status(500).json({ msg_registro_conductor: "Error al subir la imagen" });
+        }
+        } else {
+            return res.status(400).json({ msg_registro_conductor: "Lo sentimos, debes subir una imagen" });
+        }
+        // Actualización de los datos
+        conductor.placaAutomovil = placaAutomovil;
+        conductor.telefono = telefono;
+        await conductor.save();
+        res.status(200).json({ msg_actualizacion_perfil: "Los datos del conductor han sido actualizados exitosamente" });
+    } catch(error){
+        console.error(error);
+        res.status(500).json({msg_actualizacion_perfil:"Error al actualizar el perfil del conductor"});
+    }
+}
 export {
     RegistroDeLosEstudiantes,
     LoginConductor, 
@@ -558,5 +629,7 @@ export {
     ActualizarEstudiante, 
     ActualizarEstudianteCedula,
     EliminarEstudiante, 
-    ManejoActualizacionUbicacion 
+    ManejoActualizacionUbicacion, 
+    VisuallizarPerfil, 
+    ActualizarPerfil
 }

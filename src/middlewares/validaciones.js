@@ -128,4 +128,27 @@ const validacionesRepresentantes = [
 
 ]
 
-export {validacionesConductor, validacionesRepresentantes}
+const validacionesActualizarPerfilConductor = [
+    // Verificar que el numero de placa automovil sea de 10 digitos
+    check("placaAutomovil")
+    .isLength({ min: 7, max: 7 })
+        .withMessage('El teléfono debe ser de 10 digitos')
+    .customSanitizer(value => value?.trim()),
+
+     // Verificar que el numero de telefono sea de 10 digitos
+     check("telefono")
+     .isLength({ min: 10, max: 10 })
+         .withMessage('El teléfono debe ser de 10 digitos')
+     .isNumeric()
+         .withMessage('El campo "teléfono" debe contener solo números')
+     .customSanitizer(value => value?.trim()),
+
+    // Verificar que no ayuda campos vacíos 
+    check(["telefono","placaAutomovil"])
+    .notEmpty()
+        .withMessage('Se necesita campos para actualizar')
+    .customSanitizer(value => value?.trim()),
+
+]
+
+export {validacionesConductor, validacionesRepresentantes, validacionesActualizarPerfilConductor}
