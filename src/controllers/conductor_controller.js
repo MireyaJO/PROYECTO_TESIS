@@ -462,6 +462,9 @@ const CalcularDistanciaYTiempo = async (latitudOrigen, longitudOrigen, latitudDe
         const latDestino = parseFloat(latitudDestino);
         const lonDestino = parseFloat(longitudDestino);
 
+        console.log("Destino: ", latDestino, lonDestino);
+        console.log("Origen", latOrigen, lonOrigen);
+
         // Verificar que las coordenadas sean válidas
         if (isNaN(latOrigen) || isNaN(lonOrigen) || isNaN(latDestino) || isNaN(lonDestino)) {
             return { msg_calculo_distancia_tiempo: "Error al calcular la distancia y el tiempo" };
@@ -502,7 +505,7 @@ const EnviarNotificacion = async (conductorId, estudianteNombre, representanteId
         // Usar updateOne para actualizar un documento
         await Representantes.updateOne({ _id: representanteId }, { notificacionEnviada: true });
         // Enviar la notificación al representante
-        return { msg_notificacion: `Notificación enviada al representante ${representante.nombre} del estudiante ${estudianteNombre} del conductor ${conductorId}`};
+        return { msg_notificacion: `Notificación enviada al representante ${representante.nombre} del estudiante ${estudianteNombre} del conductor ${conductorId}` };
     } catch (error) {
         console.error(error);
         return { msg_notificacion: "Error al enviar la notificación" };
@@ -524,15 +527,12 @@ const ManejoActualizacionUbicacion = async (req, res, conductorId, latitud, long
         const notificaciones = [];
 
         for (const estudiante of estudiantes) {
-            // Usar destructuración para obtener las coordenadas y la cédula del estudiante
             const { latitud: latitudEstudiante, longitud: longitudEstudiante, cedula } = estudiante;
-            // Calcular la distancia y el tiempo entre el conductor y el estudiante
             const { distancia, tiempo } = await CalcularDistanciaYTiempo(req, res, latitud, longitud, latitudEstudiante, longitudEstudiante);
             if (distancia <= 1) {
                 // Usar lean() para obtener objetos simples
                 const representantes = await Representantes.find({ cedulaRepresentado: cedula }).lean(); 
                 for (const representante of representantes) {
-                    // Enviar notificaciones a los representantes de los estudiantes
                     const notificacion = await EnviarNotificacion(conductorId, estudiante.nombre, representante._id, distancia, tiempo);
                     notificaciones.push(notificacion);
                 }
