@@ -12,7 +12,7 @@ router.patch('/nueva/contrasenia/:token', NuevaPassword);
 //Rutas Privadas
 router.post('/registro/estudiantes', verificacionToken, verificacionConductorRol, RegistroDeLosEstudiantes);
 router.patch('/actualizar/contrasenia', verificacionToken, verificacionConductorRol, ActualizarPassword);  
-router.get('lista/estudiantes', verificacionToken, verificacionConductorRol, ListarEstudiantes);
+router.get('/lista/estudiantes', verificacionToken, verificacionConductorRol, ListarEstudiantes);
 router.get('/buscar/estudiante/:id', verificacionToken, verificacionConductorRol, BuscarEstudiante);
 router.get('/buscar/estudiante/cedula/:cedula', verificacionToken, verificacionConductorRol, BuscarEstudianteCedula);
 router.patch('/actualizar/estudiante/:id', verificacionToken, verificacionConductorRol, ActualizarEstudiante);
@@ -23,7 +23,7 @@ router.post('/actualizar/ubicacion', verificacionToken, verificacionConductorRol
     const {latitud, longitud } = req.body;
     const {id} = req.user;
     //Llamar a la función que actualiza la ubicación
-    ManejoActualizacionUbicacion(id, latitud, longitud)
+    ManejoActualizacionUbicacion(req, res, id, latitud, longitud)
     .then(result => {
         // Mensaje de éxito
         res.json(result);
@@ -34,5 +34,4 @@ router.post('/actualizar/ubicacion', verificacionToken, verificacionConductorRol
         res.status(500).json({ msg: 'Error al actualizar la ubicación', error });
     });
 });
-
 export default router

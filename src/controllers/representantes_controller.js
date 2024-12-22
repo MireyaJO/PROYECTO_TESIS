@@ -131,11 +131,12 @@ const ConfirmacionCorreo = async (req, res) => {
         if(!token) return res.status(400).json({msg:"Lo sentimos, no se puede validar la cuenta"})
         const representante= await Representantes.findOne({token:token})
 
-        // Verificar si el representante ya ha confirmado su cuenta
-        if (!representante?.token) {
-            return res.status(404).json({ msg: "La cuenta ya ha sido confirmada" });
-        }
-
+        // Verificaicón de la confirmación de la cuenta
+        if(representante?.confirmacionEmail===false) return res.status(403).json({msg:"Lo sentimos, debe verificar su cuenta"})
+        
+        // Verificar si el representante no se encuentra registrado
+        if(!representante) return res.status(404).json({msg:"Lo sentimos, el representante no se encuentra registrado"})
+        
         // Confirmar la cuenta del representante
         representante.token = null;
         //Cambiar el estado del correo a confirmado

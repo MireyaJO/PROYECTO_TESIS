@@ -4,6 +4,7 @@ import Representantes from '../models/Representantes.js';
 import {createToken} from '../middlewares/autho.js';
 import {directionsService} from '../config/mapbox.js';
 import {recuperacionContrasenia} from "../config/nodemailer.js"; 
+import axios from 'axios';
 
 //Registro de los estudiantes
 const RegistroDeLosEstudiantes = async (req, res) => {
@@ -24,7 +25,7 @@ const RegistroDeLosEstudiantes = async (req, res) => {
     }
 
     // Comprobar el tamaño de la cedula
-    if(cedula.toString().length !== 10){
+    if(!cedula || cedula.toString().length !== 10){
         return res.status(400).json({ msg_registro_estudiantes: "Lo sentimos, el número de cédula debe tener 10 dígitos" });
     }
 
@@ -310,7 +311,7 @@ const ActualizarEstudiante = async (req, res) => {
     if (coordenadas.msg_extracion_coordenadas_estudiantes) return res.status(400).json({ msg_actualizar_estudiantes: coordenadas.msg_extracion_coordenadas_estudiantes });
 
     //Datos del estudiante 
-    const {nombre, apellido} = estudiante;
+    const {nombre, apellido, cedula} = estudiante;
 
     // Actualización de los datos
     await Estudiantes.findOneAndUpdate(
@@ -321,6 +322,7 @@ const ActualizarEstudiante = async (req, res) => {
     );
 
     const conductor = await Conductores.findById(req.user.id);
+    
     //Actualizar el array de los estudiantes
     const estudianteAActualizar = `${cedula} - ${nombre} ${apellido} - ${nivelEscolar} ${paralelo}`;
     conductor.estudiantesRegistrados = conductor.estudiantesRegistrados.map(estudiante => {
@@ -491,54 +493,57 @@ const CalcularDistanciaYTiempo = async (latitudOrigen, longitudOrigen, latitudDe
 }
 
 // Función para enviar notificaciones a los padres de familia
-const   EnviarNotificacion = (conductorId, estudianteNombre, representanteId, distancia, tiempo) => {
-    console.log(`Notificación enviada al representante ${representanteId} del estudiante ${estudianteNombre} del conductor ${conductorId}`);
-    console.log(`Distancia: ${distancia} km`);
-    console.log(`Tiempo estimado: ${tiempo} minutos`);  
-    const representante = Representantes.findById(representanteId);
-    representante.notificacionEnviada = true;
-    representante.save();
+const EnviarNotificacion = async (conductorId, estudianteNombre, representanteId, distancia, tiempo) => {
+    try {
+        // Usar lean() para obtener un objeto simple
+        const representante = await Representantes.findById(representanteId).lean(); 
+        // Verificar si el representante existe
+        if (!representante) return { msg_notificacion: "Representante no encontrado" };
+        // Usar updateOne para actualizar un documento
+        await Representantes.updateOne({ _id: representanteId }, { notificacionEnviada: true });
+        // Enviar la notificación al representante
+        return { msg_notificacion: `Notificación enviada al representante ${representante.nombre} del estudiante ${estudianteNombre} del conductor ${conductorId}`};
+    } catch (error) {
+        console.error(error);
+        return { msg_notificacion: "Error al enviar la notificación" };
+    }
 }
 
-const ManejoActualizacionUbicacion = async (conductorId, latitud, longitud) => {
-    try{
-        //Información del conductor
-        const conductor = await Conductores.findById(conductorId);
-
-        //Verificación de que el conductor exista
-        if(!conductor){
-            return {msg_actualizacion_ubicacion: "Conductor no encontrado"};
+const ManejoActualizacionUbicacion = async (req, res, conductorId, latitud, longitud) => {
+    try {
+        // Usar lean() para obtener un objeto simple
+        const conductor = await Conductores.findById(conductorId).lean(); 
+        if (!conductor) {
+            return res.json({ msg_actualizacion_ubicacion: "Conductor no encontrado" });
         }
+        // Usar updateOne en lugar de save
+        await Conductores.updateOne({ _id: conductorId }, { latitud, longitud }); 
+        // Usar lean() para obtener objetos simples
+        const estudiantes = await Estudiantes.find({ conductor: conductorId }).lean(); 
+        // Crear un array para almacenar las notificaciones
+        const notificaciones = [];
 
-        //Actualización de la ubicación del conductor
-        conductor.latitud = latitud;
-        conductor.longitud = longitud;
-        
-        //Guardar los cambios en la base de datos 
-        await conductor.save();
-
-        //Información de los estudiantes viculados al conductor
-        const estudiantes = await Estudiantes.find({conductor: conductorId});
-
-        //Interacion con cada estudiante
         for (const estudiante of estudiantes) {
+            // Usar destructuración para obtener las coordenadas y la cédula del estudiante
             const { latitud: latitudEstudiante, longitud: longitudEstudiante, cedula } = estudiante;
-            const { distancia, tiempo } = await CalcularDistanciaYTiempo(latitud, longitud, latitudEstudiante, longitudEstudiante);
-            //Si la distancia es menor a 1 km, se envía una notificación a los representantes del estudiante
-            if (distancia <= 1) { 
-                // Información de los representantes del estudiante
-                const representantes = await Representantes.find({ cedulaRepresentado: cedula });
-                // Envío de notificaciones a los representantes
+            // Calcular la distancia y el tiempo entre el conductor y el estudiante
+            const { distancia, tiempo } = await CalcularDistanciaYTiempo(req, res, latitud, longitud, latitudEstudiante, longitudEstudiante);
+            if (distancia <= 1) {
+                // Usar lean() para obtener objetos simples
+                const representantes = await Representantes.find({ cedulaRepresentado: cedula }).lean(); 
                 for (const representante of representantes) {
-                    EnviarNotificacion(conductorId, estudiante.nombre, representante._id, distancia, tiempo);
+                    // Enviar notificaciones a los representantes de los estudiantes
+                    const notificacion = await EnviarNotificacion(conductorId, estudiante.nombre, representante._id, distancia, tiempo);
+                    notificaciones.push(notificacion);
                 }
             }
         }
-    } catch(error){
+        return res.json({ msg_actualizacion_ubicacion: "Ubicación actualizada correctamente", notificaciones });
+    } catch (error) {
         console.error(error);
-        return {msg_actualizacion_ubicacion: "Error al actualizar la ubicación"};
+        return res.json({ msg_actualizacion_ubicacion: "Error al actualizar la ubicación" });
     }
-} 
+}
 
 export {
     RegistroDeLosEstudiantes,
