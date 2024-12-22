@@ -4,8 +4,6 @@ import Representantes from '../models/Representantes.js';
 import {createToken} from '../middlewares/autho.js';
 import {directionsService} from '../config/mapbox.js';
 import {recuperacionContrasenia} from "../config/nodemailer.js"; 
-import {io} from '../server.js';
-import axios from 'axios';
 
 //Registro de los estudiantes
 const RegistroDeLosEstudiantes = async (req, res) => {
@@ -477,11 +475,12 @@ const CalcularDistanciaYTiempo = async (latitudOrigen, longitudOrigen, latitudDe
             ],
         }).send();
 
+        console.log(respuesta.body);
         // Extraer la información de la distancia y el tiempo
         // Conversión de metros a kilómetros
         const distancia = parseFloat(respuesta.body.routes[0].distance / 1000);
         // Conversión de segundos a minutos
-        const tiempo = parseFloat(respuesta.body.routes[0].duration / 60);
+        const tiempo =  parseFloat(respuesta.body.routes[0].duration / 60);
 
         // Retorno de la distancia y el tiempo
         return { distancia, tiempo };
@@ -492,18 +491,13 @@ const CalcularDistanciaYTiempo = async (latitudOrigen, longitudOrigen, latitudDe
 }
 
 // Función para enviar notificaciones a los padres de familia
-const EnviarNotificacion = (conductorId, estudianteNombre, representanteId, distancia, tiempo) => {
-    //Identificacion unica de la conexion del representante
-    const socketId = Representantes.get(representanteId);
-
-    //Envío de la notificación si existe el socketId
-    if (socketId) {
-        //Se especifica que la notificación es solo para los 
-        io.to(socketId).emit('notificacion', {
-            msg_envio_notificacion: `El conductor ${conductorId} está cerca de la casa de ${estudianteNombre}. Distancia: ${distancia} km, Tiempo: ${tiempo} minutos.`
-        });
-        console.log(`Enviando notificación a representante ${representanteId} sobre el conductor ${conductorId} que se dirige a la casa de ${estudianteNombre}. Distancia: ${distancia} km, Tiempo: ${tiempo} minutos.`);
-    }
+const   EnviarNotificacion = (conductorId, estudianteNombre, representanteId, distancia, tiempo) => {
+    console.log(`Notificación enviada al representante ${representanteId} del estudiante ${estudianteNombre} del conductor ${conductorId}`);
+    console.log(`Distancia: ${distancia} km`);
+    console.log(`Tiempo estimado: ${tiempo} minutos`);  
+    const representante = Representantes.findById(representanteId);
+    representante.notificacionEnviada = true;
+    representante.save();
 }
 
 const ManejoActualizacionUbicacion = async (conductorId, latitud, longitud) => {
@@ -530,9 +524,8 @@ const ManejoActualizacionUbicacion = async (conductorId, latitud, longitud) => {
         for (const estudiante of estudiantes) {
             const { latitud: latitudEstudiante, longitud: longitudEstudiante, cedula } = estudiante;
             const { distancia, tiempo } = await CalcularDistanciaYTiempo(latitud, longitud, latitudEstudiante, longitudEstudiante);
-
             //Si la distancia es menor a 1 km, se envía una notificación a los representantes del estudiante
-            if (distancia < 1) { 
+            if (distancia <= 1) { 
                 // Información de los representantes del estudiante
                 const representantes = await Representantes.find({ cedulaRepresentado: cedula });
                 // Envío de notificaciones a los representantes

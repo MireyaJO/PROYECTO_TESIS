@@ -11,25 +11,10 @@ import Conductoresrouter from './routers/conductor_routers.js';
 import RepresentantesRouter from './routers/representantes_routers.js';
 import { ManejoActualizacionUbicacion } from './controllers/conductor_controller.js';
 
-// Para la comunicación en tiempo real del cliente y el servidor
-import { Server } from 'socket.io';
-// Importar el módulo http para crear el servidor
-import http from 'http'; 
 
 // Inicializaciones
 const app = express()
 dotenv.config()
-
-// Crear el servidor HTTP
-const server = http.createServer(app);
-
-// Configurar socket.io
-const io = new Server(server, {
-    cors: {
-        origin: "*", // Permitir todas las solicitudes de origen cruzado
-        methods: ["GET", "POST"]
-    }
-});
 
 // Configuraciones 
 app.set('port',process.env.port || 3000)
@@ -65,20 +50,5 @@ app.use('/api', Conductoresrouter)
 //Rutas de los Representantes
 app.use('/api', RepresentantesRouter)
 
-// Configurar socket.io para manejar conexiones
-io.on('connection', (socket) => {
-    console.log('Nuevo cliente conectado:', socket.id);
-
-    // Manejar la desconexión del cliente
-    socket.on('disconnect', () => {
-        console.log('Cliente desconectado:', socket.id);
-    });
-
-    // Manejar el evento 'actualizarUbicacion' enviado por el cliente
-    socket.on('actualizarUbicacion', ({ conductorId, latitud, longitud }) => {
-        ManejoActualizacionUbicacion(conductorId, latitud, longitud);
-    });
-});
-
 // Exportar la instancia de express por medio de app
-export {app, server, io}
+export default app;

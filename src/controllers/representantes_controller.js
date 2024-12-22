@@ -182,13 +182,8 @@ const LoginRepresentante = async (req, res) => {
     }
 }
 
-//Función para obtener el ID del representante autenticado
-const ObtenerRepresentanteId = (req, res) => {
-    res.json({ id: req.user.id });
-};
 export {
     RegistroDeRepresentantes, 
     ConfirmacionCorreo, 
-    LoginRepresentante, 
-    ObtenerRepresentanteId
+    LoginRepresentante
 }
