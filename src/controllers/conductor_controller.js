@@ -1,6 +1,7 @@
 import Conductores from '../models/Administrador.js';
 import Estudiantes from '../models/Conductor.js';
 import Representantes from '../models/Representantes.js';
+import Asistencias from '../models/Asistencias.js';
 import {createToken} from '../middlewares/autho.js';
 import {directionsService} from '../config/mapbox.js';
 import {recuperacionContrasenia} from "../config/nodemailer.js"; 
@@ -616,6 +617,119 @@ const ActualizarPerfil = async (req, res) => {
         res.status(500).json({msg_actualizacion_perfil:"Error al actualizar el perfil del conductor"});
     }
 }
+const TomarLista = async (req, res) => {
+    //Obtención de datos del conductor
+    const {id} = req.user;
+    //Obtención de datos de lo escrito por el conductor
+    const {listaAsistenciaManana, listaAsistenciaTarde} = req.body;
+    try{
+        // Verificación de los campos vacíos
+        if (Object.values(req.body).includes("")) return res.status(400).json({ msg_tomar_lista: "Lo sentimos, debe tomar lista a los estudiantes" });
+        
+        // Verificación de la existencia del conductor
+        const conductor = await Conductores.findById(id);
+        if (!conductor) return res.status(400).json({ msg_tomar_lista: "Lo sentimos, el conductor no se encuentra registrado" });
+        //Verificación de que el conductor tenga estudiantes registrados
+        if(conductor.numeroEstudiantes === 0) return res.status(400).json({msg_tomar_lista:"Lo sentimos, no tiene estudiantes registrados"});
+        
+        //Obtención de los estudiantes registrados por el conductor
+        const estudiantesRuta = await Estudiantes.find({conductor: id}).lean();
+        //Transformación los ids de los estudiantes en strings
+        const estudiantesRutaIds = estudiantesRuta.map(est => est._id.toString());
+
+        //Arreglos para almacenar a los estudiantes que asistieron y los que no en la mañana
+        const estudiantesAsistieronManana = [];
+        const estudiantesNoAsistieronManana = [];
+
+        //Recorrer el array ingresado por el conductor 
+        for (const estudiante of listaAsistenciaManana) {
+            //Obtención a detalle de la información escrita 
+            const {estudianteId, asistencia} = estudiante;
+
+            //Verificación de que el id del estudiante se encuentre en laq ruta del conductor 
+            if(!estudiantesRutaIds.includes(estudianteId)){
+                return res.status(400).json({msg_tomar_lista:`Lo sentimos, el estudiante con el id ${estudianteId} no se encuentra registrado, registrelo porfavor`});
+            }
+
+            //Verificació de que la asistencia sea 0 o 1
+            if(asistencia !== 0 && asistencia !== 1){
+                return res.status(400).json({msg_tomar_lista:"Lo sentimos, la asistencia debe ser 0 o 1"});
+            }
+
+            //Almacenar a los estudiantes que asistieron y los que no
+            if(asistencia === 1){
+                estudiantesAsistieronManana.push(estudianteId);
+            } else {
+                estudiantesNoAsistieronManana.push(estudianteId);
+            }
+        }
+
+        //Arreglos para almacenar a los estudiantes que asistieron y los que no en la tarde
+        const estudiantesAsistieronTarde = [];
+        const estudiantesNoAsistieronTarde = [];
+
+        //Recorrer el array ingresado por el conductor
+        for(const estudiante of listaAsistenciaTarde){
+            //Obtención a detalle de la información escrita 
+            const {estudianteId, asistencia} = estudiante;
+
+            //Verificación de que el id del estudiante se encuentre en la ruta del conductor
+            if(!estudiantesRutaIds.includes(estudianteId)){
+                return res.status(400).json({msg_tomar_lista:`Lo sentimos, el estudiante con el id ${estudianteId} no se encuentra registrado, registrelo porfavor`});
+            }
+
+            //Verificación de que la asistencia sea 0 o 1
+            if(asistencia !== 0 && asistencia !== 1){
+                return res.status(400).json({msg_tomar_lista:"Lo sentimos, la asistencia debe ser 0 o 1"});
+            }
+
+            //Almacenar a los estudiantes que asistieron y los que no
+            if(asistencia === 1){
+                estudiantesAsistieronTarde.push(estudianteId);
+            } else {
+                estudiantesNoAsistieronTarde.push(estudianteId);
+            }
+        }
+
+        //Crear un nuevo registro de asistencia
+        const nuevaAsistencia = new Asistencias({
+            conductor: id,
+            estudiantesAsistieronManana,
+            estudiantesNoAsistieronManana,
+            estudiantesAsistieronTarde,
+            estudiantesNoAsistieronTarde
+        });
+
+        //Guardar el registro de asistencia en la base de datos 
+        await nuevaAsistencia.save();
+
+        //Arreglo para almacenar las notificaciones
+        const notificaciones = [];
+
+        //Recorrer los estudiantes que asistieron en la mañana
+        for(const estudianteId of estudiantesAsistieronManana){
+            //Obtener la información del estudiante
+            const estudiante = await Estudiantes.findById(estudianteId).lean();
+
+            //Si existe el estudainte se envía la notificación
+            if(estudiante){
+                const {nombre, cedula} = estudiante;
+                const representantes = await Representantes.find({cedulaRepresentado: cedula}).lean();
+                for (const representante of representantes){
+                    const notificacion = await EnviarNotificacion(id, nombre, representante._id, 0, 0);
+                    if(notificacion){
+                        notificaciones.push(notificacion);
+
+                    }
+                }
+            }
+        }
+
+    } catch(error){
+        console.error(error);
+        res.status(500).json({msg_tomar_lista:"Error al tomar la lista"});
+    }
+}
 export {
     RegistroDeLosEstudiantes,
     LoginConductor, 
@@ -631,5 +745,6 @@ export {
     EliminarEstudiante, 
     ManejoActualizacionUbicacion, 
     VisuallizarPerfil, 
-    ActualizarPerfil
+    ActualizarPerfil, 
+    TomarLista
 }
