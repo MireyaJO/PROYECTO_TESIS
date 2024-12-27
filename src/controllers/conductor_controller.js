@@ -161,6 +161,7 @@ const ActualizarPassword = async (req, res) => {
 
 }
 
+//Recuperación de Contraseña
 const RecuperacionPassword = async (req, res) => {
     //Recepción del email del conductor
     const {email} = req.body;
@@ -188,6 +189,7 @@ const RecuperacionPassword = async (req, res) => {
     }
 }
 
+//Comprobación del token para la recuperación de la contraseña
 const ComprobarTokenPassword= async (req, res) => { 
     //Recepción del token
     const tokenURL = req.params.token;
@@ -207,6 +209,7 @@ const ComprobarTokenPassword= async (req, res) => {
     }
 }
 
+//Creación de la nueva contraseña
 const NuevaPassword = async (req, res) => {
     //Recepción de la nueva contraseña
     const {passwordActual, passwordActualConfirm} = req.body;
@@ -250,12 +253,12 @@ const ListarEstudiantes = async (req, res) => {
 }
 
 const BuscarEstudiante = async (req, res) => {
-     //Obtener el id de los parámetros de la URL
+    //Obtener el id de los parámetros de la URL
     const {id} = req.params;
     //Información del conductor logeado
     const conductor = await Conductores.findById(req.user.id);
     // Verificación de la existencia del conductor
-    const estudiante = await Estudiantes.findOne({_id:id, ruta: conductor.rutaAsignada} ).select("-updatedAt -createdAt -__v");
+    const estudiante = await Estudiantes.findOne({_id:id, conductor: conductor._id} ).select("-updatedAt -createdAt -__v");
     if (!estudiante) return res.status(400).json({ msg_estudiante_id: "Lo sentimos, el estudiante no se ha encontrado o no pertenece a su ruta" });
     
     //Mensaje de exito
@@ -269,7 +272,7 @@ const BuscarEstudianteCedula = async (req, res) => {
         //Información del conductor logeado
         const conductor = await Conductores.findById(req.user.id);
         // Verificación de la existencia de la ruta
-        const estudiante = await Estudiantes.findOne({cedula: cedula, ruta: conductor.rutaAsignada}).select("-updatedAt -createdAt -__v");
+        const estudiante = await Estudiantes.findOne({cedula: cedula, conductor: conductor._id}).select("-updatedAt -createdAt -__v");
         if (!estudiante) return res.status(400).json({ msg: "Lo sentimos, no se ha encontrado ningun estudiante con ese numero de cedula o no pertenece a su ruta" });
    
         // Mensaje de éxito
@@ -285,13 +288,15 @@ const ActualizarEstudiante = async (req, res) => {
     const {nivelEscolar, paralelo, ubicacionDomicilio, recoCompletoOMedio} = req.body;
     //Obtención del id del estudiante (facilitado en la URL)
     const {id} = req.params;
+    //Información del conductor logeado
+    const conductor = await Conductores.findById(req.user.id); 
 
     // Verificación de los campos vacíos
     if (Object.values(req.body).includes("")) return res.status(400).json({ msg_actualizar_estudiantes: "Lo sentimos, debes llenar todos los campos" });
 
-    // Verificación de la existencia del conductor
-    const estudiante = await Estudiantes.findOne({_id:id});
-    if (!estudiante) return res.status(400).json({ msg: "Lo sentimos, el conductor no se encuentra trabajando en la Unidad Educativa Particular EMAÚS" });
+    // Verificación de la existencia del estudiante
+    const estudiante = await Estudiantes.findOne({_id:id, conductor: conductor._id});
+    if (!estudiante) return res.status(400).json({ msg: "Lo sentimos, el estudiante no se encuentra o no pertenece a la ruta" });
 
     //Comprobar que el nivel escolar se encuentre bien escrito 
     if(nivelEscolar !== "Nocional" && nivelEscolar !== "Inicial 1" && nivelEscolar !== "Inicial 2"
@@ -324,8 +329,6 @@ const ActualizarEstudiante = async (req, res) => {
         { new: true } 
     );
 
-    const conductor = await Conductores.findById(req.user.id);
-    
     //Actualizar el array de los estudiantes
     const estudianteAActualizar = `${cedula} - ${nombre} ${apellido} - ${nivelEscolar} ${paralelo}`;
     conductor.estudiantesRegistrados = conductor.estudiantesRegistrados.map(estudiante => {
@@ -338,17 +341,20 @@ const ActualizarEstudiante = async (req, res) => {
         msg_actualizar_estudiantes: `Los datos del estudiante ${nombre} ${apellido} han sido actualizados exitosamente`
     });
 }
+
 const ActualizarEstudianteCedula = async (req, res) => {
     //Obtención de datos de lo escrito por el conductor
     const {nivelEscolar, paralelo, ubicacionDomicilio, recoCompletoOMedio} = req.body;
     //Obtención del id del estudiante (facilitado en la URL)
     const {cedula} = req.params;
+    //Información del conductor logeado
+    const conductor = await Conductores.findById(req.user.id); 
 
     // Verificación de los campos vacíos
     if (Object.values(req.body).includes("")) return res.status(400).json({ msg_actualizacion_estudiante_cedula: "Lo sentimos, debes llenar todos los campos" });
 
     // Verificación de la existencia del conductor
-    const estudiante = await Estudiantes.findOne({ cedula: cedula });
+    const estudiante = await Estudiantes.findOne({ cedula: cedula, conductor: conductor._id});
     if (!estudiante) return res.status(400).json({ msg_actualizacion_estudiante_cedula: "Lo sentimos, el conductor no se encuentra trabajando en la Unidad Educativa Particular EMAÚS" });
 
    //Comprobar que el nivel escolar se encuentre bien escrito 
@@ -390,9 +396,11 @@ const ActualizarEstudianteCedula = async (req, res) => {
 const EliminarEstudiante = async (req, res) => {
     // Obtener el ID de los parámetros de la URL
     const { id } = req.params;
+    //Información del conductor logeado
+    const conductor = await Conductores.findById(req.user.id)
         
     //Verificación de la existencia del conductor
-    const estudiante = await Estudiantes.findOne({_id:id});
+    const estudiante = await Estudiantes.findOne({_id:id, conductor: conductor._id});
     if(!estudiante) return res.status(400).json({msg_eliminacion_estudiante:"Lo sentimos, el conductor no se encuentra trabajando en la Unidad Educativa Particular EMAÚS"})
     
     //Datos del estudiante 
@@ -400,7 +408,7 @@ const EliminarEstudiante = async (req, res) => {
 
     //Eliminación del conductor
     await Estudiantes.findOneAndDelete({id});
-    const conductor = await Conductores.findById(req.user.id);
+    
     //Eliminación en el array de los conductores
     conductor.numeroEstudiantes -= 1;
     const estudianteAEliminar = `${cedula} - ${nombre} ${apellido} - ${nivelEscolar} ${paralelo}`;
@@ -412,7 +420,6 @@ const EliminarEstudiante = async (req, res) => {
 }
 
 //Funciones para el manejo de ubicaciones 
-
 //Función que extrae la latitud y longitud de la ubicacion del estudiante
 const ExtraerCoordenadasLinkGoogleMaps = async (url) => {
     try {
@@ -532,6 +539,19 @@ const ManejoActualizacionUbicacion = async (req, res) => {
         const notificaciones = [];
 
         for (const estudiante of estudiantes) {
+            // Verificar si el estudiante asistió (al menos una se tiene que cumplir)
+            const asistencia = await Asistencias.findOne({
+                $or: [
+                    { estudiantesAsistieronManana: estudiante._id },
+                    { estudiantesAsistieronTarde: estudiante._id }
+                ]
+            }).lean();
+
+            // Si el estudiante no asistió (null, undefine), no se nvia notificación
+            if (!asistencia) {
+                continue; 
+            }
+
             // Extraer las coordenadas del estudiante
             const { latitud: latitudEstudiante, longitud: longitudEstudiante, cedula } = estudiante;
             // Calcular la distancia y el tiempo entre el conductor y el estudiante
@@ -569,6 +589,7 @@ const VisuallizarPerfil = async (req, res) => {
 const ActualizarPerfil = async (req, res) => {
     //Obtención de datos de lo escrito por el conductor
     const {placaAutomovil, telefono} = req.body;
+    //Obtención del id del conductor logeado
     const {id} = req.user;
     // Verificación de los campos vacíos
     if (Object.values(req.body).includes("")) return res.status(400).json({ msg_actualizacion_perfil: "Lo sentimos, debes llenar todos los campos" });
@@ -617,6 +638,8 @@ const ActualizarPerfil = async (req, res) => {
         res.status(500).json({msg_actualizacion_perfil:"Error al actualizar el perfil del conductor"});
     }
 }
+
+//Tomar lista en la mañana y tarde
 const TomarLista = async (req, res) => {
     //Obtención de datos del conductor
     const {id} = req.user;
@@ -713,6 +736,28 @@ const TomarLista = async (req, res) => {
 
             //Si existe el estudainte se envía la notificación
             if(estudiante){
+                //Se obtienen datos del estudiante
+                const {nombre, cedula} = estudiante;
+                //Se obtienen los representantes del estudiante
+                const representantes = await Representantes.find({cedulaRepresentado: cedula}).lean();
+                //Se recorre los representantes para enviar la notificación
+                for (const representante of representantes){
+                    const notificacion = await EnviarNotificacion(id, nombre, representante._id, 0, 0);
+                    if(notificacion){
+                        notificaciones.push(notificacion);
+
+                    }
+                }
+            }
+        }
+
+        //Recorrer los estudiantes que no asistieron en la tarde
+        for(const estudianteId of estudiantesNoAsistieronTarde){
+            //Obtener la información del estudiante
+            const estudiante = await Estudiantes.findById(estudianteId).lean();
+
+            //Si existe el estudainte se envía la notificación
+            if(estudiante){
                 const {nombre, cedula} = estudiante;
                 const representantes = await Representantes.find({cedulaRepresentado: cedula}).lean();
                 for (const representante of representantes){
@@ -725,11 +770,101 @@ const TomarLista = async (req, res) => {
             }
         }
 
+        return res.status(200).json({msg_tomar_lista:"Lista tomada exitosamente", notificaciones});
+
     } catch(error){
         console.error(error);
         res.status(500).json({msg_tomar_lista:"Error al tomar la lista"});
     }
 }
+
+//Busqueda de la lista de asistencia por id de la lista
+const BuscarListaId = async (req, res) => {
+    try{
+        //Obtener el id del conductor logeado
+        const {id} = req.user;
+
+        //Obtener la fecha de los parámetros de la URL
+        const { listaId } = req.params;
+
+        //Verificación de la existencia de lista con la fecha ingresada
+        const lista = await Asistencias.findOne({ _id: listaId, conductor: id}).lean();
+        if (!lista) return res.status(400).json({ msg_buscar_lista: "Lo sentimos, no se ha encontrado ninguna lista con ese ID" });
+        
+        // Mensaje de éxito
+        res.status(200).json({ msg: `La lista con id ${listaId} se ha encontrado exitosamente`, lista});
+    } catch(error){
+        console.log(error);
+        res.status(500).json({msg_buscar_lista:"Error al buscar la lista"});
+    }
+}
+
+//Busqueda de la lista de asistencia
+const BuscarLista = async (req, res) => {
+    try{
+        //Obtener el id del conductor logeado
+        const {id} = req.user;
+
+        //Obtener la fecha de los parámetros de la URL
+        const { fecha } = req.params;
+
+        //Verificación de la existencia de lista con la fecha ingresada
+        const lista = await Asistencias.findOne({conductor: id, fecha: fecha}).lean();
+        if (!lista) return res.status(400).json({ msg_buscar_lista: "Lo sentimos, no se ha encontrado ninguna lista con esa fecha" });
+
+        // Mensaje de éxito
+        res.status(200).json({ msg: `La lista con fecha: ${fecha}, se ha encontrado exitosamente`, lista});
+    } catch(error){
+        console.log(error);
+        res.status(500).json({msg_buscar_lista:"Error al buscar la lista"});
+    }
+}
+
+//Eliminar lista de asistencia
+const EliminarLista = async (req, res) => {
+    try {
+        // Obtener el id del conductor
+        const { id } = req.user;
+
+        // Obtener el id de la lista a eliminar desde los parámetros de la URL
+        const { listaId } = req.params;
+
+        // Verificación de la existencia de la lista y que pertenezca al conductor
+        const lista = await Asistencias.findOne({ _id: listaId, conductor: id });
+        if (!lista) return res.status(400).json({ msg_eliminar_lista: "Lo sentimos, la lista no se ha encontrado o no pertenece a este conductor" });
+
+        // Eliminar la lista
+        await Asistencias.findByIdAndDelete(listaId);
+        res.status(200).json({ msg_eliminar_lista: `La lista con id ${listaId} ha sido eliminada exitosamente` });
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ msg_eliminar_lista: "Error al eliminar la lista" });
+    }
+}
+
+//Eliminar lista de asistencia en la mañana
+const EliminarListaFecha = async (req, res) => {
+    try {
+        // Obtener el id del conductor
+        const { id } = req.user;
+
+        // Obtener el id de la lista a eliminar desde los parámetros de la URL
+        const { fecha } = req.params;
+
+        // Verificación de la existencia de la lista y que pertenezca al conductor
+        const lista = await Asistencias.findOne({fecha: fecha, conductor: id });
+        if (!lista) return res.status(400).json({ msg_eliminar_lista: "Lo sentimos, la lista no se ha encontrado o no pertenece a este conductor" });
+
+        // Eliminar la lista
+        await Asistencias.findByIdAndDelete(lista._id);
+        res.status(200).json({ msg_eliminar_lista: `La lista con fecha: ${fecha} ha sido eliminada exitosamente` });
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ msg_eliminar_lista: "Error al eliminar la lista" });
+    }
+}
+  
+
 export {
     RegistroDeLosEstudiantes,
     LoginConductor, 
@@ -746,5 +881,9 @@ export {
     ManejoActualizacionUbicacion, 
     VisuallizarPerfil, 
     ActualizarPerfil, 
-    TomarLista
+    TomarLista,
+    BuscarListaId, 
+    BuscarLista,
+    EliminarLista, 
+    EliminarListaFecha
 }

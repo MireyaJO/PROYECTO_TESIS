@@ -1,6 +1,7 @@
 import {Router} from 'express';
 import { RegistroDeLosEstudiantes, LoginConductor, ActualizarPassword, RecuperacionPassword, ComprobarTokenPassword, NuevaPassword, BuscarEstudiante, BuscarEstudianteCedula, 
-    ActualizarEstudiante, ActualizarEstudianteCedula, EliminarEstudiante, ManejoActualizacionUbicacion, ListarEstudiantes, VisuallizarPerfil, ActualizarPerfil } from '../controllers/conductor_controller.js';
+    ActualizarEstudiante, ActualizarEstudianteCedula, EliminarEstudiante, ManejoActualizacionUbicacion, ListarEstudiantes, VisuallizarPerfil, ActualizarPerfil, 
+    TomarLista, BuscarListaId, BuscarLista, EliminarLista, EliminarListaFecha} from '../controllers/conductor_controller.js';
 import {verificacionConductorRol, verificacionToken} from '../middlewares/autho.js'
 import { validacionesActualizarPerfilConductor } from '../middlewares/validaciones.js';
 const router = Router();
@@ -22,5 +23,11 @@ router.delete('/eliminar/estudiante/:id', verificacionToken, verificacionConduct
 router.post('/actualizar/ubicacion', verificacionToken, verificacionConductorRol, ManejoActualizacionUbicacion);
 router.get('/perfil/conductor', verificacionToken, verificacionConductorRol, VisuallizarPerfil);
 router.patch('/actualizar/perfil/conductor', verificacionToken, verificacionConductorRol, validacionesActualizarPerfilConductor, ActualizarPerfil);
-    
+router.post('/tomar/asistencia', verificacionToken, verificacionConductorRol, TomarLista);
+router.get('/buscar/asistencia/id/:listaId', verificacionToken, verificacionConductorRol, BuscarListaId);
+router.get('/buscar/asistencia/fecha/:fecha', verificacionToken, verificacionConductorRol, BuscarLista);
+router.delete('/eliminar/asistencia/id/:listaId', verificacionToken, verificacionConductorRol, EliminarLista);
+router.delete('/eliminar/asistencia/fecha/:fecha', verificacionToken, verificacionConductorRol, EliminarListaFecha);
+
+
 export default router
