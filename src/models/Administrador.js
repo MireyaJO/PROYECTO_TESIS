@@ -75,10 +75,12 @@ const paraElRegistroDeLosConductores= new Schema(
             type: Number, 
             default: 0
         },
-        estudiantesRegistrados:{
-            type: [String],
-            default: []
-        }, 
+        estudiantesRegistrados: [{
+            nombre: String,
+            apellido: String,
+            nivelEscolar: String,
+            paralelo: String
+        }], 
         token: {
             type: String,
             default: null

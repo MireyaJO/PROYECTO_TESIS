@@ -84,7 +84,13 @@ const RegistroDeLosEstudiantes = async (req, res) => {
 
         // Actualizar el número de estudiantes registrados por el conductor
         conductor.numeroEstudiantes += 1;
-        conductor.estudiantesRegistrados.push(`${nuevoEstudiante.nombre} - ${nuevoEstudiante.apellido} - ${nuevoEstudiante.nivelEscolar} - ${nuevoEstudiante.paralelo}`);
+        // Actualizar el array de los estudiantes
+        conductor.estudiantesRegistrados.push({
+            nombre: nuevoEstudiante.nombre,
+            apellido: nuevoEstudiante.apellido,
+            nivelEscolar: nuevoEstudiante.nivelEscolar,
+            paralelo: nuevoEstudiante.paralelo
+        }); 
         await conductor.save();
 
         res.status(201).json({ msg_registro_estudiantes: "Estudiante registrado exitosamente", nuevoEstudiante });
