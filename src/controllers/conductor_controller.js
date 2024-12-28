@@ -84,7 +84,7 @@ const RegistroDeLosEstudiantes = async (req, res) => {
 
         // Actualizar el número de estudiantes registrados por el conductor
         conductor.numeroEstudiantes += 1;
-        conductor.estudiantesRegistrados.push(`${cedula} - ${nombre} ${apellido} - ${nivelEscolar} ${paralelo}`);
+        conductor.estudiantesRegistrados.push(`${nuevoEstudiante.nombre} - ${nuevoEstudiante.apellido} - ${nuevoEstudiante.nivelEscolar} - ${nuevoEstudiante.paralelo}`);
         await conductor.save();
 
         res.status(201).json({ msg_registro_estudiantes: "Estudiante registrado exitosamente", nuevoEstudiante });
@@ -94,6 +94,7 @@ const RegistroDeLosEstudiantes = async (req, res) => {
     }
 }
 
+//Logeo del conductor
 const LoginConductor = async (req, res) => {
     // Toma de los datos del conductor que se quiere logear
     const {email, password} = req.body;
@@ -128,6 +129,7 @@ const LoginConductor = async (req, res) => {
     }
 };
 
+//Cambio de contraseña del conductor una vez logeado el mismo 
 const ActualizarPassword = async (req, res) => {
     // Toma de los datos del conductor que desea cambiar su contraseña
     const {passwordAnterior, passwordActual, passwordActualConfirm} = req.body;

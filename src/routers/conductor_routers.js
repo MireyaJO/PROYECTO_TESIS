@@ -7,13 +7,13 @@ import { validacionesActualizarPerfilConductor } from '../middlewares/validacion
 const router = Router();
 //Rutas Públicas
 router.post('/login/conductor', LoginConductor);
-router.post('/recuperacion/contrasenia', RecuperacionPassword);
-router.get('/comprobar/token/:token', ComprobarTokenPassword);
-router.patch('/nueva/contrasenia/:token', NuevaPassword); 
+router.post('/recuperacion/contrasenia/conductor', RecuperacionPassword);
+router.get('/comprobar/token/conductor/:token', ComprobarTokenPassword);
+router.patch('/nueva/contrasenia/conductor/:token', NuevaPassword); 
 
 //Rutas Privadas
 router.post('/registro/estudiantes', verificacionToken, verificacionConductorRol, RegistroDeLosEstudiantes);
-router.patch('/actualizar/contrasenia', verificacionToken, verificacionConductorRol, ActualizarPassword);  
+router.patch('/actualizar/contrasenia/conductor', verificacionToken, verificacionConductorRol, ActualizarPassword);  
 router.get('/lista/estudiantes', verificacionToken, verificacionConductorRol, ListarEstudiantes);
 router.get('/buscar/estudiante/:id', verificacionToken, verificacionConductorRol, BuscarEstudiante);
 router.get('/buscar/estudiante/cedula/:cedula', verificacionToken, verificacionConductorRol, BuscarEstudianteCedula);
