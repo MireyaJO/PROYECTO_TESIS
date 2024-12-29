@@ -4,7 +4,7 @@ import Conductores from '../models/Administrador.js';
 import Estudiantes from '../models/Conductor.js';
 import Representantes from '../models/Representantes.js';
 import {createToken} from '../middlewares/autho.js';
-import {confirmacionDeCorreoRepresentante, recuperacionContraseniaRepresentante} from '../config/nodemailer.js';
+import {confirmacionDeCorreoRepresentante, recuperacionContraseniaRepresentante, confirmacionDeCorreoRepresentanteCambio} from '../config/nodemailer.js';
 
 //Registro de los representantes
 const RegistroDeRepresentantes = async (req, res) => {
@@ -387,6 +387,115 @@ const AlertaLlegadaConductor = async (req, res) => {
     }
 }
 
+//Actualizar su perfil de representante
+const ActualizarPerfilRepresentante = async (req, res) => {
+    // Obtención de datos de lo escrito por el representante
+    const { nombre, apellido, telefono, genero, cedula, email } = req.body;
+    // Obtención del id del representante logeado
+    const { id } = req.user;
+
+    // Verificación de los campos vacíos
+    if (Object.values(req.body).includes("")) return res.status(400).json({ msg_actualizacion_perfil: "Lo sentimos, debes llenar todos los campos" });
+
+    try {
+        // Verificación de la existencia del representante
+        const representante = await Representantes.findById(id);
+        if (!representante) return res.status(400).json({ msg: "Lo sentimos, el representante no se encuentra registrado" });
+
+        // Comprobar si el teléfono ya está registrado por otro representante
+        const verificarTelefonoBDD = await Representantes.findOne({ telefono, _id: { $ne: id } });
+        if (verificarTelefonoBDD) {
+            return res.status(400).json({ msg_actualizacion_perfil: "Lo sentimos, el teléfono ya se encuentra registrado" });
+        }
+
+        // Comprobar si la cédula ya está registrada por otro representante
+        const verificarCedulaBDD = await Representantes.findOne({ cedula, _id: { $ne: id } });
+        if (verificarCedulaBDD) {
+            return res.status(400).json({ msg_actualizacion_perfil: "Lo sentimos, la cédula ya se encuentra registrada" });
+        }
+
+        // Comprobar si el email ya está registrado por otro representante
+        const verificarEmailBDD = await Representantes.findOne({ email, _id: { $ne: id } });
+        if (verificarEmailBDD) {
+            return res.status(400).json({ msg_actualizacion_perfil: "Lo sentimos, el email ya se encuentra registrado" });
+        }
+
+        // Verificar si se envió un archivo de imagen
+        if (req.files && req.files.fotografia) {
+            const file = req.files.fotografia;
+            try {
+                // Subir la imagen a Cloudinary con el nombre del representante como public_id
+                const result = await cloudinary.v2.uploader.upload(file.tempFilePath, {
+                    public_id: `representantes/${representante.nombre} ${representante.apellido}`,
+                    folder: "representantes"
+                });
+                // Guardar la URL de la imagen en la base de datos
+                representante.fotografia = result.secure_url;
+                // Eliminar el archivo local después de subirlo
+                await fs.unlink(file.tempFilePath);
+            } catch (error) {
+                console.error(error);
+                return res.status(500).json({ msg_actualizacion_perfil: "Error al subir la imagen" });
+            }
+        }
+
+        // Si el email cambia, enviar un enlace de confirmación al nuevo correo
+        if (email && email !== representante.email) {
+            // Crear un token JWT con el ID del representante y el nuevo email
+            const token = representante.crearToken();
+            representante.token = token;
+
+            // Guardar el token en la base de datos
+            await representante.save();
+
+            // Enviar un email de confirmación al nuevo correo electrónico
+            await enviarEmailConfirmacionCambio(email, representante.nombre, representante.apellido, token);
+
+            // Enviar una respuesta al cliente indicando que se ha enviado un enlace de confirmación
+            return res.status(200).json({ msg: "Se ha enviado un enlace de confirmación al nuevo correo electrónico" });
+        }
+
+        // Actualización del perfil del representante
+        representante.nombre = nombre;
+        representante.apellido = apellido;
+        representante.telefono = telefono;
+        representante.genero = genero;
+        representante.cedula = cedula;
+        representante.email = email;
+
+        // Guardar los cambios en la base de datos
+        await representante.save();
+
+        res.status(200).json({ msg_actualizacion_perfil: "Los datos del representante han sido actualizados exitosamente" });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ msg_actualizacion_perfil: "Error al actualizar el perfil del representante" });
+    }
+};
+
+//Confirmación del nuevo correo del representante
+const ConfirmacionCorreoNuevoRepresentante = async (req, res) => {
+    //Recepcion del token proporcionado por la URL
+    const { token } = req.params;
+
+    try {
+        // Buscar representante por token
+        const representante = await Representantes.findOne({ token });
+        if (!representante) return res.status(400).json({ msg: "Token inválido o expirado" });
+
+        // Actualizar el email
+        representante.email = representante.tokenEmail;
+        representante.token = null;
+        representante.tokenEmail = null;
+        await representante.save();
+
+        res.status(200).json({ msg: "Correo electrónico actualizado exitosamente, puede logearse con su nuevo email" });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ msg: "Error al confirmar el cambio de correo electrónico" });
+    }
+};
+
 export {
     RegistroDeRepresentantes, 
     ConfirmacionCorreo, 
@@ -398,5 +507,7 @@ export {
     EstudiantesRepresentados, 
     VisuallizarPerfil, 
     EliminarCuentaRepresentante, 
-    AlertaLlegadaConductor
+    AlertaLlegadaConductor, 
+    ActualizarPerfilRepresentante, 
+    ConfirmacionCorreoNuevoRepresentante
 }

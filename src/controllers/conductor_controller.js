@@ -4,7 +4,7 @@ import Representantes from '../models/Representantes.js';
 import Asistencias from '../models/Asistencias.js';
 import {createToken} from '../middlewares/autho.js';
 import {directionsService} from '../config/mapbox.js';
-import {recuperacionContrasenia} from "../config/nodemailer.js"; 
+import {recuperacionContrasenia, confirmacionDeCorreoConductorCambio} from "../config/nodemailer.js"; 
 import axios from 'axios';
 import cloudinary from 'cloudinary';
 import fs from 'fs-extra';
@@ -16,6 +16,7 @@ const RegistroDeLosEstudiantes = async (req, res) => {
         nombre,
         apellido,
         nivelEscolar,
+        genero,
         paralelo,
         cedula,
         ubicacionDomicilio,
@@ -48,6 +49,11 @@ const RegistroDeLosEstudiantes = async (req, res) => {
         return res.status(400).json({ msg_registro_estudiantes: "Lo sentimos, el paralelo debe ser de la A a la C" });
     }
 
+    //Comprobación de lo escrito en el genero del estudiante 
+    if(genero!== "Femenino" && genero !== "Masculino" && genero !== "Prefiero no decirlo"){
+        return res.status(400).json({ msg_registro_estudiantes: "Lo sentimos, el género debe ser Femenino, Masculino o Prefiero no decirlo" });
+    }
+
     try {
         //Información del conductor logeado
         const conductor = await Conductores.findById(req.user.id);
@@ -70,6 +76,7 @@ const RegistroDeLosEstudiantes = async (req, res) => {
             nivelEscolar,
             paralelo,
             cedula,
+            genero,
             ruta: conductor.rutaAsignada,
             ubicacionDomicilio,
             institucion: conductor.institucion,
@@ -86,11 +93,14 @@ const RegistroDeLosEstudiantes = async (req, res) => {
         conductor.numeroEstudiantes += 1;
         // Actualizar el array de los estudiantes
         conductor.estudiantesRegistrados.push({
+            id: nuevoEstudiante._id,
+            cedula: nuevoEstudiante.cedula,
             nombre: nuevoEstudiante.nombre,
             apellido: nuevoEstudiante.apellido,
             nivelEscolar: nuevoEstudiante.nivelEscolar,
             paralelo: nuevoEstudiante.paralelo
         }); 
+        // Guardar los cambios en la base de datos
         await conductor.save();
 
         res.status(201).json({ msg_registro_estudiantes: "Estudiante registrado exitosamente", nuevoEstudiante });
@@ -247,6 +257,7 @@ const NuevaPassword = async (req, res) => {
     }
 }
 
+//Todos los estudiantes de la ruta del conductor logeado
 const ListarEstudiantes = async (req, res) => {
     try{
         //Información del conductor logeado
@@ -260,6 +271,7 @@ const ListarEstudiantes = async (req, res) => {
     }
 }
 
+//Buscar un estudiante por su id
 const BuscarEstudiante = async (req, res) => {
     //Obtener el id de los parámetros de la URL
     const {id} = req.params;
@@ -273,6 +285,7 @@ const BuscarEstudiante = async (req, res) => {
     res.status(200).json({ msg_estudiante_id: `El estudiante ${estudiante.nombre} ${estudiante.apellido} se ha encontrado exitosamente`, estudiante});
 }
 
+//Buscar un estudiante por su cedula
 const BuscarEstudianteCedula = async (req, res) => {
    try {
         // Obtener el número de la cedula de los parámetros de la URL
@@ -291,6 +304,7 @@ const BuscarEstudianteCedula = async (req, res) => {
     }
 }
 
+//Actualizar los datos de un estudiante
 const ActualizarEstudiante = async (req, res) => {
     //Obtención de datos de lo escrito por el conductor
     const {nivelEscolar, paralelo, ubicacionDomicilio, recoCompletoOMedio} = req.body;
@@ -337,12 +351,20 @@ const ActualizarEstudiante = async (req, res) => {
         { new: true } 
     );
 
-    //Actualizar el array de los estudiantes
-    const estudianteAActualizar = `${cedula} - ${nombre} ${apellido} - ${nivelEscolar} ${paralelo}`;
-    conductor.estudiantesRegistrados = conductor.estudiantesRegistrados.map(estudiante => {
-        const [cedulaEstudiante] = estudiante.split(" - ");
-        return cedulaEstudiante === cedula ? estudianteAActualizar : estudiante;
-    });
+    //Actualizar el array de los estudiantes en el esquema conductor 
+    for (let i = 0; i < conductor.estudiantesRegistrados.length; i++) {
+        if (conductor.estudiantesRegistrados[i].id.equals(id)) {
+            conductor.estudiantesRegistrados[i] = {
+                id: estudiante._id,
+                cedula: estudiante.cedula,
+                nombre: estudiante.nombre,
+                apellido: estudiante.apellido,
+                nivelEscolar: estudiante.nivelEscolar,
+                paralelo: estudiante.paralelo
+            };
+            break;
+        }
+    }
     await conductor.save();
 
     res.status(200).json({
@@ -396,11 +418,28 @@ const ActualizarEstudianteCedula = async (req, res) => {
         { new: true } 
     );
 
+    //Actualizar el array de los estudiantes en el esquema conductor 
+    for (let i = 0; i < conductor.estudiantesRegistrados.length; i++) {
+        if (conductor.estudiantesRegistrados[i].cedula.equals(cedula)) {
+            conductor.estudiantesRegistrados[i] = {
+                id: estudiante._id,
+                cedula: estudiante.cedula,
+                nombre: estudiante.nombre,
+                apellido: estudiante.apellido,
+                nivelEscolar: estudiante.nivelEscolar,
+                paralelo: estudiante.paralelo
+            };
+            break;
+        }
+    }
+    await conductor.save();
+
     res.status(200).json({
         msg: `Los datos del estudiante ${nombre} ${apellido} han sido actualizados exitosamente`
     });
 }
 
+//Eliminación de un estudiante registrado por el conductor logeado
 const EliminarEstudiante = async (req, res) => {
     // Obtener el ID de los parámetros de la URL
     const { id } = req.params;
@@ -409,18 +448,23 @@ const EliminarEstudiante = async (req, res) => {
         
     //Verificación de la existencia del conductor
     const estudiante = await Estudiantes.findOne({_id:id, conductor: conductor._id});
-    if(!estudiante) return res.status(400).json({msg_eliminacion_estudiante:"Lo sentimos, el conductor no se encuentra trabajando en la Unidad Educativa Particular EMAÚS"})
+    if(!estudiante) return res.status(400).json({msg_eliminacion_estudiante:"Lo sentimos, el estudiante no se encuentra o no pertenece a la ruta"});
     
     //Datos del estudiante 
-    const {nombre, apellido, cedula, nivelEscolar, paralelo} = estudiante;
+    const {nombre, apellido} = estudiante;
 
     //Eliminación del conductor
     await Estudiantes.findOneAndDelete({id});
     
-    //Eliminación en el array de los conductores
+    //Actualización en el numero de estudiantes registrados por el conductor
     conductor.numeroEstudiantes -= 1;
-    const estudianteAEliminar = `${cedula} - ${nombre} ${apellido} - ${nivelEscolar} ${paralelo}`;
-    conductor.estudiantesRegistrados = conductor.estudiantesRegistrados.filter(estudiante => estudiante !== estudianteAEliminar);
+    //Actualización del array de los estudiantes
+    for (let i = 0; i < conductor.estudiantesRegistrados.length; i++) {
+        if (conductor.estudiantesRegistrados[i].id.equals(id)) {
+            conductor.estudiantesRegistrados.splice(i, 1);
+            break;
+        }
+    }
     await conductor.save();
 
     //Mensaje de exito
@@ -596,7 +640,7 @@ const VisuallizarPerfil = async (req, res) => {
 
 const ActualizarPerfil = async (req, res) => {
     //Obtención de datos de lo escrito por el conductor
-    const {placaAutomovil, telefono} = req.body;
+    const {placaAutomovil, telefono, email, genero} = req.body;
     //Obtención del id del conductor logeado
     const {id} = req.user;
     // Verificación de los campos vacíos
@@ -608,37 +652,58 @@ const ActualizarPerfil = async (req, res) => {
         // Comprobar si el telefono ya está registrado
         const verificarTelefonoBDD = await Conductores.findOne({telefono});
         if (verificarTelefonoBDD) {
-            return res.status(400).json({ msg_registro_conductor: "Lo sentimos, el telefono ya se encuentra registrado" })
+            return res.status(400).json({ msg_actualizacion_perfil: "Lo sentimos, el telefono ya se encuentra registrado" })
         };
         
         // Comprobar si la placa ya está registrada
         const verificarPlacaBDD = await Conductores.findOne({placaAutomovil});
         if (verificarPlacaBDD) {
-            return res.status(400).json({ msg_registro_conductor: "Lo sentimos, la placa ya se encuentra registrada" })
+            return res.status(400).json({ msg_actualizacion_perfil: "Lo sentimos, la placa ya se encuentra registrada" })
         };
         // Verificar si se envió un archivo de imagen
         if (req.files && req.files.fotografiaDelConductor) {
             const file = req.files.fotografiaDelConductor;
-        try {
-            // Subir la imagen a Cloudinary con el nombre del conductor como public_id
-            const result = await cloudinary.v2.uploader.upload(file.tempFilePath, {
-                public_id: `conductores/${conductor.nombre} ${conductor.apellido}`,
-                folder: "conductores"
-            });
-            // Guardar la URL de la imagen en la base de datos
-            conductor.fotografiaDelConductor = result.secure_url;
-            // Eliminar el archivo local después de subirlo
-            await fs.unlink(file.tempFilePath);
-        } catch (error) {
-            console.error(error);
-            return res.status(500).json({ msg_registro_conductor: "Error al subir la imagen" });
-        }
+            try {
+                // Subir la imagen a Cloudinary con el nombre del conductor como public_id
+                const result = await cloudinary.v2.uploader.upload(file.tempFilePath, {
+                    public_id: `conductores/${conductor.nombre} ${conductor.apellido}`,
+                    folder: "conductores"
+                });
+                // Guardar la URL de la imagen en la base de datos
+                conductor.fotografiaDelConductor = result.secure_url;
+                // Eliminar el archivo local después de subirlo
+                await fs.unlink(file.tempFilePath);
+            } catch (error) {
+                console.error(error);
+                return res.status(500).json({ msg_actualizacion_perfil: "Error al subir la imagen" });
+            }
         } else {
-            return res.status(400).json({ msg_registro_conductor: "Lo sentimos, debes subir una imagen" });
+            return res.status(400).json({ msg_actualizacion_perfil: "Lo sentimos, debes subir una imagen" });
         }
+
+        // Si el email cambia, enviar un enlace de confirmación al nuevo correo
+        if (email && email !== conductor.email) {
+            // Crear un token JWT con el ID del conductor y el nuevo email
+            const token = conductor.crearToken();
+            conductor.token = token;
+
+            // Guardar el token en la base de datos
+            await conductor.save();
+
+            // Enviar un email de confirmación al nuevo correo electrónico
+            await confirmacionDeCorreoConductorCambio(email, conductor.nombre, conductor.apellido, token);
+
+            // Enviar una respuesta al cliente indicando que se ha enviado un enlace de confirmación
+            return res.status(200).json({ msg: "Se ha enviado un enlace de confirmación al nuevo correo electrónico" });
+        }
+
         // Actualización de los datos
         conductor.placaAutomovil = placaAutomovil;
         conductor.telefono = telefono;
+        conductor.email = email;
+        conductor.genero = genero;
+
+        // Guardar los cambios en la base de datos
         await conductor.save();
         res.status(200).json({ msg_actualizacion_perfil: "Los datos del conductor han sido actualizados exitosamente" });
     } catch(error){
@@ -646,6 +711,31 @@ const ActualizarPerfil = async (req, res) => {
         res.status(500).json({msg_actualizacion_perfil:"Error al actualizar el perfil del conductor"});
     }
 }
+
+//Confirmación del nuevo correo del representante
+const ConfirmacionCorreoNuevoConductor = async (req, res) => {
+    //Recepcion del token proporcionado por la URL
+    const { token } = req.params;
+
+    try {
+        // Buscar representante por token
+        const conductor = await Conductores.findOne({ token });
+        if (!conductor) return res.status(400).json({ msg: "Token inválido o expirado" });
+
+        // Actualizar el email
+        conductor.email = conductor.tokenEmail;
+        conductor.token = null;
+        //Almacenamiento temporal de el correo nuevo hasta que se confirme el cambio de correo
+        conductor.tokenEmail = null;
+
+        // Guardar los cambios en la base de datos
+        await conductor.save();
+        res.status(200).json({ msg: "Correo electrónico actualizado exitosamente, puede logearse con su nuevo email" });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ msg: "Error al confirmar el cambio de correo electrónico" });
+    }
+};
 
 //Tomar lista en la mañana y tarde
 const TomarLista = async (req, res) => {
@@ -871,7 +961,39 @@ const EliminarListaFecha = async (req, res) => {
         res.status(500).json({ msg_eliminar_lista: "Error al eliminar la lista" });
     }
 }
-  
+
+//Eliminación del padre de familia
+const EliminarRepresentante = async (req, res) => {
+    // Obtención del id del representante proporcionado por la URL
+    const { id } = req.params;
+    // Obtención del id del conductor logeado
+    const { conductorId } = req.user;
+
+    try {
+        // Verificación de la existencia del estudiante con el representante
+        const estudiante = await Estudiantes.findOne({ conductor: conductorId, 'representantes._id': id });
+        if (!estudiante) {
+            return res.status(400).json({ msg_eliminar_representante: "Lo sentimos, el representante no se ha encontrado o no pertenece a un estudiante inscrito en la ruta" });
+        }
+
+        // Eliminar el representante del array de representantes del estudiante usando un bucle for
+        for (let i = 0; i < estudiante.representantes.length; i++) {
+            if (estudiante.representantes[i]._id.equals(id)) {
+                estudiante.representantes.splice(i, 1);
+                break; // Detener la iteración una vez que se ha encontrado y eliminado el representante
+            }
+        }
+        await estudiante.save();
+
+        // Eliminar el documento del representante de la base de datos
+        await Representantes.findByIdAndDelete(id);
+
+        res.status(200).json({ msg_eliminar_representante: "Representante eliminado exitosamente" });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ msg_eliminar_representante: "Error al eliminar el representante" });
+    }
+}
 
 export {
     RegistroDeLosEstudiantes,
@@ -889,9 +1011,11 @@ export {
     ManejoActualizacionUbicacion, 
     VisuallizarPerfil, 
     ActualizarPerfil, 
+    ConfirmacionCorreoNuevoConductor,
     TomarLista,
     BuscarListaId, 
     BuscarLista,
     EliminarLista, 
-    EliminarListaFecha
+    EliminarListaFecha, 
+    EliminarRepresentante
 }

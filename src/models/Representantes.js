@@ -53,6 +53,10 @@ const paraElRegistroDeLosRepresentantes = new Schema(
             type: String,
             default: null
         },
+        tokenEmail:{
+            type: String,
+            default: null
+        }, 
         cedulaRepresentado: [{
             type: Number, 
             require: true, 

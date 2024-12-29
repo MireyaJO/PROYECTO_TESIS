@@ -62,6 +62,12 @@ const validacionesConductor = [
         .withMessage('La institución debe ser un texto, no se acepta otro tipo de dato')
         .customSanitizer(value => value?.trim()),
     
+    // Verificar que el género sea uno de los valores permitidos
+    check("genero")
+    .isIn(["Femenino", "Masculino", "Prefiero no decirlo"])
+        .withMessage('El género debe ser "Femenino", "Masculino" o "Prefiero no decirlo"')
+    .customSanitizer(value => value?.trim()),
+    
     (req,res,next)=>{
         const errors = validationResult(req);
         if (errors.isEmpty()) {
@@ -124,8 +130,24 @@ const validacionesRepresentantes = [
         .withMessage('La contraseña debe tener entre 6 y 10 caracteres')
         .matches(/^(?=(?:.*\d){3})(?=(?:.*[!@#$%^&*()\-_=+{};:,<.>]){3})/)
         .withMessage('La contraseña debe contener al menos 3 números y 3 signos especiales')
-        .customSanitizer(value => value?.trim())
+        .customSanitizer(value => value?.trim()),
 
+    // Verificar que el género sea uno de los valores permitidos
+    check("genero")
+    .isIn(["Femenino", "Masculino", "Prefiero no decirlo"])
+        .withMessage('El género debe ser "Femenino", "Masculino" o "Prefiero no decirlo"')
+    .customSanitizer(value => value?.trim()),
+
+    (req,res,next)=>{
+        const errors = validationResult(req);
+        if (errors.isEmpty()) {
+            return next();
+        } else {
+            return res.status(400).send({ errors: errors.array() });
+        }
+    }
+    
+    
 ]
 
 const validacionesActualizarPerfilConductor = [
@@ -149,6 +171,66 @@ const validacionesActualizarPerfilConductor = [
         .withMessage('Se necesita campos para actualizar')
     .customSanitizer(value => value?.trim()),
 
+    // Verificar que el género sea uno de los valores permitidos
+    check("genero")
+    .isIn(["Femenino", "Masculino", "Prefiero no decirlo"])
+        .withMessage('El género debe ser "Femenino", "Masculino" o "Prefiero no decirlo"')
+    .customSanitizer(value => value?.trim()),
+
+    (req,res,next)=>{
+        const errors = validationResult(req);
+        if (errors.isEmpty()) {
+            return next();
+        } else {
+            return res.status(400).send({ errors: errors.array() });
+        }
+     }
+
 ]
 
-export {validacionesConductor, validacionesRepresentantes, validacionesActualizarPerfilConductor}
+const validacionesActualizarPerfilRepresentante = [
+    //Verificación de que todo sea un string
+    check(["nombre","apellido"])
+    .isAlpha('es-ES', { ignore: 'áéíóúÁÉÍÓÚñÑ' })
+        .withMessage('El campo debe ser un texto, no se acepta otro tipo de dato')
+    .customSanitizer(value => value?.trim()),
+
+    // Verificar que el numero de telefono sea de 10 digitos
+    check("telefono")
+    .isLength({ min: 10, max: 10 })
+        .withMessage('El teléfono debe ser de 10 digitos')
+    .isNumeric()
+        .withMessage('El campo "teléfono" debe contener solo números')
+    .customSanitizer(value => value?.trim()),
+
+    // Verificar que el número de cédula tenga 10 dígitos
+    check("cedula")
+    .isLength({ min: 10, max: 10 })
+        .withMessage('La cedula debe ser de 10 digitos')
+    .isNumeric()
+        .withMessage('El campo "teléfono" debe contener solo números')
+    .customSanitizer(value => value?.trim()), 
+
+    // Verificar que el email se enceuntre bien escrito
+    check("email")
+    .isEmail()
+        .withMessage('El email debe ser un correo válido')
+    .customSanitizer(value => value?.trim()),
+
+    // Verificar que el género sea uno de los valores permitidos
+    check("genero")
+    .isIn(["Femenino", "Masculino", "Prefiero no decirlo"])
+        .withMessage('El género debe ser "Femenino", "Masculino" o "Prefiero no decirlo"')
+    .customSanitizer(value => value?.trim()),
+
+    (req,res,next)=>{
+        const errors = validationResult(req);
+        if (errors.isEmpty()) {
+            return next();
+        } else {
+            return res.status(400).send({ errors: errors.array() });
+        }
+    }
+]
+
+export {validacionesConductor, validacionesRepresentantes, validacionesActualizarPerfilConductor, validacionesActualizarPerfilRepresentante}

@@ -47,12 +47,24 @@ const paraElRegistroDeLosEstudiantes= new Schema(
             type: String, 
             require: true
         }, 
+        genero:{
+            type: String, 
+            trim: true
+        },
         latitud:{
             type: Number
         }, 
         longitud:{
             type: Number
         },
+        token: {
+            type: String,
+            default: null
+        },
+        tokenEmail:{
+            type: String,
+            default: null
+        }, 
         conductor:{
             type: mongoose.Schema.Types.ObjectId,
             ref: 'Conductores',

@@ -5,6 +5,7 @@ import {enviarCorreoConductor, actualizacionDeConductor, eliminacionDelConductor
 import {createToken} from '../middlewares/autho.js';
 import crypto from 'crypto';
 
+// Registros de los conductores
 const RegistroDeLosConductores = async (req, res) => {
     // Extraer los campos del cuerpo de la solicitud
     const {
@@ -94,6 +95,7 @@ const RegistroDeLosConductores = async (req, res) => {
     }
 };
 
+// Logeo del administrador 
 const LoginAdministrador = async (req, res) => {
     //Toma de los datos del administrador
     const {emailAdmin, passwordAdmin} = req.body;
@@ -111,6 +113,7 @@ const LoginAdministrador = async (req, res) => {
     }
 };
 
+//Busqueda de conductores de la Unidad Educativa Particular EMAÚS
 const BuscarConductor = async (req, res) => {
     //Obtener el id de los parámetros de la URL
     const { id } = req.params;
@@ -123,6 +126,7 @@ const BuscarConductor = async (req, res) => {
     res.status(200).json({ msg: `El conductor ${conductor.nombre} ${conductor.apellido} se ha encontrado exitosamente`, conductor});
 };
 
+// Buscar un conductor en especifico por la ruta asignada
 const BuscarConductorRuta = async (req, res) => {
     try {
         // Obtener el número de la ruta de los parámetros de la URL
@@ -142,6 +146,7 @@ const BuscarConductorRuta = async (req, res) => {
     }
 }
 
+// Listar todos los conductores de la Unidad Educativa Particular EMAÚS
 const ListarConductor = async (req, res) => {
     //Obtener todos los conductores
     const conductores = await Conductores.find().select("-updatedAt -createdAt -__v");
@@ -151,6 +156,7 @@ const ListarConductor = async (req, res) => {
     res.status(200).json({ msg_listar_conductores: "Los conductores se han encontrado exitosamente", conductores});
 }
 
+//Actuallización de las rutas y sectores de los conductores
 const ActualizarRutasYSectores = async (req, res) => {
     const {rutaAsignada, sectoresRuta, cedula} = req.body;
 
@@ -180,6 +186,7 @@ const ActualizarRutasYSectores = async (req, res) => {
     });
 };
 
+//Eliminación de un conductor
 const EliminarConductor = async (req, res) => {
     // Obtener el ID de los parámetros de la URL
     const {id} = req.params;

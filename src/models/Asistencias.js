@@ -1,9 +1,8 @@
 import {Schema, model} from 'mongoose'
 import bcrypt from 'bcryptjs'
-import Conductor from './Conductor'
 //Definición de la estructura en la base de datos 
 //Esquema para el registro de asistencias
-const paraElRegistroDeAsistencias= new mongoose.Schema({
+const paraElRegistroDeAsistencias= new Schema({
     conductor: {
         type: Schema.Types.ObjectId,
         ref: 'Conductores', 

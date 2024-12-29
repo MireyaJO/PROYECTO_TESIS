@@ -144,6 +144,49 @@ const recuperacionContraseniaRepresentante = async (email, nombre, apellido, tok
     });
 }
 
+const confirmacionDeCorreoRepresentanteCambio = async (email, nombre, apellido, token) => {
+    //Creación de la estuctura que tendrá el correo
+    let estructuraEmail = {
+        from: process.env.EMAIL_USER,
+        to: email,  
+        subject: "Confirmación del nuevo correo electrónico para el representante de un estudiante de la Unidad Educativa Particular Emaús",
+        html: `<p>Señor/a ${nombre} ${apellido} usted desea cambiar su correo electronico, para confirmar el mismo haga clic en el siguiente link: </p>
+        <hr>
+        <a href=${process.env.URL_BACKEND}cambio/emailRepresentante/${encodeURIComponent(token)}>Clic aquí para confirmar tu correo electrónico</a>
+        <hr>`
+    };
+
+    //Creación del transportador universal con el email y el password del conductor ingresado por el administrador
+    transportador.sendMail(estructuraEmail, (error, info) => {
+        if(error){
+            console.error(error);
+        } else {
+            console.log('Correo enviado: ' + info.response);
+        }
+    });
+}
+
+const confirmacionDeCorreoConductorCambio = async (email, nombre, apellido, token) => {
+    //Creación de la estuctura que tendrá el correo
+    let estructuraEmail = {
+        from: process.env.EMAIL_USER,
+        to: email,  
+        subject: "Confirmación del nuevo correo electrónico para el conductor de un estudiante de la Unidad Educativa Particular Emaús",
+        html: `<p>Señor/a ${nombre} ${apellido} usted desea cambiar su correo electronico, para confirmar el mismo haga clic en el siguiente link: </p>
+        <hr>
+        <a href=${process.env.URL_BACKEND}cambio/emailConductor/${encodeURIComponent(token)}>Clic aquí para confirmar tu correo electrónico</a>
+        <hr>`
+    };
+
+    //Creación del transportador universal con el email y el password del conductor ingresado por el administrador
+    transportador.sendMail(estructuraEmail, (error, info) => {
+        if(error){
+            console.error(error);
+        } else {
+            console.log('Correo enviado: ' + info.response);
+        }
+    });
+}
 
 export {
     enviarCorreoConductor, 
@@ -151,5 +194,7 @@ export {
     recuperacionContrasenia,
     eliminacionDelConductor, 
     confirmacionDeCorreoRepresentante, 
-    recuperacionContraseniaRepresentante
+    recuperacionContraseniaRepresentante, 
+    confirmacionDeCorreoRepresentanteCambio, 
+    confirmacionDeCorreoConductorCambio
 }
