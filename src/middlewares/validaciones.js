@@ -13,9 +13,9 @@ const validacionesConductor = [
     .customSanitizer(value => value?.trim()),
 
     //Verificación de que todo sea un string
-    check(["nombre","apellido"])
-    .isAlpha('es-ES', { ignore: 'áéíóúÁÉÍÓÚñÑ' })
-        .withMessage('El campo debe ser un texto, no se acepta otro tipo de dato')
+    check(["nombre", "apellido"])
+    .matches(/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/)
+        .withMessage('El campo debe ser un texto y puede contener espacios')
     .customSanitizer(value => value?.trim()),
 
     // Verificar que el numero de telefono sea de 10 digitos
@@ -63,7 +63,7 @@ const validacionesConductor = [
         .customSanitizer(value => value?.trim()),
     
     // Verificar que el género sea uno de los valores permitidos
-    check("genero")
+    check("generoConductor")
     .isIn(["Femenino", "Masculino", "Prefiero no decirlo"])
         .withMessage('El género debe ser "Femenino", "Masculino" o "Prefiero no decirlo"')
     .customSanitizer(value => value?.trim()),
