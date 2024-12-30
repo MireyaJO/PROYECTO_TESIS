@@ -89,9 +89,9 @@ const validacionesRepresentantes = [
     .customSanitizer(value => value?.trim()),
 
     //Verificación de que todo sea un string
-    check(["nombre","apellido"])
-    .isAlpha('es-ES', { ignore: 'áéíóúÁÉÍÓÚñÑ' })
-        .withMessage('El campo debe ser un texto, no se acepta otro tipo de dato')
+    check(["nombre", "apellido"])
+    .matches(/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/)
+        .withMessage('El campo debe ser un texto y puede contener espacios')
     .customSanitizer(value => value?.trim()),
 
     // Verificar que el numero de telefono sea de 10 digitos
@@ -190,9 +190,9 @@ const validacionesActualizarPerfilConductor = [
 
 const validacionesActualizarPerfilRepresentante = [
     //Verificación de que todo sea un string
-    check(["nombre","apellido"])
-    .isAlpha('es-ES', { ignore: 'áéíóúÁÉÍÓÚñÑ' })
-        .withMessage('El campo debe ser un texto, no se acepta otro tipo de dato')
+    check(["nombre", "apellido"])
+    .matches(/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/)
+        .withMessage('El campo debe ser un texto y puede contener espacios')
     .customSanitizer(value => value?.trim()),
 
     // Verificar que el numero de telefono sea de 10 digitos
@@ -233,4 +233,21 @@ const validacionesActualizarPerfilRepresentante = [
     }
 ]
 
-export {validacionesConductor, validacionesRepresentantes, validacionesActualizarPerfilConductor, validacionesActualizarPerfilRepresentante}
+const validacionesActualizarEstudianteId = [
+    //Verificación de que todo sea un string
+    check(["nombre", "apellido"])
+    .matches(/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/)
+        .withMessage('El campo debe ser un texto y puede contener espacios')
+    .customSanitizer(value => value?.trim()),
+    (req,res,next)=>{
+        const errors = validationResult(req);
+        if (errors.isEmpty()) {
+            return next();
+        } else {
+            return res.status(400).send({ errors: errors.array() });
+        }
+    }
+]
+export {validacionesConductor, validacionesRepresentantes, validacionesActualizarPerfilConductor, validacionesActualizarPerfilRepresentante,
+    validacionesActualizarEstudianteId
+}

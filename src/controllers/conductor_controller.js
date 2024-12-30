@@ -8,6 +8,8 @@ import {recuperacionContrasenia, confirmacionDeCorreoConductorCambio} from "../c
 import axios from 'axios';
 import cloudinary from 'cloudinary';
 import fs from 'fs-extra';
+import mongoose from 'mongoose';
+
 
 //Registro de los estudiantes
 const RegistroDeLosEstudiantes = async (req, res) => {
@@ -63,6 +65,16 @@ const RegistroDeLosEstudiantes = async (req, res) => {
             return res.status(404).json({ msg_conductor_logeado: "Conductor no encontrado" });
         }
 
+        // Inicializar el array de estudiantes registrados si no está definido
+        if (!conductor.estudiantesRegistrados) {
+            conductor.estudiantesRegistrados = [];
+        }
+
+        const cedulaExistente = await Estudiantes.findOne({ cedula });
+        if (cedulaExistente) {
+            return res.status(400).json({ msg_registro_estudiantes: "Lo sentimos, la cédula ya está registrada" });
+        }
+
         //Extraer las coordenadas de la direccion del estudiante
         const coordenadas = await ExtraerCoordenadasLinkGoogleMaps(ubicacionDomicilio);
         if (coordenadas.msg_extracion_coordenadas_estudiantes) {
@@ -91,22 +103,18 @@ const RegistroDeLosEstudiantes = async (req, res) => {
 
         // Actualizar el número de estudiantes registrados por el conductor
         conductor.numeroEstudiantes += 1;
+
         // Actualizar el array de los estudiantes
-        conductor.estudiantesRegistrados.push({
-            id: nuevoEstudiante._id,
-            cedula: nuevoEstudiante.cedula,
-            nombre: nuevoEstudiante.nombre,
-            apellido: nuevoEstudiante.apellido,
-            nivelEscolar: nuevoEstudiante.nivelEscolar,
-            paralelo: nuevoEstudiante.paralelo
-        }); 
+        const estudianteRegistrado = {idEstudiante: nuevoEstudiante._id, nombreEstudiante: nuevoEstudiante.nombre, apellidoEstudiante: nuevoEstudiante.apellido, nivelEscolarEstudiante: nuevoEstudiante.nivelEscolar, paraleloEstudiante: nuevoEstudiante.paralelo, cedulaEstudiante: nuevoEstudiante.cedula}     
+        conductor.ingresarEstudiante(estudianteRegistrado)
+
         // Guardar los cambios en la base de datos
         await conductor.save();
 
         res.status(201).json({ msg_registro_estudiantes: "Estudiante registrado exitosamente", nuevoEstudiante });
     } catch (error) {
         console.error(error);
-        res.status(500).json({ msg_registro_estudiantes: "Error al registrar el estudiante" });
+        res.status(500).json({ msg_registro_estudiantes: "Error al registrar el estudiante", error: error.message });
     }
 }
 
@@ -264,7 +272,7 @@ const ListarEstudiantes = async (req, res) => {
         const conductor = await Conductores.findById(req.user.id);
         //Enlistar los estudiantes de la ruta del conductor logeado
         const estudiantes = await Estudiantes.find({ruta: conductor.rutaAsignada}).where('conductor').equals(conductor._id).select("-createdAt -updatedAt -__v").populate('conductor','_id nombre apellido')
-        res.status(200).json(estudiantes);
+        res.status(200).json({msg_lista_estudiantes:`Los estudiantes registrados del conductor ${conductor.nombre} ${conductor.apellido}`, estudiantes});
     } catch (error) {
         console.error(error);
         res.status(500).json({msg_lista_estudiantes:"Error al listar los estudiantes"});
@@ -307,7 +315,16 @@ const BuscarEstudianteCedula = async (req, res) => {
 //Actualizar los datos de un estudiante
 const ActualizarEstudiante = async (req, res) => {
     //Obtención de datos de lo escrito por el conductor
-    const {nivelEscolar, paralelo, ubicacionDomicilio, recoCompletoOMedio} = req.body;
+    const { 
+        nombre,
+        apellido,
+        nivelEscolar,
+        genero,
+        paralelo,
+        cedula,
+        ubicacionDomicilio,
+        recoCompletoOMedio
+    } = req.body;
     //Obtención del id del estudiante (facilitado en la URL)
     const {id} = req.params;
     //Información del conductor logeado
@@ -315,6 +332,17 @@ const ActualizarEstudiante = async (req, res) => {
 
     // Verificación de los campos vacíos
     if (Object.values(req.body).includes("")) return res.status(400).json({ msg_actualizar_estudiantes: "Lo sentimos, debes llenar todos los campos" });
+
+    // Comprobar el tamaño de la cedula
+    if(!cedula || cedula.toString().length !== 10){
+        return res.status(400).json({ msg_registro_estudiantes: "Lo sentimos, el número de cédula debe tener 10 dígitos" });
+    }
+
+    //Comprobar que la cedula sea unica 
+    const cedulaExistente = await Estudiantes.findOne({cedula: cedula, conductor: conductor._id});
+    if(cedulaExistente && cedulaExistente._id.toString() !== id){
+        return res.status(400).json({ msg_registro_estudiantes: "Lo sentimos, la cédula ya se encuentra registrada" });
+    }
 
     // Verificación de la existencia del estudiante
     const estudiante = await Estudiantes.findOne({_id:id, conductor: conductor._id});
@@ -335,46 +363,58 @@ const ActualizarEstudiante = async (req, res) => {
     if(paralelo !== "A" && paralelo !== "B" && paralelo !== "C" ){
         return res.status(400).json({ msg_registro_estudiantes: "Lo sentimos, el paralelo debe ser de la A a la C" });
     }
+
+    //Comprobación de lo escrito en el genero del estudiante 
+    if(genero!== "Femenino" && genero !== "Masculino" && genero !== "Prefiero no decirlo"){
+        return res.status(400).json({ msg_registro_estudiantes: "Lo sentimos, el género debe ser Femenino, Masculino o Prefiero no decirlo" });
+    }
    
     //Extraer las coordenadas de la direccion del estudiante
     const coordenadas = await ExtraerCoordenadasLinkGoogleMaps(ubicacionDomicilio);
     if (coordenadas.msg_extracion_coordenadas_estudiantes) return res.status(400).json({ msg_actualizar_estudiantes: coordenadas.msg_extracion_coordenadas_estudiantes });
 
-    //Datos del estudiante 
-    const {nombre, apellido, cedula} = estudiante;
-
-    // Actualización de los datos
-    await Estudiantes.findOneAndUpdate(
-        { cedula },
-        { nivelEscolar, paralelo, ubicacionDomicilio, recoCompletoOMedio, latitud: coordenadas.latitud, longitud: coordenadas.longitud },
+    // Actualización de los datos del estudiante
+    const estudianteActualizado = await Estudiantes.findByIdAndUpdate(
+        id,
+        {
+            nivelEscolar,
+            paralelo,
+            ubicacionDomicilio,
+            recoCompletoOMedio,
+            latitud: coordenadas.latitud,
+            longitud: coordenadas.longitud,
+            nombre,
+            apellido,
+            genero,
+            cedula
+        },
         // Esta opción devuelve el documento actualizado en lugar del original
-        { new: true } 
+        { new: true }
     );
 
-    //Actualizar el array de los estudiantes en el esquema conductor 
-    for (let i = 0; i < conductor.estudiantesRegistrados.length; i++) {
-        if (conductor.estudiantesRegistrados[i].id.equals(id)) {
-            conductor.estudiantesRegistrados[i] = {
-                id: estudiante._id,
-                cedula: estudiante.cedula,
-                nombre: estudiante.nombre,
-                apellido: estudiante.apellido,
-                nivelEscolar: estudiante.nivelEscolar,
-                paralelo: estudiante.paralelo
-            };
-            break;
-        }
-    }
+    // Actualización en el array del conductor
+    const estudianteParaListado = {nombreEstudiante: estudianteActualizado.nombre, apellidoEstudiante: estudianteActualizado.apellido, nivelEscolarEstudiante: estudianteActualizado.nivelEscolar, paraleloEstudiante: estudianteActualizado.paralelo, cedulaEstudiante: estudianteActualizado.cedula}
+    const actualizar = await conductor.actualizarListaEstudiantes(estudianteParaListado, estudianteActualizado._id);
+    if (actualizar?.error) return res.status(400).json({ msg_actualizar_estudiantes: actualizar.error });
     await conductor.save();
 
     res.status(200).json({
-        msg_actualizar_estudiantes: `Los datos del estudiante ${nombre} ${apellido} han sido actualizados exitosamente`
+        msg_actualizar_estudiantes: `Los datos del estudiante ${estudiante.nombre} ${estudiante.apellido} han sido actualizados exitosamente`
     });
 }
 
 const ActualizarEstudianteCedula = async (req, res) => {
     //Obtención de datos de lo escrito por el conductor
-    const {nivelEscolar, paralelo, ubicacionDomicilio, recoCompletoOMedio} = req.body;
+    const {
+        nombre,
+        apellido,
+        nivelEscolar,
+        genero,
+        paralelo,
+        cedulaNueva,
+        ubicacionDomicilio,
+        recoCompletoOMedio
+    } = req.body;
     //Obtención del id del estudiante (facilitado en la URL)
     const {cedula} = req.params;
     //Información del conductor logeado
@@ -382,6 +422,11 @@ const ActualizarEstudianteCedula = async (req, res) => {
 
     // Verificación de los campos vacíos
     if (Object.values(req.body).includes("")) return res.status(400).json({ msg_actualizacion_estudiante_cedula: "Lo sentimos, debes llenar todos los campos" });
+
+    // Comprobar el tamaño de la cedula
+    if(!cedulaNueva || cedulaNueva.toString().length !== 10){
+        return res.status(400).json({ msg_actualizacion_estudiante_cedula: "Lo sentimos, el número de cédula debe tener 10 dígitos" });
+    }
 
     // Verificación de la existencia del conductor
     const estudiante = await Estudiantes.findOne({ cedula: cedula, conductor: conductor._id});
@@ -403,39 +448,32 @@ const ActualizarEstudianteCedula = async (req, res) => {
         return res.status(400).json({ msg_registro_estudiantes: "Lo sentimos, el paralelo debe ser de la A a la C" });
     }
 
+    //Comprobación de lo escrito en el genero del estudiante 
+    if(genero!== "Femenino" && genero !== "Masculino" && genero !== "Prefiero no decirlo"){
+        return res.status(400).json({ msg_registro_estudiantes: "Lo sentimos, el género debe ser Femenino, Masculino o Prefiero no decirlo" });
+    }
+
     //Extraer las coordenadas de la direccion del estudiante
     const coordenadas = await ExtraerCoordenadasLinkGoogleMaps(ubicacionDomicilio);
     if (coordenadas.msg_extracion_coordenadas_estudiantes) return res.status(400).json({ msg_actualizar_estudiantes: coordenadas.msg_extracion_coordenadas_estudiantes });
 
-    //Datos del estudiante 
-    const {nombre, apellido} = estudiante;
-
     // Actualización de los datos
-    await Estudiantes.findOneAndUpdate(
+    const estudianteActualizado = await Estudiantes.findOneAndUpdate(
         { cedula },
-        { nivelEscolar, paralelo, ubicacionDomicilio, recoCompletoOMedio, latitud: coordenadas.latitud, longitud: coordenadas.longitud },
+        { nivelEscolar, paralelo, ubicacionDomicilio, recoCompletoOMedio, latitud: coordenadas.latitud, longitud: coordenadas.longitud, nombre, apellido, genero, cedula: cedulaNueva },
         // Esta opción devuelve el documento actualizado en lugar del original
         { new: true } 
     );
 
     //Actualizar el array de los estudiantes en el esquema conductor 
-    for (let i = 0; i < conductor.estudiantesRegistrados.length; i++) {
-        if (conductor.estudiantesRegistrados[i].cedula.equals(cedula)) {
-            conductor.estudiantesRegistrados[i] = {
-                id: estudiante._id,
-                cedula: estudiante.cedula,
-                nombre: estudiante.nombre,
-                apellido: estudiante.apellido,
-                nivelEscolar: estudiante.nivelEscolar,
-                paralelo: estudiante.paralelo
-            };
-            break;
-        }
-    }
+    // Actualización en el array del conductor
+    const estudianteParaListado = {nombreEstudiante: estudianteActualizado.nombre, apellidoEstudiante: estudianteActualizado.apellido, nivelEscolarEstudiante: estudianteActualizado.nivelEscolar, paraleloEstudiante: estudianteActualizado.paralelo, cedulaEstudiante: estudianteActualizado.cedula}
+    const actualizar = await conductor.actualizarListaEstudiantes(estudianteParaListado, estudianteActualizado._id);
+    if (actualizar?.error) return res.status(400).json({ msg_actualizar_estudiantes: actualizar.error });
     await conductor.save();
 
     res.status(200).json({
-        msg: `Los datos del estudiante ${nombre} ${apellido} han sido actualizados exitosamente`
+        msg: `Los datos del estudiante ${estudiante.nombre} ${estudiante.apellido} han sido actualizados exitosamente`
     });
 }
 

@@ -3,7 +3,7 @@ import { RegistroDeLosEstudiantes, LoginConductor, ActualizarPassword, Recuperac
     ActualizarEstudiante, ActualizarEstudianteCedula, EliminarEstudiante, ManejoActualizacionUbicacion, ListarEstudiantes, VisuallizarPerfil, ActualizarPerfil, 
     TomarLista, BuscarListaId, BuscarLista, EliminarLista, EliminarListaFecha, EliminarRepresentante, ConfirmacionCorreoNuevoConductor} from '../controllers/conductor_controller.js';
 import {verificacionConductorRol, verificacionToken} from '../middlewares/autho.js'
-import { validacionesActualizarPerfilConductor } from '../middlewares/validaciones.js';
+import { validacionesActualizarPerfilConductor, validacionesActualizarEstudianteId } from '../middlewares/validaciones.js';
 const router = Router();
 //Rutas Públicas
 router.post('/login/conductor', LoginConductor);
@@ -19,7 +19,7 @@ router.patch('/actualizar/contrasenia/conductor', verificacionToken, verificacio
 router.get('/lista/estudiantes', verificacionToken, verificacionConductorRol, ListarEstudiantes);
 router.get('/buscar/estudiante/:id', verificacionToken, verificacionConductorRol, BuscarEstudiante);
 router.get('/buscar/estudiante/cedula/:cedula', verificacionToken, verificacionConductorRol, BuscarEstudianteCedula);
-router.patch('/actualizar/estudiante/:id', verificacionToken, verificacionConductorRol, ActualizarEstudiante);
+router.patch('/actualizar/estudiante/:id', verificacionToken, verificacionConductorRol, validacionesActualizarEstudianteId, ActualizarEstudiante);
 router.patch('/actualizar/estudiante/cedula/:cedula', verificacionToken, verificacionConductorRol, ActualizarEstudianteCedula);
 router.delete('/eliminar/estudiante/:id', verificacionToken, verificacionConductorRol, EliminarEstudiante);
 router.post('/actualizar/ubicacion', verificacionToken, verificacionConductorRol, ManejoActualizacionUbicacion);
