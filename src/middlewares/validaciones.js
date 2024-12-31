@@ -233,11 +233,19 @@ const validacionesActualizarPerfilRepresentante = [
     }
 ]
 
-const validacionesActualizarEstudianteId = [
+const validacionesActualizarEstudiante = [
     //Verificación de que todo sea un string
     check(["nombre", "apellido"])
     .matches(/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/)
         .withMessage('El campo debe ser un texto y puede contener espacios')
+    .customSanitizer(value => value?.trim()),
+
+    // Verificar que el numero de cedula sea de 10 digitos
+    check("cedula")
+    .isLength({ min: 10, max: 10 })
+        .withMessage('La cedula debe ser de 10 digitos')
+    .isNumeric()
+        .withMessage('El campo "teléfono" debe contener solo números')
     .customSanitizer(value => value?.trim()),
     (req,res,next)=>{
         const errors = validationResult(req);
@@ -249,5 +257,5 @@ const validacionesActualizarEstudianteId = [
     }
 ]
 export {validacionesConductor, validacionesRepresentantes, validacionesActualizarPerfilConductor, validacionesActualizarPerfilRepresentante,
-    validacionesActualizarEstudianteId
+    validacionesActualizarEstudiante
 }

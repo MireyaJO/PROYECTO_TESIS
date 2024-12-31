@@ -74,7 +74,6 @@ const paraElRegistroDeLosRepresentantes = new Schema(
             type: Boolean, 
             default: false
         }
-
     }
 ,{
     timestamps:true

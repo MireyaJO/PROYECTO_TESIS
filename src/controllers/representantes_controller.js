@@ -1,10 +1,12 @@
 import cloudinary from 'cloudinary';
 import fs from 'fs-extra';
 import Conductores from '../models/Administrador.js';
+import Notificaciones from '../models/Notificaciones.js';
 import Estudiantes from '../models/Conductor.js';
 import Representantes from '../models/Representantes.js';
 import {createToken} from '../middlewares/autho.js';
 import {confirmacionDeCorreoRepresentante, recuperacionContraseniaRepresentante, confirmacionDeCorreoRepresentanteCambio} from '../config/nodemailer.js';
+import {CalcularDistanciaYTiempo} from '../controllers/conductor_controller.js';
 
 //Registro de los representantes
 const RegistroDeRepresentantes = async (req, res) => {
@@ -133,7 +135,7 @@ const ConfirmacionCorreo = async (req, res) => {
         const representante= await Representantes.findOne({token:token})
 
         // Verificaicón de la confirmación de la cuenta
-        if(representante?.confirmacionEmail===false) return res.status(403).json({msg:"Lo sentimos, debe verificar su cuenta"})
+        if(!representante?.token) return res.status(404).json({msg:"La cuenta ya ha sido confirmada"})
         
         // Verificar si el representante no se encuentra registrado
         if(!representante) return res.status(404).json({msg:"Lo sentimos, el representante no se encuentra registrado"})
@@ -163,6 +165,10 @@ const LoginRepresentante = async (req, res) => {
     try {
         // Verificación de que el conductor exista
         const representante = await Representantes.findOne({email : email});
+        //Verificación de que el correo haya sido confirmado
+        if(representante?.confirmEmail===false) return res.status(403).json({msg:"Lo sentimos, debe verificar su cuenta"})
+
+        // Verificación de que el representante exista
         if (!representante) {
             return res.status(404).json({ msg_login_representante: "Lo sentimos, el representnate no se encuentra registrado" });
         }
@@ -308,7 +314,7 @@ const EstudiantesRepresentados = async (req, res) => {
         const estudiantes = await Estudiantes.find({ representantes: id }).populate('conductor', 'nombre apellido email telefono');
 
         // Verificación de que el representante tenga estudiantes representados
-        if (estudiantes.length === 0) return res.status(404).json({ msg: "Lo sentimos, no tienes estudiantes representados" });
+        if (estudiantes.length === 0) return res.status(404).json({ msg: "Lo sentimos, no tiene estudiantes representados" });
 
         // Envío de los estudiantes representados
         res.status(200).json({ estudiantesRepresentados: estudiantes });
@@ -371,7 +377,7 @@ const AlertaLlegadaConductor = async (req, res) => {
 
             //Creación de la alerta 
             const alerta = {
-                estudiante: `${estudiantes.nombres} ${estudiantes.apellidos}`,
+                estudiante: `${estudiante.nombre} ${estudiante.apellido}`,
                 distancia,
                 tiempo
             };
@@ -386,6 +392,24 @@ const AlertaLlegadaConductor = async (req, res) => {
         res.status(500).json({ msg: "Error al recibir la alerta" });
     }
 }
+
+//Todas las notificaciones de los representantes
+const VerNotificaciones = async (req, res) => {
+    const { id } = req.user;
+
+    try {
+        // Obtener las notificaciones del representante
+        const notificaciones = await Notificaciones.find({ representante: id }).lean();
+
+        // Verificación de que el representante tenga notificaciones
+        if (notificaciones.length === 0) return res.status(404).json({ msg: "No tienes notificaciones" });
+
+        res.status(200).json({ notificaciones });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ msg: "Error al obtener las notificaciones", error: error.message });
+    }
+};
 
 //Actualizar su perfil de representante
 const ActualizarPerfilRepresentante = async (req, res) => {
@@ -444,12 +468,13 @@ const ActualizarPerfilRepresentante = async (req, res) => {
             // Crear un token JWT con el ID del representante y el nuevo email
             const token = representante.crearToken();
             representante.token = token;
+            representante.tokenEmail = email;
 
             // Guardar el token en la base de datos
             await representante.save();
 
             // Enviar un email de confirmación al nuevo correo electrónico
-            await enviarEmailConfirmacionCambio(email, representante.nombre, representante.apellido, token);
+            await confirmacionDeCorreoRepresentanteCambio(email, representante.nombre, representante.apellido, token);
 
             // Enviar una respuesta al cliente indicando que se ha enviado un enlace de confirmación
             return res.status(200).json({ msg: "Se ha enviado un enlace de confirmación al nuevo correo electrónico" });
@@ -461,7 +486,6 @@ const ActualizarPerfilRepresentante = async (req, res) => {
         representante.telefono = telefono;
         representante.genero = genero;
         representante.cedula = cedula;
-        representante.email = email;
 
         // Guardar los cambios en la base de datos
         await representante.save();
@@ -487,6 +511,8 @@ const ConfirmacionCorreoNuevoRepresentante = async (req, res) => {
         representante.email = representante.tokenEmail;
         representante.token = null;
         representante.tokenEmail = null;
+
+        // Guardar los cambios en la base de datos
         await representante.save();
 
         res.status(200).json({ msg: "Correo electrónico actualizado exitosamente, puede logearse con su nuevo email" });
@@ -508,6 +534,7 @@ export {
     VisuallizarPerfil, 
     EliminarCuentaRepresentante, 
     AlertaLlegadaConductor, 
+    VerNotificaciones,
     ActualizarPerfilRepresentante, 
     ConfirmacionCorreoNuevoRepresentante
 }

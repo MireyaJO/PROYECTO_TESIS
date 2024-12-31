@@ -131,7 +131,7 @@ const recuperacionContraseniaRepresentante = async (email, nombre, apellido, tok
         subject: "Recuperación de contraseña del representante de la Unidad Educativa Particular Emaús",
         html: `<p>Señor/a ${nombre} ${apellido} usted desea recuperar su contraseña, para aquello ingrese al siguiente link: </p>
         <hr>
-        <a href=${process.env.URL_BACKEND}comprobar/token/${token}>Clic aquí para reestablecer tu contraseña</a>
+        <a href=${process.env.URL_BACKEND}comprobar/token/representante/${token}>Clic aquí para reestablecer tu contraseña</a>
         <hr>`
     }
     //Creación del transportador universal con el email y el password del conductor ingresado por el administrador

@@ -100,7 +100,11 @@ const paraElRegistroDeLosConductores= new Schema(
         token: {
             type: String,
             default: null
-        }
+        },
+        tokenEmail:{
+            type: String,
+            default: null
+        }, 
                                                                                    
     }
 , { timestamps: true}
@@ -136,7 +140,7 @@ paraElRegistroDeLosConductores.methods.actualizarListaEstudiantes = function(est
     const estudianteIdStr = estudianteId.toString();
 
     // Encuentra el índice del estudiante en el array estudiantesRegistrados
-    const index = this.estudiantesRegistrados.findIndex(est => est.idEstudiante && est.idEstudiante.toString() === estudianteIdStr);
+    const index = this.estudiantesRegistrados.findIndex(estudiante => estudiante.idEstudiante && est.idEstudiante.toString() === estudianteIdStr);
 
     // Si no se encuentra el estudiante, devuelve un error
     if (index === -1) return {error: 'No se ha encontrado el estudiante'}
@@ -148,6 +152,21 @@ paraElRegistroDeLosConductores.methods.actualizarListaEstudiantes = function(est
     this.estudiantesRegistrados[index].paraleloEstudiante = estudianteActualizado.paraleloEstudiante;
     this.estudiantesRegistrados[index].nivelEscolarEstudiante = estudianteActualizado.nivelEscolarEstudiante;
     
+};
+
+// Método para la eliminación de un estudiante de la lista de estudiantes registrados del conductor
+paraElRegistroDeLosConductores.methods.eliminarEstudiante = function(estudianteId){
+    // Asegúrate de que estudianteId sea una cadena
+    const estudianteIdStr = estudianteId.toString();
+
+    // Encuentra el índice del estudiante en el array estudiantesRegistrados
+    const index = this.estudiantesRegistrados.findIndex(est => est.idEstudiante && est.idEstudiante.toString() === estudianteIdStr);
+
+    // Si no se encuentra el estudiante, devuelve un error
+    if (index === -1) return {error: 'No se ha encontrado el estudiante'}
+
+    // Elimina el estudiante de la lista
+    this.estudiantesRegistrados.splice(index, 1);
 };
 
 export default model('Conductores',paraElRegistroDeLosConductores)
