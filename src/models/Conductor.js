@@ -70,11 +70,11 @@ const paraElRegistroDeLosEstudiantes= new Schema(
             ref: 'Conductores',
             require: true
         },     
-        representantes:{
+        representantes:[{
             type: mongoose.Schema.Types.ObjectId,
             ref: 'Representantes',
             require: true
-        }                                                           
+        }]                                                       
     }
 , { timestamps: true}
 );

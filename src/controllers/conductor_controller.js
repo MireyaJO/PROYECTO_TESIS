@@ -1073,40 +1073,6 @@ const EliminarListaFecha = async (req, res) => {
     }
 }
 
-//Eliminación del padre de familia
-const EliminarRepresentante = async (req, res) => {
-    // Obtención del id del representante proporcionado por la URL
-    const { id } = req.params;
-    // Obtención del id del conductor logeado
-    const { conductorId } = req.user;
-
-    try {
-        // Verificación de la existencia del estudiante con el representante
-        const estudiante = await Estudiantes.findOne({ conductor: conductorId, 'representantes._id': id });
-        if (!estudiante) {
-            return res.status(400).json({ msg_eliminar_representante: "Lo sentimos, el representante no se ha encontrado o no pertenece a un estudiante inscrito en la ruta" });
-        }
-
-        // Eliminar el representante del array de representantes del estudiante usando un bucle for
-        for (let i = 0; i < estudiante.representantes.length; i++) {
-            if (estudiante.representantes[i]._id.equals(id)) {
-                estudiante.representantes.splice(i, 1);
-                // Detener la iteración una vez que se ha encontrado y eliminado el representante
-                break; 
-            }
-        }
-        await estudiante.save();
-
-        // Eliminar el documento del representante de la base de datos
-        await Representantes.findByIdAndDelete(id);
-
-        res.status(200).json({ msg_eliminar_representante: "Representante eliminado exitosamente" });
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ msg_eliminar_representante: "Error al eliminar el representante" });
-    }
-}
-
 export {
     RegistroDeLosEstudiantes,
     LoginConductor, 
@@ -1130,6 +1096,5 @@ export {
     BuscarListaId, 
     BuscarLista,
     EliminarLista, 
-    EliminarListaFecha, 
-    EliminarRepresentante
+    EliminarListaFecha
 }
