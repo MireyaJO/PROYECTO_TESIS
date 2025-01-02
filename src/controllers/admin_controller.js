@@ -156,9 +156,48 @@ const ListarConductor = async (req, res) => {
     res.status(200).json({ msg_listar_conductores: "Los conductores se han encontrado exitosamente", conductores});
 }
 
+//Actualizacion de las rutas y sectores de los conductores por su id
+const ActualizarRutasYSectoresId = async (req, res) => {
+    //Obtener el id de los parámetros de la URL
+    const {id} = req.params;
+
+    //Obtener la ruta y los sectores de la solicitud
+    const {rutaAsignada, sectoresRuta} = req.body;
+
+    // Verificación de los campos vacíos
+    if (Object.values(req.body).includes("")) return res.status(400).json({ msg: "Lo sentimos, debes llenar todos los campos" });
+
+    // Verificación de la existencia del conductor
+    const conductor = await Conductores.findById(id);
+    if (!conductor) return res.status(400).json({ msg: "Lo sentimos, el conductor no se encuentra trabajando en la Unidad Educativa Particular EMAÚS" });
+
+    // Para conocer el nombre del conductor que posee ese id
+    const {nombre, apellido} = conductor;
+
+    // Actualización de los datos
+    await Conductores.findOneAndUpdate(
+        { id },
+        { rutaAsignada, sectoresRuta},
+        // Esta opción devuelve el documento actualizado
+        { new: true } 
+    );
+
+    //Envio del correo al conductor 
+    await actualizacionDeConductor(conductor.email, rutaAsignada, sectoresRuta);
+
+    res.status(200).json({
+        msg: `La ruta y sectores objetivo del conductor ${nombre} ${apellido} han sido actualizados exitosamente`
+    });
+}
+
+
 //Actuallización de las rutas y sectores de los conductores
-const ActualizarRutasYSectores = async (req, res) => {
-    const {rutaAsignada, sectoresRuta, cedula} = req.body;
+const ActualizarRutasYSectoresCedula = async (req, res) => {
+    //Obtener la cedula de los parámetros de la URL
+    const {cedula} = req.params;
+
+    //Obtener la ruta y los sectores de la solicitud
+    const {rutaAsignada, sectoresRuta} = req.body;
 
     // Verificación de los campos vacíos
     if (Object.values(req.body).includes("")) return res.status(400).json({ msg: "Lo sentimos, debes llenar todos los campos" });
@@ -211,6 +250,7 @@ export {
     BuscarConductor, 
     BuscarConductorRuta,
     ListarConductor,
-    ActualizarRutasYSectores, 
+    ActualizarRutasYSectoresId,
+    ActualizarRutasYSectoresCedula, 
     EliminarConductor
 };

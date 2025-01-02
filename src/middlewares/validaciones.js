@@ -150,6 +150,23 @@ const validacionesRepresentantes = [
     
 ]
 
+const validacionesActualizarConductorAdmin = [
+    // Verificar que la ruta sea un número y que solo existan 12 ruta
+    check("rutaAsignada")
+    .isNumeric()
+        .withMessage('La ruta debe ser un número, no se acepta otro tipo de dato')
+    .isInt({ min: 1, max: 12 })
+        .withMessage('Solo existen 12 rutas disponibles en la Unidad Educativa Particular Emaús')
+    .customSanitizer(value => value?.trim()),
+    (req,res,next)=>{
+        const errors = validationResult(req);
+        if (errors.isEmpty()) {
+            return next();
+        } else {
+            return res.status(400).send({ errors: errors.array() });
+        }
+    }
+]
 const validacionesActualizarPerfilConductor = [
     // Verificar que el numero de placa automovil sea de 10 digitos
     check("placaAutomovil")
@@ -157,13 +174,13 @@ const validacionesActualizarPerfilConductor = [
         .withMessage('El teléfono debe ser de 10 digitos')
     .customSanitizer(value => value?.trim()),
 
-     // Verificar que el numero de telefono sea de 10 digitos
-     check("telefono")
-     .isLength({ min: 10, max: 10 })
-         .withMessage('El teléfono debe ser de 10 digitos')
-     .isNumeric()
-         .withMessage('El campo "teléfono" debe contener solo números')
-     .customSanitizer(value => value?.trim()),
+    // Verificar que el numero de telefono sea de 10 digitos
+    check("telefono")
+    .isLength({ min: 10, max: 10 })
+        .withMessage('El teléfono debe ser de 10 digitos')
+    .isNumeric()
+        .withMessage('El campo "teléfono" debe contener solo números')
+    .customSanitizer(value => value?.trim()),
 
     // Verificar que no ayuda campos vacíos 
     check(["telefono","placaAutomovil"])
@@ -184,7 +201,7 @@ const validacionesActualizarPerfilConductor = [
         } else {
             return res.status(400).send({ errors: errors.array() });
         }
-     }
+    }
 
 ]
 
@@ -256,6 +273,6 @@ const validacionesActualizarEstudiante = [
         }
     }
 ]
-export {validacionesConductor, validacionesRepresentantes, validacionesActualizarPerfilConductor, validacionesActualizarPerfilRepresentante,
+export {validacionesConductor, validacionesRepresentantes, validacionesActualizarConductorAdmin, validacionesActualizarPerfilConductor, validacionesActualizarPerfilRepresentante,
     validacionesActualizarEstudiante
 }
