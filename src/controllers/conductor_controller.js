@@ -131,11 +131,15 @@ const LoginConductor = async (req, res) => {
     }
 
     try {
+        console.log("Iniciando consulta del conductor");
+
         // Verificación de que el conductor exista
         const conductor = await Conductores.findOne({email : email});
         if (!conductor) {
             return res.status(404).json({ msg_login_conductor: "Lo sentimos, el conductor no se encuentra registrado" });
         }
+
+        console.log("Conductor encontrado");
 
         // Verificar la contraseña
         const verificarPassword = await conductor.matchPassword(password);
@@ -144,8 +148,12 @@ const LoginConductor = async (req, res) => {
             return res.status(404).json({ msg_login_conductor: "Lo sentimos, el password no es el correcto" });
         }
 
+        console.log("Contraseña verificada");
+
         // Creación del token para el logeo del conductor
         const token = createToken({ id: conductor._id, email: conductor.email, role: 'conductor' });
+
+        console.log("Token generado");
 
         // Mensaje de éxito
         return res.status(200).json({ token, msg_login_conductor: "Bienvenido conductor" });
