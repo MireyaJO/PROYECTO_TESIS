@@ -8,6 +8,8 @@ import mbxTilesets from '@mapbox/mapbox-sdk/services/tilesets.js';
 import dotenv from 'dotenv';
 dotenv.config();
 
+console.log('MAPBOX_API_KEY:', process.env.MAPBOX_API_KEY);
+
 // Inicializar el cliente base de Mapbox con la API key
 const baseClient = mbxClient({ accessToken: process.env.MAPBOX_API_KEY });
 
