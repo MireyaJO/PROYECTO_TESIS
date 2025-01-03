@@ -59,7 +59,7 @@ const RegistroDeLosConductores = async (req, res) => {
         try {
             // Subir la imagen a Cloudinary con el nombre del conductor como public_id
             const result = await cloudinary.v2.uploader.upload(file.tempFilePath, {
-                public_id: `conductores/${nombre} ${apellido}`,
+                public_id: `${nombre}_${apellido}`.replace(/\s+/g, '_'),
                 folder: "conductores"
             });
 
