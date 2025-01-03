@@ -122,7 +122,7 @@ const RegistroDeLosEstudiantes = async (req, res) => {
 
 //Logeo del conductor
 const LoginConductor = async (req, res) => {
-    return res.status(200).json({ msg: "Conductor logeado exitosamente", token: createToken(req.user) });
+    return res.status(200).json({ msg: "Conductor logeado exitosamente"});
 };
 
 //Cambio de contraseña del conductor una vez logeado el mismo 
