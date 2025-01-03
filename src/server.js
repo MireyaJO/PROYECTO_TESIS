@@ -3,6 +3,11 @@ import express from 'express'
 import dotenv from 'dotenv'
 import cors from 'cors';
 
+//Para el manejo de archivos
+import os from 'os';
+import fs from 'fs';
+import path from 'path';
+
 // Para las imagenes de perfiles 
 import cloudinary from 'cloudinary';
 import fileUpload from 'express-fileupload';
