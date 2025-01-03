@@ -236,9 +236,9 @@ const ComprobarTokenPassword= async (req, res) => {
         //Verificación de que exista un conductor con el token 
         const conductor = await Conductores.findOne({token: tokenURL});
         if(conductor?.token !== tokenURL ) return res.status(404).json({msg_recuperacion_contrasenia:"Lo sentimos, el token no coincide con ningún conductor"});
-        await conductor.save()
+        
+        //Mensaje de éxito
         res.status(200).json({msg_recuperacion_contrasenia:"Token confirmado, ya puedes crear tu nuevo password"}) 
-
     } catch (error) {
         console.error(error);
         res.status(500).json({msg_recuperacion_contrasenia:"Error al comprobar el token"});
