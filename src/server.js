@@ -40,13 +40,13 @@ app.get('/',(req,res)=>{
     res.send("El servidor del sistema de recorridos para la alerta de la llegada del bus escolar Cooperativa Ciudad de Quito de la Unidad Educativa Particular EMAÚS")
 })
 //Rutas de los Administradores
-app.use('/api/', Adminrouter)
+app.use('/api', Adminrouter)
 
 //Rutas de los Conductores
-app.use('/api/', Conductoresrouter)
+app.use('/api', Conductoresrouter)
 
 //Rutas de los Representantes
-app.use('/api/', RepresentantesRouter)
+app.use('/api', RepresentantesRouter)
 
 // Exportar la instancia de express por medio de app
 export default app;
