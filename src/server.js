@@ -23,10 +23,18 @@ cloudinary.config({
     api_key: process.env.CLOUDINARY_API_KEY, 
     api_secret: process.env.CLOUDINARY_API_SECRET
 });
+
+// Crear una subcarpeta 'uploads' en el directorio temporal del sistema
+const tempDir = path.join(os.tmpdir(), 'uploads');
+if (!fs.existsSync(tempDir)) {
+    // Crea la carpeta si no existe
+    fs.mkdirSync(tempDir, { recursive: true }); 
+}
+
 //Configuración de un middleware "express-fileupload" para la subida de archivos
 app.use(fileUpload({
     useTempFiles: true,
-    tempFileDir: '/conductores/',
+    tempFileDir: tempDir,
 }));
 
 //Compatibilidad entre dominios 
