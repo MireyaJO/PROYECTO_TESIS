@@ -935,7 +935,7 @@ const TomarListaTarde = async (req, res) => {
          const notificaciones = [];
  
         //Recorrer los estudiantes que no asistieron en la tarde
-        for(const estudianteId of estudiantesNoAsistieronTarde){
+        for(const estudianteId of estudiantesAsistieronTarde){
             //Obtener la información del estudiante
             const estudiante = await Estudiantes.findById(estudianteId).lean();
 
