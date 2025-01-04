@@ -111,6 +111,13 @@ const RegistroDeRepresentantes = async (req, res) => {
             return res.status(404).json({ msg_registro_representante: `No se encontraron estudiantes con las cédulas: ${cedulasNoEncontradas.join(', ')}` });
         }
 
+        // Verificar si todos los estudiantes tienen el mismo ID de conductor
+        const conductorId = estudiantes[0].conductor;
+        const estudiantesConductorDiferente = estudiantes.filter(estudiante => estudiante.conductor.toString() !== conductorId.toString());
+        if (estudiantesConductorDiferente.length > 0) {
+            return res.status(400).json({ msg_registro_representante: "Todos los estudiantes deben pertenecer a la misma ruta" });
+        }
+
         // Recorrer los estudiantes para asignarles el representante
         await Promise.all(estudiantes.map(async estudiante => {
             estudiante.representantes = nuevoRepresentante._id,
