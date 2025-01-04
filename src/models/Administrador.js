@@ -140,7 +140,7 @@ paraElRegistroDeLosConductores.methods.actualizarListaEstudiantes = function(est
     const estudianteIdStr = estudianteId.toString();
 
     // Encuentra el índice del estudiante en el array estudiantesRegistrados
-    const index = this.estudiantesRegistrados.findIndex(estudiante => estudiante.idEstudiante && est.idEstudiante.toString() === estudianteIdStr);
+    const index = this.estudiantesRegistrados.findIndex(estudiante => estudiante.idEstudiante && estudiante.idEstudiante.toString() === estudianteIdStr);
 
     // Si no se encuentra el estudiante, devuelve un error
     if (index === -1) return {error: 'No se ha encontrado el estudiante'}
