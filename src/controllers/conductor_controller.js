@@ -921,12 +921,12 @@ const TomarListaTarde = async (req, res) => {
                 estudiantesNoAsistieronTarde.push(estudianteId);
             }
         }
-         //Crear un nuevo registro de asistencia
-         const nuevaAsistencia = new AsistenciasTarde({
-             conductor: id,
-             estudiantesAsistieronTarde,
-             estudiantesNoAsistieronTarde
-         });
+        //Crear un nuevo registro de asistencia
+        const nuevaAsistencia = new AsistenciasTarde({
+            conductor: id,
+            estudianteAsistieronTarde: estudiantesAsistieronTarde,
+            estudianteNoAsistieronTarde: estudiantesNoAsistieronTarde
+        });
  
          //Guardar el registro de asistencia en la base de datos 
          await nuevaAsistencia.save();
@@ -941,8 +941,11 @@ const TomarListaTarde = async (req, res) => {
 
             //Si existe el estudainte se envía la notificación
             if(estudiante){
+                 //Se obtienen datos del estudiante
                 const {nombre, cedula} = estudiante;
+                //Se obtienen los representantes del estudiante
                 const representantes = await Representantes.find({cedulaRepresentado: cedula}).lean();
+                //Se recorre los representantes para enviar la notificación
                 for (const representante of representantes){
                     const notificacion = await EnviarNotificacion(id, nombre, representante._id, 0, 0);
                     if(notificacion){
