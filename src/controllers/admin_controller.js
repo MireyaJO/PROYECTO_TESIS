@@ -113,19 +113,6 @@ const LoginAdministrador = async (req, res) => {
     }
 };
 
-//Busqueda de conductores de la Unidad Educativa Particular EMAÚS
-const BuscarConductor = async (req, res) => {
-    //Obtener el id de los parámetros de la URL
-    const { id } = req.params;
-
-    // Verificación de la existencia del conductor
-    const conductor = await Conductores.findById(id).select("-updatedAt -createdAt -__v");
-    if (!conductor) return res.status(400).json({ msg_buscar_conductor: "Lo sentimos, el conductor no se encuentra trabajando en la Unidad Educativa Particular EMAÚS" });
-
-    //Mensaje de exito
-    res.status(200).json({ msg: `El conductor ${conductor.nombre} ${conductor.apellido} se ha encontrado exitosamente`, conductor});
-};
-
 // Buscar un conductor en especifico por la ruta asignada
 const BuscarConductorRuta = async (req, res) => {
     try {
@@ -190,41 +177,6 @@ const ActualizarRutasYSectoresId = async (req, res) => {
     });
 }
 
-
-//Actuallización de las rutas y sectores de los conductores
-const ActualizarRutasYSectoresCedula = async (req, res) => {
-    //Obtener la cedula de los parámetros de la URL
-    const {cedula} = req.params;
-
-    //Obtener la ruta y los sectores de la solicitud
-    const {rutaAsignada, sectoresRuta} = req.body;
-
-    // Verificación de los campos vacíos
-    if (Object.values(req.body).includes("")) return res.status(400).json({ msg: "Lo sentimos, debes llenar todos los campos" });
-
-    // Verificación de la existencia del conductor
-    const conductor = await Conductores.findOne({cedula});
-    if (!conductor) return res.status(400).json({ msg: "Lo sentimos, el conductor no se encuentra trabajando en la Unidad Educativa Particular EMAÚS" });
-
-    // Para conocer el nombre del conductor que posee ese número de cédula
-    const {nombre, apellido} = conductor;
-
-    // Actualización de los datos
-    await Conductores.findOneAndUpdate(
-        { cedula },
-        { rutaAsignada, sectoresRuta},
-        // Esta opción devuelve el documento actualizado
-        { new: true } 
-    );
-
-    //Envio del correo al conductor 
-    await actualizacionDeConductor(conductor.email, rutaAsignada, sectoresRuta);
-
-    res.status(200).json({
-        msg: `La ruta y sectores objetivo del conductor ${nombre} ${apellido} han sido actualizados exitosamente`
-    });
-};
-
 //Eliminación de un conductor
 const EliminarConductor = async (req, res) => {
     // Obtener el ID de los parámetros de la URL
@@ -247,10 +199,8 @@ const EliminarConductor = async (req, res) => {
 export {
     RegistroDeLosConductores,
     LoginAdministrador,
-    BuscarConductor, 
     BuscarConductorRuta,
     ListarConductor,
     ActualizarRutasYSectoresId,
-    ActualizarRutasYSectoresCedula, 
     EliminarConductor
 };

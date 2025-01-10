@@ -70,7 +70,7 @@ const paraElRegistroDeLosRepresentantes = new Schema(
             type: Boolean, 
             default: false
         },
-        notificacionEnviada:{
+        notificacionAsistencia:{
             type: Boolean, 
             default: false
         }

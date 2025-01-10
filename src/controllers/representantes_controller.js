@@ -7,7 +7,6 @@ import Representantes from '../models/Representantes.js';
 import {createToken} from '../middlewares/autho.js';
 import {confirmacionDeCorreoRepresentante, recuperacionContraseniaRepresentante, confirmacionDeCorreoRepresentanteCambio} from '../config/nodemailer.js';
 import {CalcularDistanciaYTiempo} from '../controllers/conductor_controller.js';
-import AsistenciasManana from '../models/AsistenciasManana.js';
 import AsistenciasTarde from '../models/AsistenciasTarde.js';
 
 //Registro de los representantes
@@ -375,67 +374,22 @@ const AlertaLlegadaConductor = async (req, res) => {
         // Creación de un array para las alertas
         const alertas = [];
 
-        // Obtener el documento más reciente de los estudiantes que asistieron en la mañana
-        const asistenciaManana = await AsistenciasManana.findOne({ estudianteAsistieronManana: { $in: estudiantes.map(e => e._id) } })
-            .sort({ fecha: -1 })
-            .populate('conductor', 'latitud longitud')
-            .lean();
-
-        console.log(asistenciaManana)
-
-        if (asistenciaManana) {
-            // Recorrer los estudiantes que asistieron en la mañana
-            for (const estudianteId of asistenciaManana.estudianteAsistieronManana) {
-                // Obtener la información del estudiante
-                const estudiante = await Estudiantes.findById(estudianteId).lean();
-
-                // Si existe el estudiante se envía la notificación
-                if (estudiante) {
-                    // Se obtienen datos del estudiante
-                    const { nombre, cedula } = estudiante;
-                    // Se obtienen los representantes del estudiante
-                    const representantes = await Representantes.find({ cedulaRepresentado: cedula }).lean();
-                    // Se recorre los representantes para enviar la notificación
-                    for (const representante of representantes) {
-                        // Obtener la latitud y longitud del conductor
-                        const { latitud: latitudConductor, longitud: longitudConductor } = asistenciaManana.conductor;
-                        // Obtener la latitud y longitud del estudiante
-                        const { latitud: latitudEstudiante, longitud: longitudEstudiante } = estudiante;
-
-                        // Calcular la distancia y el tiempo entre el conductor y el estudiante
-                        const { distancia, tiempo } = await CalcularDistanciaYTiempo(latitudConductor, longitudConductor, latitudEstudiante, longitudEstudiante);
-
-                        // Crear la notificación con la distancia y el tiempo
-                        const notificacion = {
-                            representante: representante._id,
-                            estudiante: `${nombre}`,
-                            distancia,
-                            tiempo
-                        };
-
-                        // Agregar la notificación al array de alertas
-                        alertas.push(notificacion);
-                    }
-                }
-            }
-        }
-
         // Obtener el documento más reciente de los estudiantes que asistieron en la tarde
-        const asistenciaTarde = await AsistenciasTarde.findOne({ estudianteAsistieronTarde: { $in: estudiantes.map(e => e._id) } })
+        const asistenciaTarde = await AsistenciasTarde.findOne({ 'estudiantes.estudiante': { $in: estudiantes.map(estudianteLista => estudianteLista._id) } })
             .sort({ fecha: -1 })
             .populate('conductor', 'latitud longitud')
             .lean();
 
         if (asistenciaTarde) {
             // Recorrer los estudiantes que asistieron en la tarde
-            for (const estudianteId of asistenciaTarde.estudianteAsistieronTarde) {
+            for (const estudiante of asistenciaTarde.estudiantes) {
                 // Obtener la información del estudiante
-                const estudiante = await Estudiantes.findById(estudianteId).lean();
+                const estudianteInfo = await Estudiantes.findById(estudiante.estudiante).lean();
 
                 // Si existe el estudiante se envía la notificación
-                if (estudiante) {
+                if (estudianteInfo) {
                     // Se obtienen datos del estudiante
-                    const { nombre, cedula } = estudiante;
+                    const { nombre, cedula } = estudianteInfo;
                     // Se obtienen los representantes del estudiante
                     const representantes = await Representantes.find({ cedulaRepresentado: cedula }).lean();
                     // Se recorre los representantes para enviar la notificación
@@ -443,21 +397,47 @@ const AlertaLlegadaConductor = async (req, res) => {
                         // Obtener la latitud y longitud del conductor
                         const { latitud: latitudConductor, longitud: longitudConductor } = asistenciaTarde.conductor;
                         // Obtener la latitud y longitud del estudiante
-                        const { latitud: latitudEstudiante, longitud: longitudEstudiante } = estudiante;
+                        const { latitud: latitudEstudiante, longitud: longitudEstudiante } = estudianteInfo;
 
                         // Calcular la distancia y el tiempo entre el conductor y el estudiante
                         const { distancia, tiempo } = await CalcularDistanciaYTiempo(latitudConductor, longitudConductor, latitudEstudiante, longitudEstudiante);
 
-                        // Crear la notificación con la distancia y el tiempo
-                        const notificacion = {
-                            representante: representante._id,
-                            estudiante: `${nombre}`,
-                            distancia,
-                            tiempo
-                        };
+                        // Crear la notificación solo si la distancia es menor a 1 km y el estudiante asistió
+                        if (estudiante.asistio == true && tiempo == 0 && distancia == 0) {
+                            const notificacion = {
+                                representante: representante._id,
+                                estudiante: `${nombre}`,
+                                mensaje: "El conductor ya llegó a la vivienda"
+                            };
+                            // Agregar la notificación al array de alertas
+                            alertas.push(notificacion);
 
-                        // Agregar la notificación al array de alertas
-                        alertas.push(notificacion);
+                        } else if (estudiante.asistio == true && distancia < 1) {
+                            const notificacion = {
+                                representante: representante._id,
+                                estudiante: `${nombre}`,
+                                distancia: `${distancia} km`,
+                                tiempo: `${tiempo} minutos, está cerca de llegar`
+                            };
+                            // Agregar la notificación al array de alertas
+                            alertas.push(notificacion);
+                        } else if (estudiante.asistio == true && distancia >= 1) {
+                            const notificacion = {
+                                representante: representante._id,
+                                estudiante: `${nombre}`,
+                                mensaje: `El conductor todavía no está cerca, se encuentra a ${distancia} km de la vivienda`
+                            };
+                            // Agregar la notificación al array de alertas
+                            alertas.push(notificacion);
+                        } else if (estudiante.asistio == false) {
+                            const notificacion = {
+                                representante: representante._id,
+                                estudiante: `${nombre}`,
+                                mensaje: "No asistió, por lo que no se reflejará alerta"
+                            };
+                            // Agregar la notificación al array de alertas
+                            alertas.push(notificacion);
+                        } 
                     }
                 }
             }
@@ -468,7 +448,7 @@ const AlertaLlegadaConductor = async (req, res) => {
         console.error(error);
         res.status(500).json({ msg: "Error al recibir la alerta" });
     }
-}
+};
 
 //Todas las notificaciones de los representantes
 const VerNotificaciones = async (req, res) => {

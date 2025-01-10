@@ -1,7 +1,6 @@
 import Conductores from '../models/Administrador.js';
 import Estudiantes from '../models/Conductor.js';
 import Representantes from '../models/Representantes.js';
-import AsistenciasManana from '../models/AsistenciasManana.js';
 import AsistenciasTarde from '../models/AsistenciasTarde.js';
 import Notificaciones from '../models/Notificaciones.js';
 import {createToken} from '../middlewares/autho.js';
@@ -289,20 +288,6 @@ const ListarEstudiantes = async (req, res) => {
     }
 }
 
-//Buscar un estudiante por su id
-const BuscarEstudiante = async (req, res) => {
-    //Obtener el id de los parámetros de la URL
-    const {id} = req.params;
-    //Información del conductor logeado
-    const conductor = await Conductores.findById(req.user.id);
-    // Verificación de la existencia del conductor
-    const estudiante = await Estudiantes.findOne({_id:id, conductor: conductor._id} ).select("-updatedAt -createdAt -__v");
-    if (!estudiante) return res.status(400).json({ msg_estudiante_id: "Lo sentimos, el estudiante no se ha encontrado o no pertenece a su ruta" });
-    
-    //Mensaje de exito
-    res.status(200).json({ msg_estudiante_id: `El estudiante ${estudiante.nombre} ${estudiante.apellido} se ha encontrado exitosamente`, estudiante});
-}
-
 //Buscar un estudiante por su cedula
 const BuscarEstudianteCedula = async (req, res) => {
    try {
@@ -405,75 +390,6 @@ const ActualizarEstudiante = async (req, res) => {
 
     res.status(200).json({
         msg_actualizar_estudiantes: `Los datos del estudiante ${estudiante.nombre} ${estudiante.apellido} han sido actualizados exitosamente`
-    });
-}
-
-const ActualizarEstudianteCedula = async (req, res) => {
-    //Obtención de datos de lo escrito por el conductor
-    const {
-        nombre,
-        apellido,
-        nivelEscolar,
-        genero,
-        paralelo,
-        cedulaNueva,
-        ubicacionDomicilio,
-        recoCompletoOMedio
-    } = req.body;
-    //Obtención del id del estudiante (facilitado en la URL)
-    const {cedula} = req.params;
-    //Información del conductor logeado
-    const conductor = await Conductores.findById(req.user.id); 
-
-    // Verificación de los campos vacíos
-    if (Object.values(req.body).includes("")) return res.status(400).json({ msg_actualizacion_estudiante_cedula: "Lo sentimos, debes llenar todos los campos" });
-
-    // Verificación de la existencia del conductor
-    const estudiante = await Estudiantes.findOne({ cedula: cedula, conductor: conductor._id});
-    if (!estudiante) return res.status(400).json({ msg_actualizacion_estudiante_cedula: "Lo sentimos, el conductor no se encuentra trabajando en la Unidad Educativa Particular EMAÚS" });
-
-   //Comprobar que el nivel escolar se encuentre bien escrito 
-   if(nivelEscolar !== "Nocional" && nivelEscolar !== "Inicial 1" && nivelEscolar !== "Inicial 2"
-    && nivelEscolar !== "Primero de básica" && nivelEscolar !== "Segundo de básica" && nivelEscolar !== "Tercero de básica"
-    && nivelEscolar !== "Cuarto de básica" && nivelEscolar !== "Quinto de básica" && nivelEscolar !== "Sexto de básica"
-    && nivelEscolar !== "Séptimo de básica" && nivelEscolar !== "Octavo de básica" && nivelEscolar !== "Noveno de básica"
-    && nivelEscolar !== "Décimo de básica" && nivelEscolar !== "Primero de bachillerato" && nivelEscolar !== "Segundo de bachillerato"
-    && nivelEscolar !== "Tercero de bachillerato"
-    ){
-        return res.status(400).json({ msg_registro_estudiantes: "Lo sentimos, el nivel escolar debe ser Educación Inicial, Educación General Básica o Educación Media (Bachillerato)" });
-    }
-
-    //Comprobar el paralelo en el que se encuentra el estudiante
-    if(paralelo !== "A" && paralelo !== "B" && paralelo !== "C" ){
-        return res.status(400).json({ msg_registro_estudiantes: "Lo sentimos, el paralelo debe ser de la A a la C" });
-    }
-
-    //Comprobación de lo escrito en el genero del estudiante 
-    if(genero!== "Femenino" && genero !== "Masculino" && genero !== "Prefiero no decirlo"){
-        return res.status(400).json({ msg_registro_estudiantes: "Lo sentimos, el género debe ser Femenino, Masculino o Prefiero no decirlo" });
-    }
-
-    //Extraer las coordenadas de la direccion del estudiante
-    const coordenadas = await ExtraerCoordenadasLinkGoogleMaps(ubicacionDomicilio);
-    if (coordenadas.msg_extracion_coordenadas_estudiantes) return res.status(400).json({ msg_actualizar_estudiantes: coordenadas.msg_extracion_coordenadas_estudiantes });
-
-    // Actualización de los datos
-    const estudianteActualizado = await Estudiantes.findOneAndUpdate(
-        { cedula },
-        { nivelEscolar, paralelo, ubicacionDomicilio, recoCompletoOMedio, latitud: coordenadas.latitud, longitud: coordenadas.longitud, nombre, apellido, genero, cedula: cedulaNueva },
-        // Esta opción devuelve el documento actualizado en lugar del original
-        { new: true } 
-    );
-
-    //Actualizar el array de los estudiantes en el esquema conductor 
-    // Actualización en el array del conductor
-    const estudianteParaListado = {nombreEstudiante: estudianteActualizado.nombre, apellidoEstudiante: estudianteActualizado.apellido, nivelEscolarEstudiante: estudianteActualizado.nivelEscolar, paraleloEstudiante: estudianteActualizado.paralelo, cedulaEstudiante: estudianteActualizado.cedula}
-    const actualizar = await conductor.actualizarListaEstudiantes(estudianteParaListado, estudianteActualizado._id);
-    if (actualizar?.error) return res.status(400).json({ msg_actualizar_estudiantes: actualizar.error });
-    await conductor.save();
-
-    res.status(200).json({
-        msg: `Los datos del estudiante ${estudiante.nombre} ${estudiante.apellido} han sido actualizados exitosamente`
     });
 }
 
@@ -590,36 +506,6 @@ const CalcularDistanciaYTiempo = async (latitudOrigen, longitudOrigen, latitudDe
     }
 }
 
-// Función para enviar notificaciones a los padres de familia
-const EnviarNotificacion = async (conductorId, estudianteNombre, representanteId, distancia, tiempo) => {
-    try {
-        // Usar lean() para obtener un objeto simple
-        const representante = await Representantes.findById(representanteId).lean(); 
-        // Verificar si el representante existe
-        if (!representante) return { msg_notificacion: "Representante no encontrado" };
-        // Usar updateOne para actualizar un documento
-        await Representantes.updateOne({ _id: representanteId }, { notificacionEnviada: true });
-        
-        // Crear una nueva notificación
-        const nuevaNotificacion = new Notificaciones({
-            conductor: conductorId,
-            representante: representanteId,
-            mensaje: `El estudiante ${estudianteNombre} ha asistido. El conductor está a ${distancia} km y llegará en ${tiempo} minutos.`,
-            distancia,
-            tiempo
-        });
-
-        // Guardar la notificación en la base de datos
-        await nuevaNotificacion.save();
-        
-        // Enviar la notificación al representante
-        return { msg_notificacion: `Notificación enviada al representante ${representante.nombre} del estudiante ${estudianteNombre} del conductor ${conductorId}` };
-    } catch (error) {
-        console.error(error);
-        return { msg_notificacion: "Error al enviar la notificación" };
-    }
-}
-
 const ManejoActualizacionUbicacion = async (req, res) => {
     const {latitud, longitud } = req.body;
     const {id} = req.user;
@@ -631,39 +517,7 @@ const ManejoActualizacionUbicacion = async (req, res) => {
         }
         // Usar updateOne en lugar de save
         await Conductores.updateOne({ _id: id }, { latitud, longitud }); 
-        // Usar lean() para obtener objetos simples
-        const estudiantes = await Estudiantes.find({ conductor: id }).lean(); 
-        // Crear un array para almacenar las notificaciones
-        const notificaciones = [];
 
-        for (const estudiante of estudiantes) {
-            // Verificar si el estudiante asistió en la mañana o en la tarde
-            const asistenciaManana = await AsistenciasManana.findOne({
-                estudiantesAsistieronManana: estudiante._id
-            }).lean();
-
-            const asistenciaTarde = await AsistenciasTarde.findOne({
-                estudiantesAsistieronTarde: estudiante._id
-            }).lean();
-
-            // Si el estudiante no asistió en la mañana ni en la tarde, no se envía notificación
-            if (!asistenciaManana && !asistenciaTarde) {
-                continue;
-            }
-
-            // Extraer las coordenadas del estudiante
-            const { latitud: latitudEstudiante, longitud: longitudEstudiante, cedula } = estudiante;
-            // Calcular la distancia y el tiempo entre el conductor y el estudiante
-            const { distancia, tiempo } = await CalcularDistanciaYTiempo( latitud, longitud, latitudEstudiante, longitudEstudiante);
-            if (distancia <= 1) {
-                // Usar lean() para obtener objetos simples
-                const representantes = await Representantes.find({ cedulaRepresentado: cedula }).lean(); 
-                for (const representante of representantes) {
-                    const notificacion = await EnviarNotificacion(id, estudiante.nombre, representante._id, distancia, tiempo);
-                    notificaciones.push(notificacion);
-                }
-            }
-        }
         return res.status(200).json({ msg_actualizacion_ubicacion: "Ubicación actualizada correctamente", notificaciones });
     } catch (error) {
         console.error(error);
@@ -784,213 +638,124 @@ const ConfirmacionCorreoNuevoConductor = async (req, res) => {
     }
 };
 
-//Tomar lista en la mañana y tarde
-const TomarListaManana = async (req, res) => {
-    //Obtención de datos del conductor
-    const {id} = req.user;
-    //Obtención de datos de lo escrito por el conductor
-    const {listaAsistenciaManana} = req.body;
-    try{
-        // Verificación de los campos vacíos
-        if (Object.values(req.body).includes("")) return res.status(400).json({ msg_tomar_lista: "Lo sentimos, debe tomar lista a los estudiantes" });
-        
-        // Verificación de la existencia del conductor
-        const conductor = await Conductores.findById(id);
-        if (!conductor) return res.status(400).json({ msg_tomar_lista: "Lo sentimos, el conductor no se encuentra registrado" });
-        //Verificación de que el conductor tenga estudiantes registrados
-        if(conductor.numeroEstudiantes === 0) return res.status(400).json({msg_tomar_lista:"Lo sentimos, no tiene estudiantes registrados"});
-        
-        //Obtención de los estudiantes registrados por el conductor
-        const estudiantesRuta = await Estudiantes.find({conductor: id}).lean();
-        //Transformación los ids de los estudiantes en strings
-        const estudiantesRutaIds = estudiantesRuta.map(est => est._id.toString());
+// Función para enviar notificaciones a los padres de familia
+const EnviarNotificacionAsistencia = async (conductorId, estudianteNombre, representanteId, asistio) => {
+    try {
+        // Usar lean() para obtener un objeto simple
+        const representante = await Representantes.findById(representanteId).lean(); 
+        // Verificar si el representante existe
+        if (!representante) return { msg_notificacion: "Representante no encontrado" };
+        // Usar updateOne para actualizar un documento
+        await Representantes.updateOne({ _id: representanteId }, { notificacionAsistencia: true });
+        // Obtener la información del conductor
+        const conductor = await Conductores.findById(conductorId).lean();
+        if (!conductor) return { msg_notificacion: "Conductor no encontrado" };
 
-        //Arreglos para almacenar a los estudiantes que asistieron y los que no en la mañana
-        const estudiantesAsistieronManana = [];
-        const estudiantesNoAsistieronManana = [];
-
-        //Recorrer el array ingresado por el conductor 
-        for (const estudiante of listaAsistenciaManana) {
-            //Obtención a detalle de la información escrita 
-            const {estudianteId, asistencia} = estudiante;
-
-            //Verificación de que el id del estudiante se encuentre en laq ruta del conductor 
-            if(!estudiantesRutaIds.includes(estudianteId)){
-                return res.status(400).json({msg_tomar_lista:`Lo sentimos, el estudiante con el id ${estudianteId} no se encuentra registrado, registrelo porfavor`});
-            }
-
-            //Verificació de que la asistencia sea 0 o 1
-            if(asistencia !== 0 && asistencia !== 1){
-                return res.status(400).json({msg_tomar_lista:"Lo sentimos, la asistencia debe ser 0 o 1"});
-            }
-
-            //Almacenar a los estudiantes que asistieron y los que no
-            if(asistencia === 1){
-                estudiantesAsistieronManana.push(estudianteId);
-            } else {
-                estudiantesNoAsistieronManana.push(estudianteId);
-            }
+        let mensaje; 
+        // Verificar si el estudiante asistió
+        if(asistio === true){
+            mensaje = `El estudiante ${estudianteNombre} ha asistido en la tarde.`;
+        }else{
+            mensaje = `El estudiante ${estudianteNombre} no ha asistido en la tarde.`;
         }
 
-        //Crear un nuevo registro de asistencia
-        const nuevaAsistencia = new AsistenciasManana({
-            conductor: id,
-            estudianteAsistieronManana: estudiantesAsistieronManana,
-            estudianteNoAsistieronManana: estudiantesNoAsistieronManana
+        // Obtener la fecha actual
+        const fechaDeHoy = new Date().toISOString().split('T')[0];
+
+        // Crear una nueva notificación
+        const nuevaNotificacion = new Notificaciones({
+            conductor: conductorId,
+            representante: representanteId,
+            mensaje: mensaje,
+            fecha: fechaDeHoy
         });
 
-        //Guardar el registro de asistencia en la base de datos 
-        await nuevaAsistencia.save();
-
-        //Arreglo para almacenar las notificaciones
-        const notificaciones = [];
-
-        //Recorrer los estudiantes que asistieron en la mañana
-        for(const estudianteId of estudiantesAsistieronManana){
-            //Obtener la información del estudiante
-            const estudiante = await Estudiantes.findById(estudianteId).lean();
-
-            //Si existe el estudainte se envía la notificación
-            if(estudiante){
-                //Se obtienen datos del estudiante
-                const {nombre, cedula} = estudiante;
-                //Se obtienen los representantes del estudiante
-                const representantes = await Representantes.find({cedulaRepresentado: cedula}).lean();
-                //Se recorre los representantes para enviar la notificación
-                for (const representante of representantes){
-                    const notificacion = await EnviarNotificacion(id, nombre, representante._id, 0, 0);
-                    if(notificacion){
-                        notificaciones.push(notificacion);
-
-                    }
-                }
-            }
-        }
-
-        return res.status(200).json({msg_tomar_lista:"Lista tomada exitosamente", notificaciones});
-
-    } catch(error){
+        // Guardar la notificación en la base de datos
+        await nuevaNotificacion.save();
+        
+        // Enviar la notificación al representante
+        return { msg_notificacion: `Notificación enviada al representante ${representante.nombre} del estudiante ${estudianteNombre} del conductor ${conductor.nombre} ${conductor.apellido}` };
+    } catch (error) {
         console.error(error);
-        res.status(500).json({msg_tomar_lista:"Error al tomar la lista"});
+        return { msg_notificacion: "Error al enviar la notificación" };
     }
 }
 
+// Tomar lista en la tarde
 const TomarListaTarde = async (req, res) => {
-     //Obtención de datos del conductor
-     const {id} = req.user;
-     //Obtención de datos de lo escrito por el conductor
-     const {listaAsistenciaTarde} = req.body;
-     try{
-        // Verificación de los campos vacíos
-        if (Object.values(req.body).includes("")) return res.status(400).json({ msg_tomar_lista: "Lo sentimos, debe tomar lista a los estudiantes" });
-         
+    // ID del conductor logeado
+    const { id } = req.user; 
+    // Recepción de los datos de la lista
+    const { estudiantes } = req.body;
+
+    try {
         // Verificación de la existencia del conductor
         const conductor = await Conductores.findById(id);
-        if (!conductor) return res.status(400).json({ msg_tomar_lista: "Lo sentimos, el conductor no se encuentra registrado" });
-        //Verificación de que el conductor tenga estudiantes registrados
-        if(conductor.numeroEstudiantes === 0) return res.status(400).json({msg_tomar_lista:"Lo sentimos, no tiene estudiantes registrados"});
-         
-        //Obtención de los estudiantes registrados por el conductor
-        const estudiantesRuta = await Estudiantes.find({conductor: id}).lean();
-        //Transformación los ids de los estudiantes en strings
-        const estudiantesRutaIds = estudiantesRuta.map(est => est._id.toString());
- 
-        //Arreglos para almacenar a los estudiantes que asistieron y los que no en la tarde
-        const estudiantesAsistieronTarde = [];
-        const estudiantesNoAsistieronTarde = [];
-
-        //Recorrer el array ingresado por el conductor
-        for(const estudiante of listaAsistenciaTarde){
-            //Obtención a detalle de la información escrita 
-            const {estudianteId, asistencia} = estudiante;
-
-            //Verificación de que el id del estudiante se encuentre en la ruta del conductor
-            if(!estudiantesRutaIds.includes(estudianteId)){
-                return res.status(400).json({msg_tomar_lista:`Lo sentimos, el estudiante con el id ${estudianteId} no se encuentra registrado, registrelo porfavor`});
-            }
-
-            //Verificación de que la asistencia sea 0 o 1
-            if(asistencia !== 0 && asistencia !== 1){
-                return res.status(400).json({msg_tomar_lista:"Lo sentimos, la asistencia debe ser 0 o 1"});
-            }
-
-            //Almacenar a los estudiantes que asistieron y los que no
-            if(asistencia === 1){
-                estudiantesAsistieronTarde.push(estudianteId);
-            } else {
-                estudiantesNoAsistieronTarde.push(estudianteId);
+        // Si no se encuentra el conductor
+        if (!conductor) {
+            return res.status(400).json({ msg: "Conductor no encontrado" });
+        }
+        // Verificación de los campos vacíos
+        if (!estudiantes || estudiantes.length === 0) {
+            return res.status(400).json({ msg: "La lista de estudiantes no puede estar vacía" });
+        }
+        // Obtener la fecha actual
+        const fechaDeHoy = new Date().toISOString().split('T')[0];
+        
+        //Verificar si los ids de los estudiantes se encuentran vinculados al conductor
+        for (const estudiante of estudiantes) {
+            //Encuentra un documento con el id del estudinte y el id del conductor
+            const estudianteBDD = await Estudiantes.findOne({ _id: estudiante.estudiante, conductor: id });
+            //¿Qué sucede si no se encuentra el estudiante?
+            if (!estudianteBDD) {
+                return res.status(400).json({ msg: "Lo sentimos, el estudiante no se encuentra registrado o no pertenece a su ruta" });
             }
         }
-        //Crear un nuevo registro de asistencia
+
+        // Crear un nuevo registro de asistencia
         const nuevaAsistencia = new AsistenciasTarde({
             conductor: id,
-            estudianteAsistieronTarde: estudiantesAsistieronTarde,
-            estudianteNoAsistieronTarde: estudiantesNoAsistieronTarde
+            fecha: fechaDeHoy, 
+            estudiantes: estudiantes.map(estudianteLista => ({
+                estudiante: estudianteLista.estudiante,
+                asistio: estudianteLista.asistio
+            }))
         });
- 
-         //Guardar el registro de asistencia en la base de datos 
-         await nuevaAsistencia.save();
- 
-         //Arreglo para almacenar las notificaciones
-         const notificaciones = [];
- 
-        //Recorrer los estudiantes que no asistieron en la tarde
-        for(const estudianteId of estudiantesAsistieronTarde){
-            //Obtener la información del estudiante
-            const estudiante = await Estudiantes.findById(estudianteId).lean();
 
-            //Si existe el estudainte se envía la notificación
-            if(estudiante){
-                 //Se obtienen datos del estudiante
-                const {nombre, cedula} = estudiante;
-                //Se obtienen los representantes del estudiante
-                const representantes = await Representantes.find({cedulaRepresentado: cedula}).lean();
-                //Se recorre los representantes para enviar la notificación
-                for (const representante of representantes){
-                    const notificacion = await EnviarNotificacion(id, nombre, representante._id, 0, 0);
-                    if(notificacion){
+        // Guardar el registro de asistencia en la base de datos
+        await nuevaAsistencia.save();
+
+        // Arreglo para almacenar las notificaciones
+        const notificaciones = [];
+
+        // Recorrer los estudiantes que asistieron en la tarde
+        for (const estudiante of estudiantes) {
+            // Obtener la información del estudiante
+            const estudianteInfo = await Estudiantes.findById(estudiante.estudiante).lean();
+
+            // Si existe el estudiante se envía la notificación
+            if (estudianteInfo) {
+                // Se obtienen datos del estudiante
+                const { nombre, cedula } = estudianteInfo;
+                // Se obtienen los representantes del estudiante
+                const representantes = await Representantes.find({ cedulaRepresentado: cedula }).lean();
+                // Se recorre los representantes para enviar la notificación
+                for (const representante of representantes) {
+                    // Se envía la notificación
+                    const notificacion = await EnviarNotificacionAsistencia(id, nombre, representante._id, estudiante.asistio);
+                    if (notificacion) {
                         notificaciones.push(notificacion);
-
                     }
                 }
             }
         }
- 
-        return res.status(200).json({msg_tomar_lista:"Lista tomada exitosamente", notificaciones});
-    } catch(error){
-        console.error(error);
-        res.status(500).json({msg_tomar_lista:"Error al tomar la lista"});
-    }
 
-}
-
-//Busqueda de la lista de asistencia por id de la lista
-const BuscarListaId = async (req, res) => {
-    try {
-        // Obtener el id del conductor logeado
-        const { id } = req.user;
-
-        // Obtener el id de la lista de los parámetros de la URL
-        const { listaId } = req.params;
-
-        // Verificación de la existencia de lista en la mañana
-        const listaManana = await AsistenciasManana.findOne({ _id: listaId, conductor: id }).lean();
-        if (listaManana) {
-            return res.status(200).json({ msg: `La lista de la mañana con id ${listaId} se ha encontrado exitosamente`, lista: listaManana });
-        }
-
-        // Verificación de la existencia de lista en la tarde
-        const listaTarde = await AsistenciasTarde.findOne({ _id: listaId, conductor: id }).lean();
-        if (listaTarde) {
-            return res.status(200).json({ msg: `La lista de la tarde con id ${listaId} se ha encontrado exitosamente`, lista: listaTarde });
-        }
-
-        return res.status(400).json({ msg_buscar_lista: "Lo sentimos, no se ha encontrado ninguna lista con ese ID" });
+        return res.status(201).json({ msg: "Asistencia registrada exitosamente", asistencia: nuevaAsistencia, notificaciones });
     } catch (error) {
-        console.log(error);
-        res.status(500).json({ msg_buscar_lista: "Error al buscar la lista" });
+        console.error(error);
+        res.status(500).json({ msg: "Error al registrar la asistencia" });
     }
-};
+}
 
 //Busqueda de la lista de asistencia
 const BuscarLista = async (req, res) => {
@@ -1050,40 +815,6 @@ const EliminarLista = async (req, res) => {
     }
 }
 
-//Eliminar lista de asistencia
-const EliminarListaFecha = async (req, res) => {
-    try {
-        // Obtener el id del conductor
-        const { id } = req.user;
-
-        // Obtener el id de la lista a eliminar desde los parámetros de la URL
-        const { fecha } = req.params;
-
-         // Convertir la fecha a un objeto Date
-        const fechaObj = new Date(fecha);
-        if (isNaN(fechaObj)) {
-            return res.status(400).json({ msg_eliminar_lista: "Fecha inválida" });
-        }
-
-        // Verificación y eliminación de la lista en la mañana
-        const listaManana = await AsistenciasManana.findOneAndDelete({ conductor: id, fecha: fechaObj }).lean();
-        if (listaManana) {
-            return res.status(200).json({ msg: `La lista de la mañana con fecha: ${fecha}, se ha eliminado exitosamente` });
-        }
-
-        // Verificación y eliminación de la lista en la tarde
-        const listaTarde = await AsistenciasTarde.findOneAndDelete({ conductor: id, fecha: fechaObj }).lean();
-        if (listaTarde) {
-            return res.status(200).json({ msg: `La lista de la tarde con fecha: ${fecha}, se ha eliminado exitosamente` });
-        }
-
-        res.status(200).json({ msg_eliminar_lista: `La lista con fecha: ${fecha} ha sido eliminada exitosamente` });
-    } catch (error) {
-        console.log(error);
-        res.status(500).json({ msg_eliminar_lista: "Error al eliminar la lista" });
-    }
-}
-
 export {
     RegistroDeLosEstudiantes,
     LoginConductor, 
@@ -1092,20 +823,15 @@ export {
     ComprobarTokenPassword,
     NuevaPassword,
     ListarEstudiantes,
-    BuscarEstudiante, 
     BuscarEstudianteCedula, 
     ActualizarEstudiante, 
-    ActualizarEstudianteCedula,
     EliminarEstudiante, 
     ManejoActualizacionUbicacion, 
     CalcularDistanciaYTiempo, 
     VisuallizarPerfil, 
     ActualizarPerfil, 
     ConfirmacionCorreoNuevoConductor,
-    TomarListaManana,
     TomarListaTarde,
-    BuscarListaId, 
     BuscarLista,
-    EliminarLista, 
-    EliminarListaFecha
+    EliminarLista
 }
