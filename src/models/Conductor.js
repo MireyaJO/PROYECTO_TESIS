@@ -6,46 +6,46 @@ const paraElRegistroDeLosEstudiantes= new Schema(
     {
         nombre:{
             type: String, 
-            require: true, 
+            required: true, 
             trim: true
         }, 
         apellido:{
             type: String, 
-            require: true, 
+            required: true, 
             trim: true 
         }, 
         nivelEscolar: {
             type: String, 
-            require: true, 
+            required: true, 
             trim: true
         }, 
         paralelo:{
             type: String, 
-            require: true, 
+            required: true, 
             trim: true
         },
         cedula:{
             type: Number, 
-            require: true, 
+            required: true, 
             unique: true,
             trim: true
         }, 
         ruta:{
             type: Number, 
-            require: true
+            required: true
         }, 
         ubicacionDomicilio:{
             type: String, 
-            require: true, 
+            required: true, 
             trim: true
         }, 
         institucion:{
             type: String, 
-            require: true, 
+            required: true, 
         },  
         recoCompletoOMedio:{
             type: String, 
-            require: true
+            required: true
         }, 
         genero:{
             type: String, 
@@ -68,12 +68,12 @@ const paraElRegistroDeLosEstudiantes= new Schema(
         conductor:{
             type: mongoose.Schema.Types.ObjectId,
             ref: 'Conductores',
-            require: true
+            required: true
         },     
         representantes:[{
             type: mongoose.Schema.Types.ObjectId,
             ref: 'Representantes',
-            require: true
+            required: true
         }]                                                       
     }
 , { timestamps: true}

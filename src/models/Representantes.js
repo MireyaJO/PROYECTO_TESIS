@@ -7,17 +7,17 @@ const paraElRegistroDeLosRepresentantes = new Schema(
     {
         nombre:{
             type: String, 
-            require: true, 
+            required: true, 
             trim: true
         }, 
         apellido:{
             type: String, 
-            require: true, 
+            required: true, 
             trim: true 
         }, 
         telefono:{
             type: Number, 
-            require: true, 
+            required: true, 
             unique: true,
             trim: true
         }, 
@@ -27,21 +27,21 @@ const paraElRegistroDeLosRepresentantes = new Schema(
         }, 
         cedula:{
             type: Number, 
-            require: true, 
+            required: true, 
             unique: true,
             trim: true
         }, 
         institucion:{
             type: String, 
-            require: true, 
+            required: true, 
         }, 
         fotografia:{
             type: String, 
-            require: true
+            required: true
         }, 
         email:{
             type: String, 
-            require: true, 
+            required: true, 
             unique: true,
             trim: true 
         }, 
@@ -59,7 +59,7 @@ const paraElRegistroDeLosRepresentantes = new Schema(
         }, 
         cedulaRepresentado: [{
             type: Number, 
-            require: true, 
+            required: true, 
             trim: true
         }], 
         estadoCuenta:{
@@ -70,6 +70,10 @@ const paraElRegistroDeLosRepresentantes = new Schema(
             type: Boolean, 
             default: false
         },
+        notificacionAlerta: {
+            type: Boolean, 
+            default: false
+        }, 
         notificacionAsistencia:{
             type: Boolean, 
             default: false
@@ -97,5 +101,12 @@ paraElRegistroDeLosRepresentantes.methods.crearToken = function(){
     const tokenGenerado = this.token = Math.random().toString(36).slice(2)
     return tokenGenerado
 }
+
+// Método para la eliminación de un estudiante de la lista de estudiantes
+paraElRegistroDeLosRepresentantes.methods.eliminarEstudiante = function(cedulaEstudiante){
+    //Elimina el estudiante de la lista de cedulas de los representados
+    this.cedulaRepresentado.pull(cedulaEstudiante);
+    return this.save()
+};
 
 export default model('Representantes',paraElRegistroDeLosRepresentantes)

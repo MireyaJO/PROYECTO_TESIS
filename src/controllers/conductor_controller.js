@@ -3,13 +3,15 @@ import Estudiantes from '../models/Conductor.js';
 import Representantes from '../models/Representantes.js';
 import AsistenciasTarde from '../models/AsistenciasTarde.js';
 import Notificaciones from '../models/Notificaciones.js';
+import NotificacionesEliminacionEstudiantes from '../models/NotificacionEliminacion.js';
 import {createToken} from '../middlewares/autho.js';
 import {directionsService} from '../config/mapbox.js';
-import {recuperacionContrasenia, confirmacionDeCorreoConductorCambio} from "../config/nodemailer.js"; 
+import {recuperacionContrasenia, confirmacionDeCorreoConductorCambio, eliminacionDelRepresentante} from "../config/nodemailer.js"; 
 import axios from 'axios';
 import cloudinary from 'cloudinary';
 import fs from 'fs-extra';
 import mongoose from 'mongoose';
+import { deflate } from 'zlib';
 
 
 //Registro de los estudiantes
@@ -393,6 +395,27 @@ const ActualizarEstudiante = async (req, res) => {
     });
 }
 
+// Función para enviar notificaciones a los padres de familia
+const EnviarNotificacionEliminacion= async (conductorId, representanteId, nombresRepresentante, apellidosRepresentante, mensaje ) => {
+    try {
+        //Creación de una nueva notificacion de eliminación
+        const nuevaNotificacion = new NotificacionesEliminacionEstudiantes({
+            conductor: conductorId,
+            representante: representanteId,
+            mensaje: mensaje, 
+            fecha: new Date().toISOString().split('T')[0]
+        });
+
+        //Guardar  cambios en la base de datos
+        await nuevaNotificacion.save();
+
+        //Enviar la notificacion al representante
+        return { msg_notificacion: `Notificación enviada exitosamente al representante ${nombresRepresentante} ${apellidosRepresentante}` };
+    } catch (error) {
+        return { msg_notificacion: "Error al enviar la notificación de eliminacion" };
+    }
+}
+
 //Eliminación de un estudiante registrado por el conductor logeado
 const EliminarEstudiante = async (req, res) => {
     // Obtener el ID de los parámetros de la URL
@@ -405,10 +428,30 @@ const EliminarEstudiante = async (req, res) => {
     if(!estudiante) return res.status(400).json({msg_eliminacion_estudiante:"Lo sentimos, el estudiante no se encuentra o no pertenece a la ruta"});
     
     //Datos del estudiante 
-    const {nombre, apellido} = estudiante;
+    const {nombre, apellido, cedula} = estudiante;
 
-    //Eliminación del conductor
-    await Estudiantes.findOneAndDelete({id});
+    //Eliminacion de la cedula del estudiante en el array del representante
+    const representantes = await Representantes.find({ cedulaRepresentado: cedula }).lean();
+    for (const representante of representantes) {
+        representante.eliminarEstudiante(cedula);
+
+        //Variable para almacenar el mensaje de advertencia
+        let advertencia = ''; 
+
+        //Verificar si el array de los estudiantes del representante se encuentra vacío
+        if(representante.cedulaRepresentado.length === 0){
+            //Eliminación del representante
+            await Representantes.findOneAndDelete({_id: representante._id});
+            advertencia = `El representante ${representante.nombre} ${representante.apellido} ha sido eliminado ya que no tiene estudiantes registrados, se le envió un correo`;
+            await eliminacionDelRepresentante(representante.email, representante.nombre, representante.apellido, nombre, apellido);
+        } else if (representante.estudiantes.length > 0 ){
+            advertencia = `El estudiante ${nombre} ${apellido} ha sido eliminado del representante ${representante.nombre} ${representante.apellido}`;
+            await EnviarNotificacionEliminacion(conductor._id, representante._id, representante.nombre, representante.apellido, advertencia);
+        }
+    }
+
+    //Eliminación del estudiante
+    await Estudiantes.findOneAndDelete({_id:id});
     
     //Actualización en el numero de estudiantes registrados por el conductor
     conductor.numeroEstudiantes -= 1;
@@ -417,7 +460,10 @@ const EliminarEstudiante = async (req, res) => {
     await conductor.save();
 
     //Mensaje de exito
-    res.status(200).json({msg_eliminacion_estudiante:`Los datos del estudiante ${nombre} ${apellido} han eliminado exitosamente`})
+    res.status(200).json({
+        msg_eliminacion_estudiante:`Los datos del estudiante ${nombre} ${apellido} han eliminado exitosamente`, 
+        msg_eliminacion_representante: advertencia
+    });
 }
 
 //Funciones para el manejo de ubicaciones 
@@ -565,10 +611,14 @@ const ActualizarPerfil = async (req, res) => {
         if (req.files && req.files.fotografiaDelConductor) {
             const file = req.files.fotografiaDelConductor;
             try {
+                // Definir el public_id para Cloudinary
+                const publicId = `conductores/${conductor.nombre}_${conductor.apellido}`;
+        
                 // Subir la imagen a Cloudinary con el nombre del conductor como public_id
                 const result = await cloudinary.v2.uploader.upload(file.tempFilePath, {
-                    public_id: `conductores/${conductor.nombre} ${conductor.apellido}`,
-                    folder: "conductores"
+                    public_id: publicId,
+                    folder: "conductores", 
+                    overwrite: true
                 });
                 // Guardar la URL de la imagen en la base de datos
                 conductor.fotografiaDelConductor = result.secure_url;

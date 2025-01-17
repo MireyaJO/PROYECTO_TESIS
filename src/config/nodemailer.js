@@ -188,6 +188,25 @@ const confirmacionDeCorreoConductorCambio = async (email, nombre, apellido, toke
     });
 }
 
+const eliminacionDelRepresentante = async (email, nombresRepresentante, apellidosRepresentante, nombresEstudiante, apellidosEstudiante) => {
+    //Creación de la estuctura que tendrá el correo 
+    let estructuraEmail = {
+        from: process.env.EMAIL_USER,
+        to: email,  
+        subject: "Eliminación del sistema de transporte escolar de la Unidad Educativa Particular Emaús",
+        html: `<p>Señor/a ${nombresRepresentante} ${apellidosEstudiante} el estudiante ${nombresEstudiante} ${apellidosEstudiante} del cual es representante ha sido eliminado. Usted 
+        ya no tuvo representados vinculados, por lo que, se lo/a elimino</p>`
+    }
+    //Creación del transportador universal con el email y el password del conductor ingresado por el administrador
+    transportador.sendMail(estructuraEmail, (error, info) => {
+        if(error){
+            console.error(error);
+        } else {
+            console.log('Correo enviado: ' + info.response);
+        }
+    });
+}
+
 export {
     enviarCorreoConductor, 
     actualizacionDeConductor,
@@ -196,5 +215,6 @@ export {
     confirmacionDeCorreoRepresentante, 
     recuperacionContraseniaRepresentante, 
     confirmacionDeCorreoRepresentanteCambio, 
-    confirmacionDeCorreoConductorCambio
+    confirmacionDeCorreoConductorCambio,
+    eliminacionDelRepresentante
 }

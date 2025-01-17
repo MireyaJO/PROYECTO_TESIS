@@ -5,9 +5,10 @@ import Notificaciones from '../models/Notificaciones.js';
 import Estudiantes from '../models/Conductor.js';
 import Representantes from '../models/Representantes.js';
 import {createToken} from '../middlewares/autho.js';
-import {confirmacionDeCorreoRepresentante, recuperacionContraseniaRepresentante, confirmacionDeCorreoRepresentanteCambio} from '../config/nodemailer.js';
+import {confirmacionDeCorreoRepresentante, recuperacionContraseniaRepresentante, confirmacionDeCorreoRepresentanteCambio } from '../config/nodemailer.js';
 import {CalcularDistanciaYTiempo} from '../controllers/conductor_controller.js';
 import AsistenciasTarde from '../models/AsistenciasTarde.js';
+
 
 //Registro de los representantes
 const RegistroDeRepresentantes = async (req, res) => {
@@ -319,7 +320,7 @@ const EstudiantesRepresentados = async (req, res) => {
         const { id } = req.user;
 
         // Búsqueda de los estudiantes representados por el representante y populación del conductor
-        const estudiantes = await Estudiantes.find({ representantes: id }).populate('conductor', 'nombre apellido email telefono');
+        const estudiantes = await Estudiantes.find({ representantes: id }).populate('conductor', 'nombre apellido email telefono').select("-createdAt -updatedAt -__v");
 
         // Verificación de que el representante tenga estudiantes representados
         if (estudiantes.length === 0) return res.status(404).json({ msg: "Lo sentimos, no tiene estudiantes representados" });
@@ -352,8 +353,26 @@ const EliminarCuentaRepresentante = async (req, res) => {
     //Obtención del id del representante
     const {id} = req.user;
     try {
-        await Representantes.findByIdAndDelete(id);
-        res.status(200).json({ msg: "Cuenta eliminada satisfactoriamente" });
+        //Eliminar la imagen en Cloudinary
+        const representante = await Representantes.findById(id);
+
+        //Condicion para que se elimine su cuenta 
+        if(representante.cedulaRepresentado.length === 0){
+            //Eliminar la imagen en Cloudinary 
+            const public_Id = `representantes/${representante.nombre} ${representante.apellido}`; 
+            try{
+                await cloudinary.v2.uploader.destroy(publicId);
+            }catch{
+                console.error("Error al eliminar la imagen en Cloudinary");
+                return res.status(500).json({msg:"Error al eliminar la imagen"})
+            }
+
+            //Eliminación del representante en la base de datos
+            await Representantes.findByIdAndDelete(id);
+            res.status(200).json({ msg: "Cuenta eliminada satisfactoriamente" });
+        } else if(representante.cedulaRepresentado.length > 0){
+            return res.status(400).json({msg:"Lo sentimos, no puedes eliminar tu cuenta si aún tienes estudiantes representados"})
+        }
     } catch (error) {
         console.error(error);
         res.status(500).json({ msg: "Error al eliminar la cuenta del representante" });
@@ -411,6 +430,8 @@ const AlertaLlegadaConductor = async (req, res) => {
                             };
                             // Agregar la notificación al array de alertas
                             alertas.push(notificacion);
+                             // Usar updateOne para actualizar un documento
+                            await Representantes.updateOne({ _id: representanteId }, { notificacionAlerta: true });
 
                         } else if (estudiante.asistio == true && distancia < 1) {
                             const notificacion = {
@@ -421,6 +442,8 @@ const AlertaLlegadaConductor = async (req, res) => {
                             };
                             // Agregar la notificación al array de alertas
                             alertas.push(notificacion);
+                            // Usar updateOne para actualizar un documento
+                            await Representantes.updateOne({ _id: representanteId }, { notificacionAlerta: true });
                         } else if (estudiante.asistio == true && distancia >= 1) {
                             const notificacion = {
                                 representante: representante._id,
@@ -429,6 +452,8 @@ const AlertaLlegadaConductor = async (req, res) => {
                             };
                             // Agregar la notificación al array de alertas
                             alertas.push(notificacion);
+                            // Usar updateOne para actualizar un documento
+                            await Representantes.updateOne({ _id: representanteId }, { notificacionAlerta: false });
                         } else if (estudiante.asistio == false) {
                             const notificacion = {
                                 representante: representante._id,
@@ -437,6 +462,8 @@ const AlertaLlegadaConductor = async (req, res) => {
                             };
                             // Agregar la notificación al array de alertas
                             alertas.push(notificacion);
+                            // Usar updateOne para actualizar un documento
+                            await Representantes.updateOne({ _id: representanteId }, { notificacionAlerta: false });
                         } 
                     }
                 }
@@ -505,10 +532,12 @@ const ActualizarPerfilRepresentante = async (req, res) => {
         if (req.files && req.files.fotografia) {
             const file = req.files.fotografia;
             try {
+                //Definir el public_id de Cloudinary
+                const public_Id = `representantes/${representante.nombre} ${representante.apellido}`; 
                 // Subir la imagen a Cloudinary con el nombre del representante como public_id
                 const result = await cloudinary.v2.uploader.upload(file.tempFilePath, {
-                    public_id: `representantes/${representante.nombre} ${representante.apellido}`,
-                    folder: "representantes"
+                    public_id: public_Id,
+                    overwrite: true
                 });
                 // Guardar la URL de la imagen en la base de datos
                 representante.fotografia = result.secure_url;
@@ -577,7 +606,7 @@ const ConfirmacionCorreoNuevoRepresentante = async (req, res) => {
         console.error(error);
         res.status(500).json({ msg: "Error al confirmar el cambio de correo electrónico" });
     }
-};
+}; 
 
 export {
     RegistroDeRepresentantes, 

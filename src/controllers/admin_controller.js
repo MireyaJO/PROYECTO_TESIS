@@ -186,7 +186,16 @@ const EliminarConductor = async (req, res) => {
     const conductor = await Conductores.findOne({id});
     if(!conductor) return res.status(400).json({msg:"Lo sentimos, el conductor no se encuentra trabajando en la Unidad Educativa Particular EMAÚS"})
     
-    //Eliminación del conductor
+    //Eliminar la imagen en Cloudinary 
+    const publicId = `conductores/${conductor.nombre}_${conductor.apellido}`;
+    try{
+        await cloudinary.v2.uploader.destroy(publicId);
+    }catch{
+        console.error("Error al eliminar la imagen en Cloudinary");
+        return res.status(500).json({msg:"Error al eliminar la imagen"})
+    }
+
+    //Eliminación del conductor en la base de datos
     await Conductores.findOneAndDelete({id});
 
     //Envio del correo al conductor
