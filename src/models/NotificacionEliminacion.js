@@ -28,7 +28,7 @@ const NotificacionesEliminacionEstudiantes = new Schema({
     timestamps: true
 }); 
 // Middleware para validar que la fecha no sea anterior a la fecha actual ni futura
-NotificacionesParaRepresentante.pre('save', function (next) {
+NotificacionesEliminacionEstudiantes.pre('save', function (next) {
     // Obtiene la fecha actual en formato ISO 8601 y la divide para obtener solo la fecha
     const today = new Date().toISOString().split('T')[0];
     //Compara la fecha actual con la fecha de la asistencia
