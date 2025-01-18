@@ -432,22 +432,27 @@ const EliminarEstudiante = async (req, res) => {
 
     //Eliminacion de la cedula del estudiante en el array del representante
     const representantes = await Representantes.find({ cedulaRepresentado: cedula }).lean();
-    for (const representante of representantes) {
-        representante.eliminarEstudiante(cedula);
-
-        //Variable para almacenar el mensaje de advertencia
-        let advertencia = ''; 
-
-        //Verificar si el array de los estudiantes del representante se encuentra vacío
-        if(representante.cedulaRepresentado.length === 0){
-            //Eliminación del representante
-            await Representantes.findOneAndDelete({_id: representante._id});
-            advertencia = `El representante ${representante.nombre} ${representante.apellido} ha sido eliminado ya que no tiene estudiantes registrados, se le envió un correo`;
-            await eliminacionDelRepresentante(representante.email, representante.nombre, representante.apellido, nombre, apellido);
-        } else if (representante.estudiantes.length > 0 ){
-            advertencia = `El estudiante ${nombre} ${apellido} ha sido eliminado del representante ${representante.nombre} ${representante.apellido}`;
-            await EnviarNotificacionEliminacion(conductor._id, representante._id, representante.nombre, representante.apellido, advertencia);
+    let advertencia = ''; // Variable para almacenar el mensaje de advertencia
+    if (representantes.length > 0) {
+        for (const representante of representantes) {
+            representante.eliminarEstudiante(cedula);
+    
+            //Variable para almacenar el mensaje de advertencia
+            let advertencia = ''; 
+    
+            //Verificar si el array de los estudiantes del representante se encuentra vacío
+            if(representante.cedulaRepresentado.length === 0){
+                //Eliminación del representante
+                await Representantes.findOneAndDelete({_id: representante._id});
+                advertencia = `El representante ${representante.nombre} ${representante.apellido} ha sido eliminado ya que no tiene estudiantes registrados, se le envió un correo`;
+                await eliminacionDelRepresentante(representante.email, representante.nombre, representante.apellido, nombre, apellido);
+            } else if (representante.estudiantes.length > 0 ){
+                advertencia = `El estudiante ${nombre} ${apellido} ha sido eliminado del representante ${representante.nombre} ${representante.apellido}`;
+                await EnviarNotificacionEliminacion(conductor._id, representante._id, representante.nombre, representante.apellido, advertencia);
+            }
         }
+    } else {
+        advertencia = "Se elimino el estudiante pero no se encontraron representantes asociados";
     }
 
     //Eliminación del estudiante
@@ -836,6 +841,90 @@ const BuscarLista = async (req, res) => {
     }
 }
 
+//Actualizar la lista de asistencia 
+const ActualizarLista = async (req, res) => {
+    try {
+        // Obtener el id del conductor logeado
+        const { id } = req.user;
+        // Obtener el id de la lista de los parámetros de la URL
+        const { listaId } = req.params;
+        // Obtener los datos de la lista de asistencia
+        const { estudiantes } = req.body;
+
+        // Verificación de los campos vacíos
+        if (!Array.isArray(estudiantes) || estudiantes.length === 0) {
+            return res.status(400).json({ msg_actualizar_lista: "La lista de estudiantes no puede estar vacía" });
+        }
+
+        // Verificación de la existencia del conductor
+        const conductor = await Conductores.findById(id);
+        if (!conductor) {
+            return res.status(400).json({ msg_actualizar_lista: "Conductor no encontrado" });
+        }
+
+        // Verificar si los ids de los estudiantes se encuentran vinculados al conductor
+        for (const estudiante of estudiantes) {
+            const estudianteBDD = await Estudiantes.findOne({ _id: estudiante.estudiante, conductor: id });
+            if (!estudianteBDD) {
+                return res.status(400).json({ msg_actualizar_lista: "Lo sentimos, el estudiante no se encuentra registrado o no pertenece a su ruta" });
+            }
+        }
+
+        // Verificación de la existencia de lista en la mañana
+        const listaManana = await AsistenciasManana.findOne({ _id: listaId, conductor: id });
+
+        // Fecha actual
+        const fechaDeHoy = new Date().toISOString().split('T')[0];
+        if (listaManana && listaManana.fecha === fechaDeHoy) {
+            // Estructurar los datos de los estudiantes
+            const estudiantesActualizados = estudiantes.map(estudianteLista => ({
+                estudiante: estudianteLista.estudiante,
+                asistio: estudianteLista.asistio
+            }));
+
+            // Actualización de la lista de asistencia
+            await AsistenciasManana.findByIdAndUpdate(
+                listaId,
+                { estudiantes: estudiantesActualizados },
+                { new: true }
+            );
+
+            // Arreglo para almacenar las notificaciones
+            const notificaciones = [];
+
+            // Recorrer los estudiantes que asistieron en la mañana
+            for (const estudiante of estudiantes) {
+                // Obtener la información del estudiante
+                const estudianteInfo = await Estudiantes.findById(estudiante.estudiante).lean();
+
+                // Si existe el estudiante se envía la notificación
+                if (estudianteInfo) {
+                    // Se obtienen datos del estudiante
+                    const { nombre, cedula } = estudianteInfo;
+                    // Se obtienen los representantes del estudiante
+                    const representantes = await Representantes.find({ cedulaRepresentado: cedula }).lean();
+                    // Se recorre los representantes para enviar la notificación
+                    for (const representante of representantes) {
+                        // Se envía la notificación
+                        const notificacion = await EnviarNotificacionAsistencia(id, nombre, representante._id, estudiante.asistio);
+                        if (notificacion) {
+                            notificaciones.push(notificacion);
+                        }
+                    }
+                }
+            }
+
+            return res.status(200).json({ msg_actualizar_lista: `La lista de la mañana con ID: ${listaId} se ha actualizado exitosamente`, notificaciones });
+        } else {
+            return res.status(400).json({ msg_actualizar_lista: `La lista de la mañana con ID: ${listaId} no se ha actualizado ya que no existe o es de una fecha antigua` });
+        }
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ msg_actualizar_lista: "Error al actualizar la lista" });
+    }
+}
+
 //Eliminar lista de asistencia
 const EliminarLista = async (req, res) => {
     try {
@@ -883,5 +972,6 @@ export {
     ConfirmacionCorreoNuevoConductor,
     TomarListaTarde,
     BuscarLista,
-    EliminarLista
+    EliminarLista, 
+    ActualizarLista
 }

@@ -6,17 +6,17 @@ const paraElRegistroDeLosConductores= new Schema(
     {
         nombre:{
             type: String, 
-            require: true, 
+            required: true, 
             trim: true
         }, 
         apellido:{
             type: String, 
-            require: true, 
+            required: true, 
             trim: true 
         }, 
         telefono:{
             type: Number, 
-            require: true, 
+            required: true, 
             unique: true,
             trim: true
         }, 
@@ -26,38 +26,38 @@ const paraElRegistroDeLosConductores= new Schema(
         }, 
         cedula:{
             type: Number, 
-            require: true, 
+            required: true, 
             unique: true,
             trim: true
         }, 
         placaAutomovil:{
             type: String, 
-            require: true, 
+            required: true, 
             unique: true,
             trim: true
         },
         rutaAsignada:{
             type: Number, 
-            require: true, 
+            required: true, 
             unique: true, 
             trim: true
         }, 
         sectoresRuta:{
             type: String, 
-            require: true, 
+            required: true, 
             trim: true
         }, 
         institucion:{
             type: String, 
-            require: true, 
+            required: true, 
         }, 
         fotografiaDelConductor:{
             type: String, 
-            require: true
+            required: true
         }, 
         email:{
             type: String, 
-            require: true, 
+            required: true, 
             unique: true,
             trim: true 
         }, 

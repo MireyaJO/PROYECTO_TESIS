@@ -1,7 +1,7 @@
 import {Router} from 'express';
 import { RegistroDeLosEstudiantes, LoginConductor, ActualizarPassword, RecuperacionPassword, ComprobarTokenPassword, NuevaPassword, BuscarEstudianteCedula, 
     ActualizarEstudiante, EliminarEstudiante, ManejoActualizacionUbicacion, ListarEstudiantes, VisuallizarPerfil, ActualizarPerfil, 
-    TomarListaTarde, BuscarLista, EliminarLista, ConfirmacionCorreoNuevoConductor} from '../controllers/conductor_controller.js';
+    TomarListaTarde, BuscarLista, EliminarLista, ConfirmacionCorreoNuevoConductor, ActualizarLista} from '../controllers/conductor_controller.js';
 import {verificacionConductorRol, verificacionToken} from '../middlewares/autho.js'
 import { validacionesActualizarPerfilConductor, validacionesActualizarEstudiante } from '../middlewares/validaciones.js';
 const router = Router();
@@ -26,5 +26,6 @@ router.patch('/actualizar/perfil/conductor', verificacionToken, verificacionCond
 router.post('/tomar/asistencia/tarde', verificacionToken, verificacionConductorRol, TomarListaTarde);
 router.get('/buscar/asistencia/fecha/:fecha', verificacionToken, verificacionConductorRol, BuscarLista);
 router.delete('/eliminar/asistencia/id/:listaId', verificacionToken, verificacionConductorRol, EliminarLista);
+router.patch('/actualizar/asistencia/:listaId', verificacionToken, verificacionConductorRol, ActualizarLista);
 
 export default router

@@ -82,10 +82,10 @@ const RegistroDeLosConductores = async (req, res) => {
 
     // Encriptar la contraseña antes de guardarla
     nuevoConductor.password = await nuevoConductor.encrypPassword(randomPassword);
-    await enviarCorreoConductor(email, randomPassword, rutaAsignada, sectoresRuta); 
 
     //No se crea un token de confirmación, ya que, al conductor solo se le necesita enviar un correo para que se diriga a su cuenta
     try {
+        await enviarCorreoConductor(email, randomPassword, rutaAsignada, sectoresRuta); 
         // Guardar el nuevo conductor en la base de datos
         await nuevoConductor.save();
         res.status(201).json({ msg_registro_conductor: "Conductor registrado exitosamente", nuevoConductor});
@@ -163,7 +163,7 @@ const ActualizarRutasYSectoresId = async (req, res) => {
 
     // Actualización de los datos
     await Conductores.findOneAndUpdate(
-        { id },
+        { _id: id },
         { rutaAsignada, sectoresRuta},
         // Esta opción devuelve el documento actualizado
         { new: true } 
