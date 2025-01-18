@@ -10,9 +10,6 @@ import {recuperacionContrasenia, confirmacionDeCorreoConductorCambio, eliminacio
 import axios from 'axios';
 import cloudinary from 'cloudinary';
 import fs from 'fs-extra';
-import mongoose from 'mongoose';
-import { deflate } from 'zlib';
-
 
 //Registro de los estudiantes
 const RegistroDeLosEstudiantes = async (req, res) => {
@@ -121,49 +118,6 @@ const RegistroDeLosEstudiantes = async (req, res) => {
     }
 }
 
-//Logeo del conductor
-const LoginConductor = async (req, res) => {
-    // Toma de los datos del conductor que se quiere logear
-    const {email, password} = req.body;
-
-    // Verificar que no haya campos vacíos
-    if (Object.values(req.body).includes("")) {
-        return res.status(400).json({ msg_login_conductor: "Lo sentimos, debes llenar todos los campos" });
-    }
-
-    try {
-        console.log("Iniciando consulta del conductor");
-
-        // Verificación de que el conductor exista
-        const conductor = await Conductores.findOne({email : email});
-        if (!conductor) {
-            return res.status(404).json({ msg_login_conductor: "Lo sentimos, el conductor no se encuentra registrado" });
-        }
-
-        console.log("Conductor encontrado");
-
-        // Verificar la contraseña
-        const verificarPassword = await conductor.matchPassword(password);
-        
-        if (!verificarPassword) {
-            return res.status(404).json({ msg_login_conductor: "Lo sentimos, el password no es el correcto" });
-        }
-
-        console.log("Contraseña verificada");
-
-        // Creación del token para el logeo del conductor
-        const token = createToken({ id: conductor._id, email: conductor.email, role: 'conductor' });
-
-        console.log("Token generado");
-
-        // Mensaje de éxito
-        return res.status(200).json({ token, msg_login_conductor: "Bienvenido conductor" });
-    } catch (error) {
-        console.error(error);
-        return res.status(500).json({ msg_login_conductor: "Error al autenticar el conductor" });
-    }
-};
-
 //Cambio de contraseña del conductor una vez logeado el mismo 
 const ActualizarPassword = async (req, res) => {
     // Toma de los datos del conductor que desea cambiar su contraseña
@@ -196,84 +150,6 @@ const ActualizarPassword = async (req, res) => {
         res.status(500).json({ msg_actualizacion_contrasenia: "Error al actualizar la contraseña" });
     }
 
-}
-
-//Recuperación de Contraseña
-const RecuperacionPassword = async (req, res) => {
-    //Recepción del email del conductor
-    const {email} = req.body;
-
-    //Verificación de que el email no se encuentre vacío
-    if (Object.values(req.body).includes("")) return res.status(404).json({msg:"Lo sentimos, debes llenar todos los campos"})
-    const conductor = await Conductores.findOne({email: email});
-    try{
-        //Verificación de que el conductor exista
-        if(!conductor){
-            return res.status(404).json({msg:"Lo sentimos, el conductor no se encuentra registrado"})
-        }
-
-        //Creación del token para la recuperación de la contraseña
-        const token = conductor.crearToken();
-        conductor.token = token;
-
-        //Envío del correo de recuperación de la contraseña
-        await recuperacionContrasenia(conductor.email, conductor.nombre, conductor.apellido, token);
-        await conductor.save();
-        res.status(200).json({ msg_recuperacion_contrasenia:"Correo de recuperación de contraseña enviado satisfactoriamente"})
-    }catch(error){
-        console.error(error);
-        res.status(500).json({ msg_recuperacion_contrasenia:"Error al recuperar la contraseña"});
-    }
-}
-
-//Comprobación del token para la recuperación de la contraseña
-const ComprobarTokenPassword= async (req, res) => { 
-    //Recepción del token
-    const tokenURL = req.params.token;
-
-    //Verificación de que el token sea válido
-    if(!tokenURL) return res.status(404).json({msg_recuperacion_contrasenia:"Lo sentimos, el token se encuentra vacío"});
-    try {
-        //Verificación de que exista un conductor con el token 
-        const conductor = await Conductores.findOne({token: tokenURL});
-        if(conductor?.token !== tokenURL ) return res.status(404).json({msg_recuperacion_contrasenia:"Lo sentimos, el token no coincide con ningún conductor"});
-        
-        //Mensaje de éxito
-        res.status(200).json({msg_recuperacion_contrasenia:"Token confirmado, ya puedes crear tu nuevo password"}) 
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({msg_recuperacion_contrasenia:"Error al comprobar el token"});
-    }
-}
-
-//Creación de la nueva contraseña
-const NuevaPassword = async (req, res) => {
-    //Recepción de la nueva contraseña
-    const {passwordActual, passwordActualConfirm} = req.body;
-    const tokenURL = req.params.token;
-    //Verificación de que no haya campos vacíos
-    if (Object.values(req.body).includes("")) {
-        return res.status(400).json({msg_recuperacion_contrasenia: "Lo sentimos, debes llenar todos los campos"});
-    }
-
-    //Verificación de que el token sea válido
-    if(!tokenURL) return res.status(404).json({msg_recuperacion_contrasenia:"Lo sentimos, el token se encuentra vacío"});
-    try {
-        //Verificación de que la contraseña y su confirmación coincidan
-        if(passwordActual !== passwordActualConfirm){
-            return res.status(400).json({msg_recuperacion_contrasenia: "Lo sentimos, la contraseña nueva y su confirmación no coinciden"});
-        }
-
-        // Encriptar la contraseña antes de guardarla
-        const conductor = await Conductores.findOne({token: tokenURL});
-        conductor.password = await conductor.encrypPassword(passwordActual);
-        conductor.token = null;
-        await conductor.save();
-        res.status(201).json({msg_recuperacion_contrasenia: "La contraseña se ha actualizado satisfactoriamente, por favor vuelva a logearse"});
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({msg_recuperacion_contrasenia:"Error al crear la nueva contraseña"});
-    }
 }
 
 //Todos los estudiantes de la ruta del conductor logeado
@@ -668,31 +544,6 @@ const ActualizarPerfil = async (req, res) => {
     }
 }
 
-//Confirmación del nuevo correo del representante
-const ConfirmacionCorreoNuevoConductor = async (req, res) => {
-    //Recepcion del token proporcionado por la URL
-    const { token } = req.params;
-
-    try {
-        // Buscar representante por token
-        const conductor = await Conductores.findOne({ token });
-        if (!conductor) return res.status(400).json({ msg: "Token inválido o expirado" });
-
-        // Actualizar el email
-        conductor.email = conductor.tokenEmail;
-        conductor.token = null;
-        //Almacenamiento temporal de el correo nuevo hasta que se confirme el cambio de correo
-        conductor.tokenEmail = null;
-
-        // Guardar los cambios en la base de datos
-        await conductor.save();
-        res.status(200).json({ msg: "Correo electrónico actualizado exitosamente, puede logearse con su nuevo email" });
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ msg: "Error al confirmar el cambio de correo electrónico" });
-    }
-};
-
 // Función para enviar notificaciones a los padres de familia
 const EnviarNotificacionAsistencia = async (conductorId, estudianteNombre, representanteId, asistio) => {
     try {
@@ -955,12 +806,8 @@ const EliminarLista = async (req, res) => {
 }
 
 export {
-    RegistroDeLosEstudiantes,
-    LoginConductor, 
+    RegistroDeLosEstudiantes, 
     ActualizarPassword, 
-    RecuperacionPassword, 
-    ComprobarTokenPassword,
-    NuevaPassword,
     ListarEstudiantes,
     BuscarEstudianteCedula, 
     ActualizarEstudiante, 
@@ -969,7 +816,6 @@ export {
     CalcularDistanciaYTiempo, 
     VisuallizarPerfil, 
     ActualizarPerfil, 
-    ConfirmacionCorreoNuevoConductor,
     TomarListaTarde,
     BuscarLista,
     EliminarLista, 

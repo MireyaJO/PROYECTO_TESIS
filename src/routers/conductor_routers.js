@@ -1,16 +1,16 @@
 import {Router} from 'express';
-import { RegistroDeLosEstudiantes, LoginConductor, ActualizarPassword, RecuperacionPassword, ComprobarTokenPassword, NuevaPassword, BuscarEstudianteCedula, 
+import { RegistroDeLosEstudiantes, ActualizarPassword, BuscarEstudianteCedula, 
     ActualizarEstudiante, EliminarEstudiante, ManejoActualizacionUbicacion, ListarEstudiantes, VisuallizarPerfil, ActualizarPerfil, 
-    TomarListaTarde, BuscarLista, EliminarLista, ConfirmacionCorreoNuevoConductor, ActualizarLista} from '../controllers/conductor_controller.js';
+    TomarListaTarde, BuscarLista, EliminarLista, ActualizarLista} from '../controllers/conductor_controller.js';
 import {verificacionConductorRol, verificacionToken} from '../middlewares/autho.js'
 import { validacionesActualizarPerfilConductor, validacionesActualizarEstudiante } from '../middlewares/validaciones.js';
 const router = Router();
 //Rutas Públicas
-router.post('/login/conductor', LoginConductor);
+/*router.post('/login/conductor', LoginConductor);
 router.post('/recuperacion/contrasenia/conductor', RecuperacionPassword);
 router.get('/comprobar/token/conductor/:token', ComprobarTokenPassword);
 router.patch('/nueva/contrasenia/conductor/:token', NuevaPassword); 
-router.get("/cambio/emailConductor/:token", ConfirmacionCorreoNuevoConductor);
+router.get("/cambio/emailConductor/:token", ConfirmacionCorreoNuevoConductor);*/
 
 
 //Rutas Privadas

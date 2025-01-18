@@ -1,17 +1,15 @@
 import {Router} from 'express';
 import {verificacionRepresentanteRol, verificacionToken} from '../middlewares/autho.js'
-import {RegistroDeRepresentantes, ConfirmacionCorreo, LoginRepresentante, RecuperacionContraseniaRepresentante, ComprobarTokenPasswordRepresentante, NuevaPasswordRepresentante, 
-    ActualizarPasswordRepresentante, EstudiantesRepresentados, VisuallizarPerfil, EliminarCuentaRepresentante, AlertaLlegadaConductor, VerNotificaciones, ActualizarPerfilRepresentante, ConfirmacionCorreoNuevoRepresentante} from '../controllers/representantes_controller.js'
+import {RegistroDeRepresentantes, ConfirmacionCorreo, ActualizarPasswordRepresentante, EstudiantesRepresentados, VisuallizarPerfil, EliminarCuentaRepresentante, AlertaLlegadaConductor, VerNotificaciones, ActualizarPerfilRepresentante, ConfirmacionCorreoNuevoRepresentante} from '../controllers/representantes_controller.js'
 import {validacionesRepresentantes, validacionesActualizarPerfilRepresentante} from '../middlewares/validaciones.js'
 const router = Router()
 //Rutas publicas
 router.post("/registro/representantes", validacionesRepresentantes, RegistroDeRepresentantes);
 router.get("/confirmar/correoRepresentante/:token", ConfirmacionCorreo);
-router.post("/login/representante", LoginRepresentante);
-router.post('/recuperacion/contrasenia/representante', RecuperacionContraseniaRepresentante);
+/*router.post('/recuperacion/contrasenia/representante', RecuperacionContraseniaRepresentante);
 router.get('/comprobar/token/representante/:token', ComprobarTokenPasswordRepresentante);
 router.patch('/nueva/contrasenia/representante/:token', NuevaPasswordRepresentante);
-router.get("/cambio/emailRepresentante/:token", ConfirmacionCorreoNuevoRepresentante);
+router.get("/cambio/emailRepresentante/:token", ConfirmacionCorreoNuevoRepresentante);*/
 
 
 //Rutas privadas

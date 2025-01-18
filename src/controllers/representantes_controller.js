@@ -161,124 +161,6 @@ const ConfirmacionCorreo = async (req, res) => {
     }
 }
 
-//Logeo del representante
-const LoginRepresentante = async (req, res) => {
-    // Toma de los datos del conductor que se quiere logear
-    const {email, password} = req.body;
-    
-    // Verificar que no haya campos vacíos
-    if (Object.values(req.body).includes("")) {
-        return res.status(400).json({ msg_login_conductor: "Lo sentimos, debes llenar todos los campos" });
-    }
-    
-    try {
-        // Verificación de que el conductor exista
-        const representante = await Representantes.findOne({email : email});
-        //Verificación de que el correo haya sido confirmado
-        if(representante?.confirmEmail===false) return res.status(403).json({msg:"Lo sentimos, debe verificar su cuenta"})
-
-        // Verificación de que el representante exista
-        if (!representante) {
-            return res.status(404).json({ msg_login_representante: "Lo sentimos, el representnate no se encuentra registrado" });
-        }
-    
-        // Verificar la contraseña
-        const verificarPassword = await representante.matchPassword(password);
-
-        if (!verificarPassword) {
-            return res.status(404).json({ msg_login_representante: "Lo sentimos, el password no es el correcto" });
-        }
-    
-        // Creación del token para el logeo del conductor
-        const token = createToken({ id: representante._id, email: representante.email, role: 'representante' });
-    
-        // Mensaje de éxito
-        return res.status(200).json({ token, msg_login_representante: "Bienvenido representante" });
-    } catch (error) {
-        console.error(error);
-        return res.status(500).json({ msg_login_representante: "Error al autenticar el representante" });
-    }
-}
-
-//Recuperación de la contraseña del representante
-const RecuperacionContraseniaRepresentante = async (req, res) => {
-    //Recepción del email del representante
-    const {email} = req.body;
-
-    //Verificación de que el email no se encuentre vacío
-    if (Object.values(req.body).includes("")) return res.status(404).json({msg:"Lo sentimos, debes llenar todos los campos"})
-    const representante = await Representantes.findOne({email: email});
-    try{
-        //Verificación de que el representante exista
-        if(!representante){
-            return res.status(404).json({msg:"Lo sentimos, el representante no se encuentra registrado"})
-        }
-
-        //Creación del token para la recuperación de la contraseña
-        const token = representante.crearToken();
-        representante.token = token;
-
-        //Envío del correo de recuperación de la contraseña
-        await recuperacionContraseniaRepresentante(representante.email, representante.nombre, representante.apellido, token);
-        await representante.save();
-        res.status(200).json({ msg_recuperacion_contrasenia:"Correo de recuperación de contraseña enviado satisfactoriamente"})
-    }catch(error){
-        console.error(error);
-        res.status(500).json({ msg_recuperacion_contrasenia:"Error al recuperar la contraseña"});
-    }
-}
-
-//Comprobación del token para la recuperación de la contraseña
-const ComprobarTokenPasswordRepresentante= async (req, res) => { 
-    //Recepción del token
-    const tokenURL = req.params.token;
-
-    //Verificación de que el token sea válido
-    if(!tokenURL) return res.status(404).json({msg_recuperacion_contrasenia:"Lo sentimos, el token se encuentra vacío"});
-    try {
-        //Verificación de que exista un representante con el token 
-        const representante = await Representantes.findOne({token: tokenURL});
-        if(representante?.token !== tokenURL ) return res.status(404).json({msg_recuperacion_contrasenia:"Lo sentimos, el token no coincide con ningún representante"});
-        await representante.save()
-        res.status(200).json({msg_recuperacion_contrasenia:"Token confirmado, ya puedes crear tu nuevo password"}) 
-
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({msg_recuperacion_contrasenia:"Error al comprobar el token"});
-    }
-}
-
-//Creación de la nueva contraseña
-const NuevaPasswordRepresentante = async (req, res) => {
-    //Recepción de la nueva contraseña
-    const {passwordActual, passwordActualConfirm} = req.body;
-    const tokenURL = req.params.token;
-    //Verificación de que no haya campos vacíos
-    if (Object.values(req.body).includes("")) {
-        return res.status(400).json({msg_recuperacion_contrasenia: "Lo sentimos, debes llenar todos los campos"});
-    }
-
-    //Verificación de que el token sea válido
-    if(!tokenURL) return res.status(404).json({msg_recuperacion_contrasenia:"Lo sentimos, el token se encuentra vacío"});
-    try {
-        //Verificación de que la contraseña y su confirmación coincidan
-        if(passwordActual !== passwordActualConfirm){
-            return res.status(400).json({msg_recuperacion_contrasenia: "Lo sentimos, la contraseña nueva y su confirmación no coinciden"});
-        }
-
-        // Encriptar la contraseña antes de guardarla
-        const representante = await Representantes.findOne({token: tokenURL});
-        representante.password = await representante.encrypPassword(passwordActual);
-        //Eliminar el token de la base de datos para que no se pueda volver a usar 
-        representante.token = null;
-        await representante.save();
-        res.status(201).json({msg_recuperacion_contrasenia: "La contraseña se ha actualizado satisfactoriamente, por favor vuelva a logearse"});
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({msg_recuperacion_contrasenia:"Error al crear la nueva contraseña"});
-    }
-}
-
 // Actualización de la contraseña del representante
 const ActualizarPasswordRepresentante = async (req, res) => {
     // Toma de los datos del conductor que desea cambiar su contraseña
@@ -583,44 +465,14 @@ const ActualizarPerfilRepresentante = async (req, res) => {
     }
 };
 
-//Confirmación del nuevo correo del representante
-const ConfirmacionCorreoNuevoRepresentante = async (req, res) => {
-    //Recepcion del token proporcionado por la URL
-    const { token } = req.params;
-
-    try {
-        // Buscar representante por token
-        const representante = await Representantes.findOne({ token });
-        if (!representante) return res.status(400).json({ msg: "Token inválido o expirado" });
-
-        // Actualizar el email
-        representante.email = representante.tokenEmail;
-        representante.token = null;
-        representante.tokenEmail = null;
-
-        // Guardar los cambios en la base de datos
-        await representante.save();
-
-        res.status(200).json({ msg: "Correo electrónico actualizado exitosamente, puede logearse con su nuevo email" });
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ msg: "Error al confirmar el cambio de correo electrónico" });
-    }
-}; 
-
 export {
     RegistroDeRepresentantes, 
     ConfirmacionCorreo, 
-    LoginRepresentante, 
-    RecuperacionContraseniaRepresentante, 
-    ComprobarTokenPasswordRepresentante, 
-    NuevaPasswordRepresentante, 
     ActualizarPasswordRepresentante,
     EstudiantesRepresentados, 
     VisuallizarPerfil, 
     EliminarCuentaRepresentante, 
     AlertaLlegadaConductor, 
     VerNotificaciones,
-    ActualizarPerfilRepresentante, 
-    ConfirmacionCorreoNuevoRepresentante
+    ActualizarPerfilRepresentante
 }

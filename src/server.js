@@ -14,6 +14,7 @@ import fileUpload from 'express-fileupload';
 import Adminrouter from './routers/admin_routers.js';
 import Conductoresrouter from './routers/conductor_routers.js';
 import RepresentantesRouter from './routers/representantes_routers.js';
+import RutasPublicas from './routers/publicas_routes.js';
 
 // Inicializaciones
 const app = express()
@@ -61,6 +62,9 @@ app.use('/api', Conductoresrouter)
 
 //Rutas de los Representantes
 app.use('/api', RepresentantesRouter)
+
+//Rutas publicas
+app.use('/api', RutasPublicas)
 
 // Exportar la instancia de express por medio de app
 export default app;

@@ -2,7 +2,6 @@ import cloudinary from 'cloudinary';
 import fs from 'fs-extra';
 import Conductores from '../models/Administrador.js';
 import {enviarCorreoConductor, actualizacionDeConductor, eliminacionDelConductor} from "../config/nodemailer.js"; 
-import {createToken} from '../middlewares/autho.js';
 import crypto from 'crypto';
 
 // Registros de los conductores
@@ -92,24 +91,6 @@ const RegistroDeLosConductores = async (req, res) => {
     } catch (error) {
         console.error(error);
         res.status(500).json({ msg_registro_conductor: "Error al registrar el conductor" });
-    }
-};
-
-// Logeo del administrador 
-const LoginAdministrador = async (req, res) => {
-    //Toma de los datos del administrador
-    const {emailAdmin, passwordAdmin} = req.body;
-    //Verificación de los campos vacíos
-    if (Object.values(req.body).includes("")) return res.satus(400).json({msg:"Lo sentimos debes llenar todos los campos"})
-    //¿Qué sucede si el email o la contraseña no son correctas?
-    if(emailAdmin !== process.env.ADMIN_EMAIL) return res.status(400).json({msg:"Lo sentimos, el email no es correcto"})
-    if(passwordAdmin !== process.env.ADMIN_PASSWORD) return res.status(400).json({msg:"Lo sentimos, la contraseña no es correcta"})
-    // ¿Qué sucede si las creedenciales son correctas?
-    if (emailAdmin === process.env.ADMIN_EMAIL && passwordAdmin === process.env.ADMIN_PASSWORD) {
-        // Crear un token JWT con un campo adicional que indique que el usuario es un administrador
-        const token = createToken({ email: emailAdmin, role: 'admin' });
-        // Enviar el token al cliente
-        return res.status(200).json({ token, msg_login_admin: "Bienvenido administrador" });
     }
 };
 
@@ -207,7 +188,6 @@ const EliminarConductor = async (req, res) => {
 
 export {
     RegistroDeLosConductores,
-    LoginAdministrador,
     BuscarConductorRuta,
     ListarConductor,
     ActualizarRutasYSectoresId,
