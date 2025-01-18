@@ -5,7 +5,6 @@ import { createToken } from '../middlewares/autho.js';
 import {recuperacionContrasenia} from "../config/nodemailer.js"; 
 import {recuperacionContraseniaRepresentante} from '../config/nodemailer.js';
 import crypto from 'crypto';
-import { CallTracker } from 'assert';
 
 // Logeo de todos los roles
 const Login = async (req, res) => {

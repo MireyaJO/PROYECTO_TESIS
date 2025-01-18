@@ -5,7 +5,7 @@ import Notificaciones from '../models/Notificaciones.js';
 import Estudiantes from '../models/Conductor.js';
 import Representantes from '../models/Representantes.js';
 import {createToken} from '../middlewares/autho.js';
-import {confirmacionDeCorreoRepresentante, recuperacionContraseniaRepresentante, confirmacionDeCorreoRepresentanteCambio } from '../config/nodemailer.js';
+import {confirmacionDeCorreoRepresentante, confirmacionDeCorreoRepresentanteCambio } from '../config/nodemailer.js';
 import {CalcularDistanciaYTiempo} from '../controllers/conductor_controller.js';
 import AsistenciasTarde from '../models/AsistenciasTarde.js';
 
