@@ -447,7 +447,7 @@ const ManejoActualizacionUbicacion = async (req, res) => {
     const {id} = req.user;
     try {
         // Usar lean() para obtener un objeto simple
-        const conductor = await Conductores.findById(id).lean(); 
+        const conductor = await Conductores.findById(id); 
         if (!conductor) {
             return res.json({ msg_actualizacion_ubicacion: "Conductor no encontrado" });
         }
