@@ -152,7 +152,7 @@ const confirmacionDeCorreoRepresentanteCambio = async (email, nombre, apellido, 
         subject: "Confirmación del nuevo correo electrónico para el representante de un estudiante de la Unidad Educativa Particular Emaús",
         html: `<p>Señor/a ${nombre} ${apellido} usted desea cambiar su correo electronico, para confirmar el mismo haga clic en el siguiente link: </p>
         <hr>
-        <a href=${process.env.URL_BACKEND}cambio/emailRepresentante/${encodeURIComponent(token)}>Clic aquí para confirmar tu correo electrónico</a>
+        <a href=${process.env.URL_BACKEND}cambio/email/${encodeURIComponent(token)}>Clic aquí para confirmar tu correo electrónico</a>
         <hr>`
     };
 
@@ -174,7 +174,7 @@ const confirmacionDeCorreoConductorCambio = async (email, nombre, apellido, toke
         subject: "Confirmación del nuevo correo electrónico para el conductor de un estudiante de la Unidad Educativa Particular Emaús",
         html: `<p>Señor/a ${nombre} ${apellido} usted desea cambiar su correo electronico, para confirmar el mismo haga clic en el siguiente link: </p>
         <hr>
-        <a href=${process.env.URL_BACKEND}cambio/emailConductor/${encodeURIComponent(token)}>Clic aquí para confirmar tu correo electrónico</a>
+        <a href=${process.env.URL_BACKEND}cambio/email/${encodeURIComponent(token)}>Clic aquí para confirmar tu correo electrónico</a>
         <hr>`
     };
 
