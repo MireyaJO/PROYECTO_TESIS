@@ -188,7 +188,7 @@ const EliminarConductor = async (req, res) => {
     
    try{
         //Verificación de la existencia del conductor
-        const conductor = await Conductores.findOne({id});
+        const conductor = await Conductores.findById({_id: id});
         if(!conductor) return res.status(400).json({msg:"Lo sentimos, el conductor no se encuentra trabajando en la Unidad Educativa Particular EMAÚS"})
         
         //Eliminar la imagen en Cloudinary 
