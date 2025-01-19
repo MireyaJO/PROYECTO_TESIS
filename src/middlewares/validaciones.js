@@ -188,12 +188,6 @@ const validacionesActualizarPerfilConductor = [
         .withMessage('Se necesita campos para actualizar')
     .customSanitizer(value => value?.trim()),
 
-    // Verificar que el género sea uno de los valores permitidos
-    check("genero")
-    .isIn(["Femenino", "Masculino", "Prefiero no decirlo"])
-        .withMessage('El género debe ser "Femenino", "Masculino" o "Prefiero no decirlo"')
-    .customSanitizer(value => value?.trim()),
-
     (req,res,next)=>{
         const errors = validationResult(req);
         if (errors.isEmpty()) {
@@ -232,12 +226,6 @@ const validacionesActualizarPerfilRepresentante = [
     check("email")
     .isEmail()
         .withMessage('El email debe ser un correo válido')
-    .customSanitizer(value => value?.trim()),
-
-    // Verificar que el género sea uno de los valores permitidos
-    check("genero")
-    .isIn(["Femenino", "Masculino", "Prefiero no decirlo"])
-        .withMessage('El género debe ser "Femenino", "Masculino" o "Prefiero no decirlo"')
     .customSanitizer(value => value?.trim()),
 
     (req,res,next)=>{

@@ -380,7 +380,7 @@ const VerNotificaciones = async (req, res) => {
 //Actualizar su perfil de representante
 const ActualizarPerfilRepresentante = async (req, res) => {
     // Obtención de datos de lo escrito por el representante
-    const { nombre, apellido, telefono, genero, cedula, email } = req.body;
+    const { nombre, apellido, telefono, cedula, email } = req.body;
     // Obtención del id del representante logeado
     const { id } = req.user;
 
@@ -452,7 +452,6 @@ const ActualizarPerfilRepresentante = async (req, res) => {
         representante.nombre = nombre;
         representante.apellido = apellido;
         representante.telefono = telefono;
-        representante.genero = genero;
         representante.cedula = cedula;
 
         // Guardar los cambios en la base de datos

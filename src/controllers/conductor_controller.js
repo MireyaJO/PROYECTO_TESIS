@@ -468,7 +468,7 @@ const VisuallizarPerfil = async (req, res) => {
 
 const ActualizarPerfil = async (req, res) => {
     //Obtención de datos de lo escrito por el conductor
-    const {placaAutomovil, telefono, email, genero} = req.body;
+    const {placaAutomovil, telefono, email} = req.body;
     //Obtención del id del conductor logeado
     const {id} = req.user;
     // Verificación de los campos vacíos
@@ -533,7 +533,6 @@ const ActualizarPerfil = async (req, res) => {
         // Actualización de los datos
         conductor.placaAutomovil = placaAutomovil;
         conductor.telefono = telefono;
-        conductor.genero = genero;
 
         // Guardar los cambios en la base de datos
         await conductor.save();
