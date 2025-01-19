@@ -17,80 +17,87 @@ const RegistroDeLosConductores = async (req, res) => {
         cedula,
         email,
     } = req.body;
+    try{
+        // Comprobar si el email ya está registrado
+        const verificarEmailBDD = await Conductores.findOne({email});
+        if (verificarEmailBDD) {
+            return res.status(400).json({ msg_registro_conductor: "Lo sentimos, el email ya se encuentra registrado" });
+        }
 
-    // Comprobar si el email ya está registrado
-    const verificarEmailBDD = await Conductores.findOne({email});
-    if (verificarEmailBDD) {
-        return res.status(400).json({ msg_registro_conductor: "Lo sentimos, el email ya se encuentra registrado" });
-    }
+        // Comprobar si la cédula ya está registrada
+        const verificarCedulaBDD = await Conductores.findOne({cedula});
+        if (verificarCedulaBDD) {
+            return res.status(400).json({ msg_registro_conductor: "Lo sentimos, la cédula ya se encuentra registrada" })
+        };
 
-    // Comprobar si la cédula ya está registrada
-    const verificarCedulaBDD = await Conductores.findOne({cedula});
-    if (verificarCedulaBDD) {
-        return res.status(400).json({ msg_registro_conductor: "Lo sentimos, la cédula ya se encuentra registrada" })
-    };
+        // Comprobar si la ruta ya está asignada
+        const verificarRutaBDD = await Conductores.findOne({rutaAsignada});
+        if (verificarRutaBDD) {
+            return res.status(400).json({ msg_registro_conductor: "Lo sentimos, la ruta ya se encuentra asignada" })
+        };
 
-    // Comprobar si la ruta ya está asignada
-    const verificarRutaBDD = await Conductores.findOne({rutaAsignada});
-    if (verificarRutaBDD) {
-        return res.status(400).json({ msg_registro_conductor: "Lo sentimos, la ruta ya se encuentra asignada" })
-    };
+        // Comprobar si el telefono ya está registrado
+        const verificarTelefonoBDD = await Conductores.findOne({telefono});
+        if (verificarTelefonoBDD) {
+            return res.status(400).json({ msg_registro_conductor: "Lo sentimos, el telefono ya se encuentra registrado" })
+        };
 
-    // Comprobar si el telefono ya está registrado
-    const verificarTelefonoBDD = await Conductores.findOne({telefono});
-    if (verificarTelefonoBDD) {
-        return res.status(400).json({ msg_registro_conductor: "Lo sentimos, el telefono ya se encuentra registrado" })
-    };
+        // Comprobar si la placa ya está registrada
+        const verificarPlacaBDD = await Conductores.findOne({placaAutomovil});
+        if (verificarPlacaBDD) {
+            return res.status(400).json({ msg_registro_conductor: "Lo sentimos, la placa ya se encuentra registrada" })
+        };
 
-    // Comprobar si la placa ya está registrada
-    const verificarPlacaBDD = await Conductores.findOne({placaAutomovil});
-    if (verificarPlacaBDD) {
-        return res.status(400).json({ msg_registro_conductor: "Lo sentimos, la placa ya se encuentra registrada" })
-    };
+        // Crear un nuevo conductor con los datos proporcionados
+        const nuevoConductor = new Conductores(req.body);
 
-    // Crear un nuevo conductor con los datos proporcionados
-    const nuevoConductor = new Conductores(req.body);
+        // Verificar si se envió un archivo de imagen
+        if (req.files && req.files.fotografiaDelConductor) {
+            const file = req.files.fotografiaDelConductor;
 
-    // Verificar si se envió un archivo de imagen
-    if (req.files && req.files.fotografiaDelConductor) {
-        const file = req.files.fotografiaDelConductor;
+            try {
+                // Subir la imagen a Cloudinary con el nombre del conductor como public_id
+                const result = await cloudinary.v2.uploader.upload(file.tempFilePath, {
+                    public_id: `${nombre}_${apellido}`.replace(/\s+/g, '_'),
+                    folder: "conductores"
+                });
 
+                // Guardar la URL de la imagen en la base de datos
+                nuevoConductor.fotografiaDelConductor = result.secure_url;
+
+                // Eliminar el archivo local después de subirlo
+                await fs.unlink(file.tempFilePath);
+            } catch (error) {
+                console.error(error);
+                return res.status(500).json({ msg_registro_conductor: "Error al subir la imagen" });
+            }
+        } else {
+            return res.status(400).json({ msg_registro_conductor: "Lo sentimos, debes subir una imagen" });
+        }
+
+
+        // Generar una contraseña aleatoria
+        const randomPassword = crypto.randomBytes(8).toString('hex');
+
+        // Encriptar la contraseña antes de guardarla
+        nuevoConductor.password = await nuevoConductor.encrypPassword(randomPassword);
+
+        //No se crea un token de confirmación, ya que, al conductor solo se le necesita enviar un correo para que se diriga a su cuenta
         try {
-            // Subir la imagen a Cloudinary con el nombre del conductor como public_id
-            const result = await cloudinary.v2.uploader.upload(file.tempFilePath, {
-                public_id: `${nombre}_${apellido}`.replace(/\s+/g, '_'),
-                folder: "conductores"
-            });
-
-            // Guardar la URL de la imagen en la base de datos
-            nuevoConductor.fotografiaDelConductor = result.secure_url;
-
-            // Eliminar el archivo local después de subirlo
-            await fs.unlink(file.tempFilePath);
+            await enviarCorreoConductor(email, randomPassword, rutaAsignada, sectoresRuta); 
+            // Guardar el nuevo conductor en la base de datos
+            await nuevoConductor.save();
+            res.status(201).json({ msg_registro_conductor: "Conductor registrado exitosamente", nuevoConductor});
         } catch (error) {
             console.error(error);
-            return res.status(500).json({ msg_registro_conductor: "Error al subir la imagen" });
+            res.status(500).json({ msg_registro_conductor: "Error al registrar el conductor" });
         }
-    } else {
-        return res.status(400).json({ msg_registro_conductor: "Lo sentimos, debes subir una imagen" });
-    }
-
-
-    // Generar una contraseña aleatoria
-    const randomPassword = crypto.randomBytes(8).toString('hex');
-
-    // Encriptar la contraseña antes de guardarla
-    nuevoConductor.password = await nuevoConductor.encrypPassword(randomPassword);
-
-    //No se crea un token de confirmación, ya que, al conductor solo se le necesita enviar un correo para que se diriga a su cuenta
-    try {
-        await enviarCorreoConductor(email, randomPassword, rutaAsignada, sectoresRuta); 
-        // Guardar el nuevo conductor en la base de datos
-        await nuevoConductor.save();
-        res.status(201).json({ msg_registro_conductor: "Conductor registrado exitosamente", nuevoConductor});
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ msg_registro_conductor: "Error al registrar el conductor" });
+    }catch(error){
+        console.log(error); 
+        res.status(500).json({
+            msg: "Error al registrar el conductor",
+            error: error.message
+        });
     }
 };
 
@@ -109,19 +116,27 @@ const BuscarConductorRuta = async (req, res) => {
         // Mensaje de éxito
         res.status(200).json({ msg_buscar_conductor_ruta: `El conductor de la ruta ${rutaAsignada} se han encontrado exitosamente`, conductores });
     } catch (error) {
-
+        console.log(error);
         res.status(500).json({ msg_buscar_conductor_ruta: "Error al buscar conductores por ruta", error: error.message });
     }
 }
 
 // Listar todos los conductores de la Unidad Educativa Particular EMAÚS
 const ListarConductor = async (req, res) => {
-    //Obtener todos los conductores
-    const conductores = await Conductores.find().select("-updatedAt -createdAt -__v");
-    //Validación de que existan conductores
-    if (conductores.length === 0) return res.status(400).json({msg:"El administrador no ha registrado a ningún conductor"});
-    //Mensaje de exito
-    res.status(200).json({ msg_listar_conductores: "Los conductores se han encontrado exitosamente", conductores});
+    try{
+        //Obtener todos los conductores
+        const conductores = await Conductores.find().select("-updatedAt -createdAt -__v");
+        //Validación de que existan conductores
+        if (conductores.length === 0) return res.status(400).json({msg:"El administrador no ha registrado a ningún conductor"});
+        //Mensaje de exito
+        res.status(200).json({ msg_listar_conductores: "Los conductores se han encontrado exitosamente", conductores});
+    }catch(error){
+        console.log(error); 
+        res.status(500).json({
+            msg: "Error al listar los conductores",
+            error: error.message
+        });
+    }    
 }
 
 //Actualizacion de las rutas y sectores de los conductores por su id
@@ -132,30 +147,38 @@ const ActualizarRutasYSectoresId = async (req, res) => {
     //Obtener la ruta y los sectores de la solicitud
     const {rutaAsignada, sectoresRuta} = req.body;
 
-    // Verificación de los campos vacíos
-    if (Object.values(req.body).includes("")) return res.status(400).json({ msg: "Lo sentimos, debes llenar todos los campos" });
+    try{
+        // Verificación de los campos vacíos
+        if (Object.values(req.body).includes("")) return res.status(400).json({ msg: "Lo sentimos, debes llenar todos los campos" });
 
-    // Verificación de la existencia del conductor
-    const conductor = await Conductores.findById(id);
-    if (!conductor) return res.status(400).json({ msg: "Lo sentimos, el conductor no se encuentra trabajando en la Unidad Educativa Particular EMAÚS" });
+        // Verificación de la existencia del conductor
+        const conductor = await Conductores.findById(id);
+        if (!conductor) return res.status(400).json({ msg: "Lo sentimos, el conductor no se encuentra trabajando en la Unidad Educativa Particular EMAÚS" });
 
-    // Para conocer el nombre del conductor que posee ese id
-    const {nombre, apellido} = conductor;
+        // Para conocer el nombre del conductor que posee ese id
+        const {nombre, apellido} = conductor;
 
-    // Actualización de los datos
-    await Conductores.findOneAndUpdate(
-        { _id: id },
-        { rutaAsignada, sectoresRuta},
-        // Esta opción devuelve el documento actualizado
-        { new: true } 
-    );
+        // Actualización de los datos
+        await Conductores.findOneAndUpdate(
+            { _id: id },
+            { rutaAsignada, sectoresRuta},
+            // Esta opción devuelve el documento actualizado
+            { new: true } 
+        );
 
-    //Envio del correo al conductor 
-    await actualizacionDeConductor(conductor.email, rutaAsignada, sectoresRuta);
+        //Envio del correo al conductor 
+        await actualizacionDeConductor(conductor.email, rutaAsignada, sectoresRuta);
 
-    res.status(200).json({
-        msg: `La ruta y sectores objetivo del conductor ${nombre} ${apellido} han sido actualizados exitosamente`
-    });
+        res.status(200).json({
+            msg: `La ruta y sectores objetivo del conductor ${nombre} ${apellido} han sido actualizados exitosamente`
+        });
+    }catch(error){
+        console.log(error); 
+        res.status(500).json({
+            msg: "Error al actualizar las rutas y sectores de los conductores",
+            error: error.message
+        });
+    }
 }
 
 //Eliminación de un conductor
