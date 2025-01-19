@@ -621,6 +621,12 @@ const TomarListaTarde = async (req, res) => {
         }
         // Obtener la fecha actual
         const fechaDeHoy = new Date().toISOString().split('T')[0];
+
+        // Verificar si ya existe un registro de asistencia para el conductor en la fecha actual
+        const asistenciaExistente = await AsistenciasTarde.findOne({ conductor: id, fecha: fechaDeHoy });
+        if (asistenciaExistente) {
+            return res.status(400).json({ msg: "La lista ya ha sido tomada para el día de hoy" });
+        }
         
         //Verificar si los ids de los estudiantes se encuentran vinculados al conductor
         for (const estudiante of estudiantes) {
