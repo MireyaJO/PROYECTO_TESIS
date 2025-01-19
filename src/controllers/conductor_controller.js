@@ -7,7 +7,6 @@ import NotificacionesEliminacionEstudiantes from '../models/NotificacionEliminac
 import {createToken} from '../middlewares/autho.js';
 import {directionsService} from '../config/mapbox.js';
 import {confirmacionDeCorreoConductorCambio, eliminacionDelRepresentante} from "../config/nodemailer.js"; 
-import NotificacionesEliminacionEstudiantes from '../models/NotificacionEliminacion.js';
 import axios from 'axios';
 import cloudinary from 'cloudinary';
 import fs from 'fs-extra';
@@ -452,8 +451,11 @@ const ManejoActualizacionUbicacion = async (req, res) => {
         if (!conductor) {
             return res.json({ msg_actualizacion_ubicacion: "Conductor no encontrado" });
         }
-        // Usar updateOne en lugar de save
-        await Conductores.updateOne({ _id: id }, { latitud, longitud }); 
+        
+        // Actualizar la latitud y longitud del conductor
+        conductor.latitud = latitud;
+        conductor.longitud = longitud;
+        await conductor.save(); 
 
         return res.status(200).json({ msg_actualizacion_ubicacion: "Ubicación actualizada correctamente"});
     } catch (error) {

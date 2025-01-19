@@ -19,6 +19,7 @@ const RegistroDeRepresentantes = async (req, res) => {
         telefono,
         cedula,
         email,
+        institucion,
         password,
         cedulaRepresentado
     } = req.body;
@@ -60,6 +61,7 @@ const RegistroDeRepresentantes = async (req, res) => {
         nombre,
         apellido,
         telefono,
+        institucion,
         cedula,
         email,
         password,
@@ -95,10 +97,7 @@ const RegistroDeRepresentantes = async (req, res) => {
 
     //Token para la confirmación de la cuenta 
     const token = nuevoRepresentante.crearToken();
-    //Enviar el correo de confirmación
-    await confirmacionDeCorreoRepresentante(email, nombre, apellido, token);
 
-    //No se crea un token de confirmación, ya que, al conductor solo se le necesita enviar un correo para que se diriga a su cuenta
     try {
 
         // Búsqueda de los estudiantes dueños de las cédulas que el representante ha digitado
@@ -126,6 +125,9 @@ const RegistroDeRepresentantes = async (req, res) => {
 
         // Guardar el nuevo representante en la base de datos
         await nuevoRepresentante.save();
+
+        //Enviar el correo de confirmación
+        await confirmacionDeCorreoRepresentante(email, nombre, apellido, token);
         
         res.status(201).json({ msg_registro_representante: "Representante registrado exitosamente", nuevoRepresentante});
     } catch (error) {
@@ -241,7 +243,7 @@ const EliminarCuentaRepresentante = async (req, res) => {
         //Condicion para que se elimine su cuenta 
         if(representante.cedulaRepresentado.length === 0){
             //Eliminar la imagen en Cloudinary 
-            const public_Id = `representantes/${representante.nombre} ${representante.apellido}`; 
+            const publicId = `representantes/${representante.nombre} ${representante.apellido}`; 
             try{
                 await cloudinary.v2.uploader.destroy(publicId);
             }catch{
@@ -427,10 +429,15 @@ const ActualizarPerfilRepresentante = async (req, res) => {
             const file = req.files.fotografia;
             try {
                 //Definir el public_id de Cloudinary
-                const public_Id = `representantes/${representante.nombre} ${representante.apellido}`; 
+                const publicId = `representantes/${representante.nombre} ${representante.apellido}`; 
+
+                // Eliminar la imagen anterior en Cloudinary
+                await cloudinary.v2.uploader.destroy(publicId);
+                
                 // Subir la imagen a Cloudinary con el nombre del representante como public_id
                 const result = await cloudinary.v2.uploader.upload(file.tempFilePath, {
-                    public_id: public_Id,
+                    public_id: publicId,
+                    folder: "representantes", 
                     overwrite: true
                 });
                 // Guardar la URL de la imagen en la base de datos
