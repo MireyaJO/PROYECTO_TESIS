@@ -3,7 +3,7 @@ import {Login, RecuperacionDeContrasenia, ComprobarTokenPassword, NuevaPassword,
 const router = Router()
 //Rutas publicas
 router.post("/login", Login);
-router.post('/recuperacion/contrasenia', RecuperacionDeContrasenia);
+router.get('/recuperacion/contrasenia', RecuperacionDeContrasenia);
 router.get('/comprobar/token/:token', ComprobarTokenPassword);
 router.patch('/nueva/contrasenia/:token', NuevaPassword);
 router.get("/cambio/email/:token", ConfirmacionCorreoNuevo);
