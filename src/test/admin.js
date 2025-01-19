@@ -61,55 +61,55 @@ describe('Pruebas de rutas del administrador', () => {
   //-----------------------------------------------------------------------------------------------//
 
   // Prueba: Registro de un conductor
-  // test('Debe registrar un nuevo conductor', async () => {
-  //   const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6Im1pcmVnYXJjaWEyMDVAZ21haWwuY29tIiwicm9sZSI6ImFkbWluIiwiaWF0IjoxNzM3MjI5MTA4LCJleHAiOjE3MzcyMzI3MDh9.7l-G9nmdwA8S5BG5nrDRI0G8tGJk6uNkdHeHTBx37z4'; // Token válido para pruebas
+  test('Debe registrar un nuevo conductor', async () => {
+    const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6Im1pcmVnYXJjaWEyMDVAZ21haWwuY29tIiwicm9sZSI6ImFkbWluIiwiaWF0IjoxNzM3MjQyOTM2LCJleHAiOjE3MzcyNDY1MzZ9.XcVa1M9Gmchy1e4GzEbqTV7U-qSk9RyiyD-x_JNiZmw'; // Token válido para pruebas
 
-  //   // Ruta del archivo de imagen local
-  //   const filePath = path.join(__dirname, 'files', 'hm2.jpg');
+    // Ruta del archivo de imagen local
+    const filePath = path.join(__dirname, 'files', 'hm3.jpg');
 
-  //   // Verificar si el archivo existe antes de ejecutar la prueba
-  //   if (!fs.existsSync(filePath)) {
-  //     throw new Error(`El archivo ${filePath} no existe. Asegúrate de que esté en la ubicación correcta.`);
-  //   }
+    // Verificar si el archivo existe antes de ejecutar la prueba
+    if (!fs.existsSync(filePath)) {
+      throw new Error(`El archivo ${filePath} no existe. Asegúrate de que esté en la ubicación correcta.`);
+    }
 
-  //   const response = await request(app)
-  //     .post('/api/registro/conductores')
-  //     .set('Authorization', `Bearer ${token}`) // Enviar el token de autenticación
-  //     .field('nombre', 'Marco')
-  //     .field('apellido', 'Silva')
-  //     .field('rutaAsignada', '6')
-  //     .field('sectoresRuta', 'La Magdalena')
-  //     .field('telefono', '0983434723')
-  //     .field('placaAutomovil', 'PDGR456')
-  //     .field('cedula', '1534591290')
-  //     .field('email', 'francishj369@gmail.com')
-  //     .field('generoConductor', 'Masculino')
-  //     .field('institucion', 'Unidad Educativa Particular Emaús')
-  //     .attach('fotografiaDelConductor', filePath); // Archivo local
+    const response = await request(app)
+      .post('/api/registro/conductores')
+      .set('Authorization', `Bearer ${token}`) // Enviar el token de autenticación
+      .field('nombre', 'Andres')
+      .field('apellido', 'Gomez')
+      .field('rutaAsignada', '5')
+      .field('sectoresRuta', 'La vicentina')
+      .field('telefono', '0994537288')
+      .field('placaAutomovil', 'PHG2380')
+      .field('cedula', '1734205831')
+      .field('email', 'francishj369@gmail.com')
+      .field('generoConductor', 'Masculino')
+      .field('institucion', 'Unidad Educativa Particular Emaús')
+      .attach('fotografiaDelConductor', filePath); // Archivo local
     
-  //   console.log(response.body); // Imprime la respuesta del servidor para ver el error
+    console.log(response.body); // Imprime la respuesta del servidor para ver el error
 
-  //   // Verifica que el conductor fue creado exitosamente
-  //   expect(response.status).toBe(201);
-  //   expect(response.body.msg_registro_conductor).toBe('Conductor registrado exitosamente');
-  // });
+    // Verifica que el conductor fue creado exitosamente
+    expect(response.status).toBe(201);
+    expect(response.body.msg_registro_conductor).toBe('Conductor registrado exitosamente');
+  });
 
 
   //-----------------------------------------------------------------------------------------------//
   // Prueba: Listar conductores
-  test('Debe listar todos los conductores registrados', async () => {
-    const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6Im1pcmVnYXJjaWEyMDVAZ21haWwuY29tIiwicm9sZSI6ImFkbWluIiwiaWF0IjoxNzM3MjI5MTA4LCJleHAiOjE3MzcyMzI3MDh9.7l-G9nmdwA8S5BG5nrDRI0G8tGJk6uNkdHeHTBx37z4'; // Genera un token válido para pruebas
+  // test('Debe listar todos los conductores registrados', async () => {
+  //   const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6Im1pcmVnYXJjaWEyMDVAZ21haWwuY29tIiwicm9sZSI6ImFkbWluIiwiaWF0IjoxNzM3MjI5MTA4LCJleHAiOjE3MzcyMzI3MDh9.7l-G9nmdwA8S5BG5nrDRI0G8tGJk6uNkdHeHTBx37z4'; // Genera un token válido para pruebas
 
-    const response = await request(app)
-      .get('/api/listar/conductores')
-      .set('Authorization', `Bearer ${token}`); // Enviar el token de autenticación
+  //   const response = await request(app)
+  //     .get('/api/listar/conductores')
+  //     .set('Authorization', `Bearer ${token}`); // Enviar el token de autenticación
 
-    // Verifica que el código de estado sea 200 y se devuelvan los conductores
-    console.log(response.body);
-    expect(response.status).toBe(200);
-    expect(response.body.msg_listar_conductores).toBe('Los conductores se han encontrado exitosamente');
-    expect(response.body.conductores).toBeInstanceOf(Array);
-  });
+  //   // Verifica que el código de estado sea 200 y se devuelvan los conductores
+  //   console.log(response.body);
+  //   expect(response.status).toBe(200);
+  //   expect(response.body.msg_listar_conductores).toBe('Los conductores se han encontrado exitosamente');
+  //   expect(response.body.conductores).toBeInstanceOf(Array);
+  // });
   //-----------------------------------------------------------------------------------------------//
 
   // Prueba: Buscar conductor por ruta

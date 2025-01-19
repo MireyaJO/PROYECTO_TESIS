@@ -445,7 +445,7 @@ const ManejoActualizacionUbicacion = async (req, res) => {
         // Usar updateOne en lugar de save
         await Conductores.updateOne({ _id: id }, { latitud, longitud }); 
 
-        return res.status(200).json({ msg_actualizacion_ubicacion: "Ubicación actualizada correctamente", notificaciones });
+        return res.status(200).json({ msg_actualizacion_ubicacion: "Ubicación actualizada correctamente", notificaciones});
     } catch (error) {
         console.error(error);
         return res.status(200).json({ msg_actualizacion_ubicacion: "Error al actualizar la ubicación" });
