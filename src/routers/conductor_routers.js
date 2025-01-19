@@ -7,8 +7,8 @@ import { validacionesActualizarPerfilConductor, validacionesActualizarEstudiante
 const router = Router();
 
 //Rutas Privadas
-router.post('/registro/estudiantes', verificacionToken, verificacionConductorRol, RegistroDeLosEstudiantes);
-router.patch('/actualizar/contrasenia/conductor', verificacionToken, verificacionConductorRol, ActualizarPassword);  
+router.patch('/actualizar/contrasenia/conductor', verificacionToken, verificacionConductorRol, ActualizarPassword); 
+router.post('/registro/estudiantes', verificacionToken, verificacionConductorRol, RegistroDeLosEstudiantes); 
 router.get('/lista/estudiantes', verificacionToken, verificacionConductorRol, ListarEstudiantes);
 router.get('/buscar/estudiante/cedula/:cedula', verificacionToken, verificacionConductorRol, BuscarEstudianteCedula);
 router.patch('/actualizar/estudiante/:id', verificacionToken, verificacionConductorRol, validacionesActualizarEstudiante, ActualizarEstudiante);
