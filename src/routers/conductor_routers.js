@@ -5,13 +5,6 @@ import { RegistroDeLosEstudiantes, ActualizarPassword, BuscarEstudianteCedula,
 import {verificacionConductorRol, verificacionToken} from '../middlewares/autho.js'
 import { validacionesActualizarPerfilConductor, validacionesActualizarEstudiante } from '../middlewares/validaciones.js';
 const router = Router();
-//Rutas Públicas
-/*router.post('/login/conductor', LoginConductor);
-router.post('/recuperacion/contrasenia/conductor', RecuperacionPassword);
-router.get('/comprobar/token/conductor/:token', ComprobarTokenPassword);
-router.patch('/nueva/contrasenia/conductor/:token', NuevaPassword); 
-router.get("/cambio/emailConductor/:token", ConfirmacionCorreoNuevoConductor);*/
-
 
 //Rutas Privadas
 router.post('/registro/estudiantes', verificacionToken, verificacionConductorRol, RegistroDeLosEstudiantes);
