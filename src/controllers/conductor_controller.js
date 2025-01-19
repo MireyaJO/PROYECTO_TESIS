@@ -686,14 +686,8 @@ const BuscarLista = async (req, res) => {
         // Obtener la fecha de los parámetros de la URL
         const { fecha } = req.params;
 
-        // Verificación de la existencia de lista en la mañana
-        const listaManana = await AsistenciasManana.findOne({ conductor: id, fecha: fecha }).lean();
-        if (listaManana) {
-            return res.status(200).json({ msg: `La lista de la mañana con fecha: ${fecha}, se ha encontrado exitosamente`, lista: listaManana });
-        }
-
         // Verificación de la existencia de lista en la tarde
-        const listaTarde = await AsistenciasTarde.findOne({ conductor: id, fecha: fecha }).lean();
+        const listaTarde = await AsistenciasTarde.findOne({ conductor: id, fecha: fecha }).select("-createdAt -updatedAt -__v");
         if (listaTarde) {
             return res.status(200).json({ msg: `La lista de la tarde con fecha: ${fecha}, se ha encontrado exitosamente`, lista: listaTarde });
         }
@@ -736,11 +730,11 @@ const ActualizarLista = async (req, res) => {
         }
 
         // Verificación de la existencia de lista en la mañana
-        const listaManana = await AsistenciasManana.findOne({ _id: listaId, conductor: id });
+        const listaTarde = await AsistenciasTarde.findOne({ _id: listaId, conductor: id });
 
         // Fecha actual
         const fechaDeHoy = new Date().toISOString().split('T')[0];
-        if (listaManana && listaManana.fecha === fechaDeHoy) {
+        if (listaTarde && listaTarde.fecha === fechaDeHoy) {
             // Estructurar los datos de los estudiantes
             const estudiantesActualizados = estudiantes.map(estudianteLista => ({
                 estudiante: estudianteLista.estudiante,
@@ -748,7 +742,7 @@ const ActualizarLista = async (req, res) => {
             }));
 
             // Actualización de la lista de asistencia
-            await AsistenciasManana.findByIdAndUpdate(
+            await AsistenciasTarde.findByIdAndUpdate(
                 listaId,
                 { estudiantes: estudiantesActualizados },
                 { new: true }
@@ -779,9 +773,9 @@ const ActualizarLista = async (req, res) => {
                 }
             }
 
-            return res.status(200).json({ msg_actualizar_lista: `La lista de la mañana con ID: ${listaId} se ha actualizado exitosamente`, notificaciones });
+            return res.status(200).json({ msg_actualizar_lista: `La lista de la tarde con ID: ${listaId} se ha actualizado exitosamente`, notificaciones });
         } else {
-            return res.status(400).json({ msg_actualizar_lista: `La lista de la mañana con ID: ${listaId} no se ha actualizado ya que no existe o es de una fecha antigua` });
+            return res.status(400).json({ msg_actualizar_lista: `La lista de la tarde con ID: ${listaId} no se ha actualizado ya que no existe o es de una fecha antigua` });
         }
 
     } catch (error) {
@@ -799,14 +793,8 @@ const EliminarLista = async (req, res) => {
         // Obtener el ID de la lista de los parámetros de la URL
         const { listaId } = req.params;
 
-        // Verificación y eliminación de la lista en la mañana
-        const listaManana = await AsistenciasManana.findOneAndDelete({ _id: listaId, conductor: id }).lean();
-        if (listaManana) {
-            return res.status(200).json({ msg: `La lista de la mañana con ID: ${listaId}, se ha eliminado exitosamente` });
-        }
-
         // Verificación y eliminación de la lista en la tarde
-        const listaTarde = await AsistenciasTarde.findOneAndDelete({ _id: listaId, conductor: id }).lean();
+        const listaTarde = await AsistenciasTarde.findOneAndDelete({ _id: listaId, conductor: id });
         if (listaTarde) {
             return res.status(200).json({ msg: `La lista de la tarde con ID: ${listaId}, se ha eliminado exitosamente` });
         }
