@@ -6,7 +6,8 @@ import Notificaciones from '../models/Notificaciones.js';
 import NotificacionesEliminacionEstudiantes from '../models/NotificacionEliminacion.js';
 import {createToken} from '../middlewares/autho.js';
 import {directionsService} from '../config/mapbox.js';
-import {recuperacionContrasenia, confirmacionDeCorreoConductorCambio, eliminacionDelRepresentante} from "../config/nodemailer.js"; 
+import {confirmacionDeCorreoConductorCambio, eliminacionDelRepresentante} from "../config/nodemailer.js"; 
+import NotificacionesEliminacionEstudiantes from '../models/NotificacionEliminacion.js';
 import axios from 'axios';
 import cloudinary from 'cloudinary';
 import fs from 'fs-extra';
@@ -322,10 +323,19 @@ const EliminarEstudiante = async (req, res) => {
                 await Representantes.findOneAndDelete({_id: representante._id});
                 advertencia = `El representante ${representante.nombre} ${representante.apellido} ha sido eliminado ya que no tiene estudiantes registrados, se le envió un correo`;
                 await eliminacionDelRepresentante(representante.email, representante.nombre, representante.apellido, nombre, apellido);
+                Representantes.updateOne({ _id: representante._id }, { notificacionEliminacion: true });
             } else if (representante.estudiantes.length > 0 ){
                 advertencia = `El estudiante ${nombre} ${apellido} ha sido eliminado del representante ${representante.nombre} ${representante.apellido}`;
                 await EnviarNotificacionEliminacion(conductor._id, representante._id, representante.nombre, representante.apellido, advertencia);
+                Representantes.updateOne({ _id: representante._id }, { notificacionEliminacion: true });
             }
+            // Crear y guardar la notificación de eliminación de estudiante
+            const notificacion = new NotificacionesEliminacionEstudiantes({
+                conductor: conductor._id,
+                representante: representante._id,
+                mensaje: advertencia
+            });
+            await notificacion.save();
         }
     } else {
         advertencia = "Se elimino el estudiante pero no se encontraron representantes asociados";
@@ -478,13 +488,13 @@ const ActualizarPerfil = async (req, res) => {
         const conductor = await Conductores.findById(id);
         if (!conductor) return res.status(400).json({ msg: "Lo sentimos, el conductor no se encuentra registrado" });
         // Comprobar si el telefono ya está registrado
-        const verificarTelefonoBDD = await Conductores.findOne({telefono});
+        const verificarTelefonoBDD = await Conductores.findOne({telefono, _id: { $ne: id } });
         if (verificarTelefonoBDD) {
             return res.status(400).json({ msg_actualizacion_perfil: "Lo sentimos, el telefono ya se encuentra registrado" })
         };
         
         // Comprobar si la placa ya está registrada
-        const verificarPlacaBDD = await Conductores.findOne({placaAutomovil});
+        const verificarPlacaBDD = await Conductores.findOne({placaAutomovil, _id: { $ne: id } });
         if (verificarPlacaBDD) {
             return res.status(400).json({ msg_actualizacion_perfil: "Lo sentimos, la placa ya se encuentra registrada" })
         };

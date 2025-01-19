@@ -1,14 +1,14 @@
 import cloudinary from 'cloudinary';
 import fs from 'fs-extra';
 import Conductores from '../models/Administrador.js';
-import Notificaciones from '../models/Notificaciones.js';
+import NotificacionesRepresentantes from '../models/Notificaciones.js';
 import Estudiantes from '../models/Conductor.js';
 import Representantes from '../models/Representantes.js';
 import {createToken} from '../middlewares/autho.js';
 import {confirmacionDeCorreoRepresentante, confirmacionDeCorreoRepresentanteCambio } from '../config/nodemailer.js';
 import {CalcularDistanciaYTiempo} from '../controllers/conductor_controller.js';
 import AsistenciasTarde from '../models/AsistenciasTarde.js';
-
+import NotificacionesEliminacionEstudiantes from '../models/NotificacionEliminacion.js';
 
 //Registro de los representantes
 const RegistroDeRepresentantes = async (req, res) => {
@@ -313,7 +313,7 @@ const AlertaLlegadaConductor = async (req, res) => {
                             // Agregar la notificación al array de alertas
                             alertas.push(notificacion);
                              // Usar updateOne para actualizar un documento
-                            await Representantes.updateOne({ _id: representanteId }, { notificacionAlerta: true });
+                            await Representantes.updateOne({ _id: representante._id }, { notificacionAlerta: true });
 
                         } else if (estudiante.asistio == true && distancia < 1) {
                             const notificacion = {
@@ -325,7 +325,7 @@ const AlertaLlegadaConductor = async (req, res) => {
                             // Agregar la notificación al array de alertas
                             alertas.push(notificacion);
                             // Usar updateOne para actualizar un documento
-                            await Representantes.updateOne({ _id: representanteId }, { notificacionAlerta: true });
+                            await Representantes.updateOne({ _id: representante._id }, { notificacionAlerta: true });
                         } else if (estudiante.asistio == true && distancia >= 1) {
                             const notificacion = {
                                 representante: representante._id,
@@ -335,7 +335,7 @@ const AlertaLlegadaConductor = async (req, res) => {
                             // Agregar la notificación al array de alertas
                             alertas.push(notificacion);
                             // Usar updateOne para actualizar un documento
-                            await Representantes.updateOne({ _id: representanteId }, { notificacionAlerta: false });
+                            await Representantes.updateOne({ _id: representante._id}, { notificacionAlerta: false });
                         } else if (estudiante.asistio == false) {
                             const notificacion = {
                                 representante: representante._id,
@@ -345,7 +345,7 @@ const AlertaLlegadaConductor = async (req, res) => {
                             // Agregar la notificación al array de alertas
                             alertas.push(notificacion);
                             // Usar updateOne para actualizar un documento
-                            await Representantes.updateOne({ _id: representanteId }, { notificacionAlerta: false });
+                            await Representantes.updateOne({ _id: representante._id }, { notificacionAlerta: false });
                         } 
                     }
                 }
@@ -362,15 +362,27 @@ const AlertaLlegadaConductor = async (req, res) => {
 //Todas las notificaciones de los representantes
 const VerNotificaciones = async (req, res) => {
     const { id } = req.user;
-
     try {
+        // Obtener las notificaciones de eliminación del estudiante
+        const notificacionesEliminacion = await NotificacionesEliminacionEstudiantes.find({ representante: id }).lean();
         // Obtener las notificaciones del representante
-        const notificaciones = await Notificaciones.find({ representante: id }).lean();
+        const notificacionesAsistencia = await NotificacionesRepresentantes.find({ representante: id }).lean();
+
+        // Filtrar las notificaciones de eliminación para incluir solo aquellas donde el representante tenga más de un estudiante representado
+        const notificacionesEliminacionFiltradas = [];
+        for (const notificacion of notificacionesEliminacion) {
+            const representante = await Representantes.findById(notificacion.representante).lean();
+            if (representante && representante.cedulaRepresentado.length === 1) {
+                notificacionesEliminacionFiltradas.push(notificacion);
+            } 
+        }
 
         // Verificación de que el representante tenga notificaciones
-        if (notificaciones.length === 0) return res.status(404).json({ msg: "No tienes notificaciones" });
+        if (notificacionesAsistencia.length === 0 && notificacionesEliminacionFiltradas.length === 0) {
+            return res.status(404).json({ msg: "No tienes notificaciones" });
+        }
 
-        res.status(200).json({ notificaciones });
+        res.status(200).json({ asistencia: notificacionesAsistencia , Eliminacion: notificacionesEliminacionFiltradas });
     } catch (error) {
         console.error(error);
         res.status(500).json({ msg: "Error al obtener las notificaciones", error: error.message });

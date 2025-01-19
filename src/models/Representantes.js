@@ -77,6 +77,10 @@ const paraElRegistroDeLosRepresentantes = new Schema(
         notificacionAsistencia:{
             type: Boolean, 
             default: false
+        }, 
+        notificacionEliminacion:{
+            type: Boolean, 
+            default: false
         }
     }
 ,{
