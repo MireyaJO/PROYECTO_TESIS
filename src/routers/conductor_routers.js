@@ -13,7 +13,7 @@ router.get('/lista/estudiantes', verificacionToken, verificacionConductorRol, Li
 router.get('/buscar/estudiante/cedula/:cedula', verificacionToken, verificacionConductorRol, BuscarEstudianteCedula);
 router.patch('/actualizar/estudiante/:id', verificacionToken, verificacionConductorRol, validacionesActualizarEstudiante, ActualizarEstudiante);
 router.delete('/eliminar/estudiante/:id', verificacionToken, verificacionConductorRol, EliminarEstudiante);
-router.post('/actualizar/ubicacion', verificacionToken, verificacionConductorRol, ManejoActualizacionUbicacion);
+router.patch('/actualizar/ubicacion', verificacionToken, verificacionConductorRol, ManejoActualizacionUbicacion);
 router.get('/perfil/conductor', verificacionToken, verificacionConductorRol, VisuallizarPerfil);
 router.patch('/actualizar/perfil/conductor', verificacionToken, verificacionConductorRol, validacionesActualizarPerfilConductor, ActualizarPerfil);
 router.post('/tomar/asistencia/tarde', verificacionToken, verificacionConductorRol, TomarListaTarde);
