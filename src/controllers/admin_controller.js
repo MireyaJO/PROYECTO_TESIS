@@ -163,33 +163,67 @@ const EliminarConductor = async (req, res) => {
     // Obtener el ID de los parámetros de la URL
     const {id} = req.params;
     
-    //Verificación de la existencia del conductor
-    const conductor = await Conductores.findOne({id});
-    if(!conductor) return res.status(400).json({msg:"Lo sentimos, el conductor no se encuentra trabajando en la Unidad Educativa Particular EMAÚS"})
+   try{
+        //Verificación de la existencia del conductor
+        const conductor = await Conductores.findOne({id});
+        if(!conductor) return res.status(400).json({msg:"Lo sentimos, el conductor no se encuentra trabajando en la Unidad Educativa Particular EMAÚS"})
+        
+        //Eliminar la imagen en Cloudinary 
+        const publicId = `conductores/${conductor.nombre}_${conductor.apellido}`;
+        try{
+            await cloudinary.v2.uploader.destroy(publicId);
+        }catch{
+            console.error("Error al eliminar la imagen en Cloudinary");
+            return res.status(500).json({msg:"Error al eliminar la imagen"})
+        }
     
-    //Eliminar la imagen en Cloudinary 
-    const publicId = `conductores/${conductor.nombre}_${conductor.apellido}`;
-    try{
-        await cloudinary.v2.uploader.destroy(publicId);
-    }catch{
-        console.error("Error al eliminar la imagen en Cloudinary");
-        return res.status(500).json({msg:"Error al eliminar la imagen"})
-    }
-
-    //Eliminación del conductor en la base de datos
-    await Conductores.findOneAndDelete({id});
-
-    //Envio del correo al conductor
-    await eliminacionDelConductor(conductor.email, conductor.nombre, conductor.apellido);
-
-    //Mensaje de exito
-    res.status(200).json({msg:`El conductor ${conductor.nombre} ${conductor.apellido} ha sido eliminado exitosamente`})
+        //Eliminación del conductor en la base de datos
+        await Conductores.findOneAndDelete({id});
+    
+        //Envio del correo al conductor
+        await eliminacionDelConductor(conductor.email, conductor.nombre, conductor.apellido);
+    
+        //Mensaje de exito
+        res.status(200).json({msg:`El conductor ${conductor.nombre} ${conductor.apellido} ha sido eliminado exitosamente`})
+    }catch(error){
+        console.log(error); 
+        res.status(500).json({
+            msg: "Error al eliminar el conductor",
+            error: error.message
+        });
+   }
 };
+
+// Perfil quemado del administrador
+const perfilAdministrador = {
+    nombre: "Mireya",
+    apellido: "Garcia",
+    email: process.env.ADMIN_EMAIL,
+    telefono: "0964531123",
+    rol: "Administrador",
+    institucion: "Unidad Educativa Particular EMAÚS"
+};
+
+const VisualizarPerfil = async (req, res)=>{
+    try{
+        res.status(200).json({
+            msg_admin: "Perfil del administrador encontrado exitosamente",
+            administrador: perfilAdministrador
+        });
+    }catch(error){
+        console.log(error); 
+        res.status(500).json({
+            msg: "Error al visualizar el perfil del administrador",
+            error: error.message
+        });
+    }
+}
 
 export {
     RegistroDeLosConductores,
     BuscarConductorRuta,
     ListarConductor,
     ActualizarRutasYSectoresId,
-    EliminarConductor
+    EliminarConductor, 
+    VisualizarPerfil
 };
