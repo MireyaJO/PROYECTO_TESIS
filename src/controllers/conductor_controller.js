@@ -494,7 +494,10 @@ const ActualizarPerfil = async (req, res) => {
             try {
                 // Definir el public_id para Cloudinary
                 const publicId = `conductores/${conductor.nombre}_${conductor.apellido}`;
-        
+
+                // Eliminar la imagen anterior en Cloudinary
+                await cloudinary.v2.uploader.destroy(publicId);
+
                 // Subir la imagen a Cloudinary con el nombre del conductor como public_id
                 const result = await cloudinary.v2.uploader.upload(file.tempFilePath, {
                     public_id: publicId,
