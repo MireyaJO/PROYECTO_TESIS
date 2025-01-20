@@ -40,9 +40,15 @@ const RegistroDeRepresentantes = async (req, res) => {
 
     // Comprobar si el email ya está registrado
     const verificarEmailBDD = await Representantes.findOne({email});
+    const verificarEmailConductor = await Conductores.findOne({email});
+
     if (verificarEmailBDD) {
-        return res.status(400).json({ msg_registro_representante: "Lo sentimos, el email ya se encuentra registrado" });
+        return res.status(400).json({ msg_registro_representante: "Lo sentimos, el email ya se encuentra registrado como representante" });
     }
+
+    if (verificarEmailConductor) {
+        return res.status(400).json({ msg_registro_representante: "Lo sentimos, el email ya se encuentra registrado como conductor" })
+    };
 
     // Comprobar si la cédula ya está registrada
     const verificarCedulaBDD = await Representantes.findOne({cedula});
@@ -420,8 +426,13 @@ const ActualizarPerfilRepresentante = async (req, res) => {
 
         // Comprobar si el email ya está registrado por otro representante
         const verificarEmailBDD = await Representantes.findOne({ email, _id: { $ne: id } });
+        const verificarEmailConductor = await Conductores.findOne({email});
         if (verificarEmailBDD) {
-            return res.status(400).json({ msg_actualizacion_perfil: "Lo sentimos, el email ya se encuentra registrado" });
+            return res.status(400).json({ msg_actualizacion_perfil: "Lo sentimos, el email ya se encuentra registrado como representados" });
+        }
+
+        if (verificarEmailConductor) {
+            return res.status(400).json({ msg_actualizacion_perfil: "Lo sentimos, el email ya se encuentra registrado como conductor" });
         }
 
         // Verificar si se envió un archivo de imagen

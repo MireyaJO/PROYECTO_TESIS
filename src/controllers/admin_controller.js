@@ -20,8 +20,13 @@ const RegistroDeLosConductores = async (req, res) => {
     try{
         // Comprobar si el email ya está registrado
         const verificarEmailBDD = await Conductores.findOne({email});
+        const cerificarRepresentateBDD = await Representantes.findOne({email});
         if (verificarEmailBDD) {
-            return res.status(400).json({ msg_registro_conductor: "Lo sentimos, el email ya se encuentra registrado" });
+            return res.status(400).json({ msg_registro_conductor: "Lo sentimos, el email ya se encuentra registrado como conductor" });
+        }
+
+        if (cerificarRepresentateBDD) {
+            return res.status(400).json({ msg_registro_conductor: "Lo sentimos, el email ya se encuentra registrado como representante" });
         }
 
         // Comprobar si la cédula ya está registrada

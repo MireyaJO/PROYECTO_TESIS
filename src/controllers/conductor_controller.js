@@ -307,11 +307,11 @@ const EliminarEstudiante = async (req, res) => {
     const {nombre, apellido, cedula} = estudiante;
 
     //Eliminacion de la cedula del estudiante en el array del representante
-    const representantes = await Representantes.find({ cedulaRepresentado: cedula }).lean();
+    const representantes = await Representantes.find({ cedulaRepresentado: cedula });
     let advertencia = ''; // Variable para almacenar el mensaje de advertencia
     if (representantes.length > 0) {
         for (const representante of representantes) {
-            representante.eliminarEstudiante(cedula);
+            await representante.eliminarEstudiante(cedula);
     
             //Variable para almacenar el mensaje de advertencia
             let advertencia = ''; 
@@ -430,9 +430,9 @@ const CalcularDistanciaYTiempo = async (latitudOrigen, longitudOrigen, latitudDe
         console.log(respuesta.body);
         // Extraer la información de la distancia y el tiempo
         // Conversión de metros a kilómetros
-        const distancia = parseFloat(respuesta.body.routes[0].distance / 1000);
+        const distancia = parseFloat(respuesta.body.routes[0].distance / 1000).toFixed(2);
         // Conversión de segundos a minutos
-        const tiempo =  parseFloat(respuesta.body.routes[0].duration / 60);
+        const tiempo =  parseFloat(respuesta.body.routes[0].duration / 60).toFixed(2);
 
         // Retorno de la distancia y el tiempo
         return { distancia, tiempo };
@@ -500,6 +500,17 @@ const ActualizarPerfil = async (req, res) => {
         if (verificarPlacaBDD) {
             return res.status(400).json({ msg_actualizacion_perfil: "Lo sentimos, la placa ya se encuentra registrada" })
         };
+
+        //Verificar si el email ya está registrado
+        const verificarEmailBDD = await Conductores.findOne({email, _id: { $ne: id } });
+        const verificacionRepresentante = await Representantes.findOne({email});
+        if (verificarEmailBDD) {
+            return res.status(400).json({ msg_actualizacion_perfil: "Lo sentimos, el email ya se encuentra registrado como conductor" });
+        }
+        if (verificacionRepresentante){
+            return res.status(400).json({ msg_actualizacion_perfil: "Lo sentimos, el email ya se encuentra registrado como representante" });
+        }
+
         // Verificar si se envió un archivo de imagen
         if (req.files && req.files.fotografiaDelConductor) {
             const file = req.files.fotografiaDelConductor;
