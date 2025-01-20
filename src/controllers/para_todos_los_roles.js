@@ -5,6 +5,15 @@ import { createToken } from '../middlewares/autho.js';
 import {recuperacionContrasenia} from "../config/nodemailer.js"; 
 import {recuperacionContraseniaRepresentante} from '../config/nodemailer.js';
 import crypto from 'crypto';
+// Perfil quemado del administrador
+const perfilAdministrador = {
+    nombre: "Mireya",
+    apellido: "Garcia",
+    email: process.env.ADMIN_EMAIL,
+    telefono: "0964531123",
+    rol: "Administrador",
+    institucion: "Unidad Educativa Particular EMAÚS"
+};
 
 // Logeo de todos los roles
 const Login = async (req, res) => {
@@ -22,7 +31,7 @@ const Login = async (req, res) => {
             if (password === process.env.ADMIN_PASSWORD) {
                 // Si la contraseña es correcta se crea el token JWT
                 const token = createToken({ email, role: 'admin' });
-                return res.status(200).json({ token, msg_login_admin: "Bienvenido administrador" });
+                return res.status(200).json({ token, msg_login_admin: "Bienvenido administrador", administrador: perfilAdministrador });
             } else {
                 return res.status(400).json({ msg: "Contraseña incorrecta" });
             }
