@@ -45,7 +45,8 @@ const Login = async (req, res) => {
             // Si la contraseña es correcta se crea el token JWT
             if (verificacionContrasenia) {
                 const token = createToken({ id: conductor._id, email: conductor.email, role: 'conductor' });
-                return res.status(200).json({ token, msg_login_conductor: "Bienvenido conductor" });
+                const conductor = await Conductores.findOne({ email: email });
+                return res.status(200).json({ token, msg_login_conductor: "Bienvenido conductor", conductor: conductor });
             } else {
                 return res.status(400).json({ msg: "Contraseña incorrecta" });
             }
@@ -59,7 +60,8 @@ const Login = async (req, res) => {
             // Si la contraseña es correcta se crea el token JWT
             if (verificacionContrasenia) {
                 const token = createToken({ id: representante._id, email: representante.email, role: 'representante' });
-                return res.status(200).json({ token, msg_login_representante: "Bienvenido representante" });
+                const representante = await Representantes.findOne({ email: email });
+                return res.status(200).json({ token, msg_login_representante: "Bienvenido representante", representante: representante});
             } else {
                 return res.status(400).json({ msg: "Contraseña incorrecta" });
             }
