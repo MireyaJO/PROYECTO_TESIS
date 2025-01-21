@@ -323,7 +323,7 @@ const EliminarEstudiante = async (req, res) => {
                 advertencia = `El representante ${representante.nombre} ${representante.apellido} ha sido eliminado ya que no tiene estudiantes registrados, se le envió un correo`;
                 await eliminacionDelRepresentante(representante.email, representante.nombre, representante.apellido, nombre, apellido);
                 Representantes.updateOne({ _id: representante._id }, { notificacionEliminacion: true });
-            } else if (representante.estudiantes.length > 0 ){
+            } else if (representante.cedulaRepresentado.length > 0 ){
                 advertencia = `El estudiante ${nombre} ${apellido} ha sido eliminado del representante ${representante.nombre} ${representante.apellido}`;
                 await EnviarNotificacionEliminacion(conductor._id, representante._id, representante.nombre, representante.apellido, advertencia);
                 Representantes.updateOne({ _id: representante._id }, { notificacionEliminacion: true });
