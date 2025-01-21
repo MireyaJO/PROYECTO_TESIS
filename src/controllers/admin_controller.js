@@ -1,6 +1,7 @@
 import cloudinary from 'cloudinary';
 import fs from 'fs-extra';
 import Conductores from '../models/Administrador.js';
+import Representantes from '../models/Representantes.js';
 import {enviarCorreoConductor, actualizacionDeConductor, eliminacionDelConductor} from "../config/nodemailer.js"; 
 import crypto from 'crypto';
 
