@@ -308,13 +308,13 @@ const EliminarEstudiante = async (req, res) => {
 
     //Eliminacion de la cedula del estudiante en el array del representante
     const representantes = await Representantes.find({ cedulaRepresentado: cedula });
-    let advertencia = ''; // Variable para almacenar el mensaje de advertencia
+
+    // Variable para almacenar el mensaje de advertencia
+    let advertencia = ''; 
     if (representantes.length > 0) {
+        //Recorrer los representados para eliminar la cedula del estudiante en cada uno de los vinculados al mismo
         for (const representante of representantes) {
             await representante.eliminarEstudiante(cedula);
-    
-            //Variable para almacenar el mensaje de advertencia
-            let advertencia = ''; 
     
             //Verificar si el array de los estudiantes del representante se encuentra vacío
             if(representante.cedulaRepresentado.length === 0){
@@ -328,13 +328,6 @@ const EliminarEstudiante = async (req, res) => {
                 await EnviarNotificacionEliminacion(conductor._id, representante._id, representante.nombre, representante.apellido, advertencia);
                 Representantes.updateOne({ _id: representante._id }, { notificacionEliminacion: true });
             }
-            // Crear y guardar la notificación de eliminación de estudiante
-            const notificacion = new NotificacionesEliminacionEstudiantes({
-                conductor: conductor._id,
-                representante: representante._id,
-                mensaje: advertencia
-            });
-            await notificacion.save();
         }
     } else {
         advertencia = "Se elimino el estudiante pero no se encontraron representantes asociados";
