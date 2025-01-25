@@ -205,9 +205,9 @@ const EliminarConductor = async (req, res) => {
             console.error("Error al eliminar la imagen en Cloudinary");
             return res.status(500).json({msg:"Error al eliminar la imagen"})
         }
-    
+
         //Eliminación del conductor en la base de datos
-        await Conductores.findOneAndDelete({id});
+        await Conductores.findOneAndDelete({_id: id});
     
         //Envio del correo al conductor
         await eliminacionDelConductor(conductor.email, conductor.nombre, conductor.apellido);
