@@ -194,8 +194,27 @@ const eliminacionDelRepresentante = async (email, nombresRepresentante, apellido
         from: process.env.EMAIL_USER,
         to: email,  
         subject: "Eliminación del sistema de transporte escolar de la Unidad Educativa Particular Emaús",
-        html: `<p>Señor/a ${nombresRepresentante} ${apellidosEstudiante} el estudiante ${nombresEstudiante} ${apellidosEstudiante} del cual es representante ha sido eliminado. Usted 
+        html: `<p>Señor/a ${nombresRepresentante} ${apellidosRepresentante} el estudiante ${nombresEstudiante} ${apellidosEstudiante} del cual es representante ha sido eliminado. Usted 
         ya no tuvo representados vinculados, por lo que, se lo/a elimino</p>`
+    }
+    //Creación del transportador universal con el email y el password del conductor ingresado por el administrador
+    transportador.sendMail(estructuraEmail, (error, info) => {
+        if(error){
+            console.error(error);
+        } else {
+            console.log('Correo enviado: ' + info.response);
+        }
+    });
+}
+
+const informacionEliminacion = async (email, nombresRepresentante, apellidosRepresentante, ruta, nombresConductor, apellidosConductor)=>{
+    //Creación de la estuctura que tendrá el correo 
+    let estructuraEmail = {
+        from: process.env.EMAIL_USER,
+        to: email,  
+        subject: "Eliminación del conductor del sistema de transporte escolar de la Unidad Educativa Particular Emaús",
+        html: `<p>Señor/a ${nombresRepresentante} ${apellidosRepresentante} el conductor de la ruta de sus representados, ${ruta}, ${nombresConductor} ${apellidosConductor}
+        ha sido eliminado del sistema. Por favor debe estar pendiente a su correo, se le notificará el nuevo conductor</p>`
     }
     //Creación del transportador universal con el email y el password del conductor ingresado por el administrador
     transportador.sendMail(estructuraEmail, (error, info) => {
@@ -216,5 +235,6 @@ export {
     recuperacionContraseniaRepresentante, 
     confirmacionDeCorreoRepresentanteCambio, 
     confirmacionDeCorreoConductorCambio,
-    eliminacionDelRepresentante
+    eliminacionDelRepresentante, 
+    informacionEliminacion
 }

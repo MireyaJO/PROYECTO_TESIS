@@ -1,8 +1,9 @@
 import cloudinary from 'cloudinary';
 import fs from 'fs-extra';
 import Conductores from '../models/Administrador.js';
+import Estudiantes from '../models/Conductor.js'
 import Representantes from '../models/Representantes.js';
-import {enviarCorreoConductor, actualizacionDeConductor, eliminacionDelConductor} from "../config/nodemailer.js"; 
+import {enviarCorreoConductor, actualizacionDeConductor, eliminacionDelConductor,  informacionEliminacion} from "../config/nodemailer.js"; 
 import crypto from 'crypto';
 
 // Registros de los conductores
@@ -40,7 +41,7 @@ const RegistroDeLosConductores = async (req, res) => {
         const verificarRutaBDD = await Conductores.findOne({rutaAsignada});
         if (verificarRutaBDD) {
             return res.status(400).json({ msg_registro_conductor: "Lo sentimos, la ruta ya se encuentra asignada" })
-        };
+        } 
 
         // Comprobar si el telefono ya está registrado
         const verificarTelefonoBDD = await Conductores.findOne({telefono});
@@ -93,6 +94,19 @@ const RegistroDeLosConductores = async (req, res) => {
             await enviarCorreoConductor(email, randomPassword, rutaAsignada, sectoresRuta); 
             // Guardar el nuevo conductor en la base de datos
             await nuevoConductor.save();
+
+            // Actualizar los estudiantes que tienen la misma ruta asignada
+            const estudiantes = await Estudiantes.find({ rutaAsignada });
+            const cantidadEstudiantes = estudiantes.length
+            if(cantidadEstudiantes > 0){
+                for (const estudiante of estudiantes) {
+                    await Estudiantes.findByIdAndUpdate(estudiante._id, { conductor: nuevoConductor._id });
+                    const estudianteRegistrado = {idEstudiante: estudiante._id, nombreEstudiante: estudiante.nombre, apellidoEstudiante: estudiante.apellido, nivelEscolarEstudiante: estudiante.nivelEscolar, paraleloEstudiante: estudiante.paralelo, cedulaEstudiante: estudiante.cedula} 
+                    nuevoConductor.estudiantesRegistrados(estudianteRegistrado)
+                }
+                nuevoConductor.numeroEstudiantes = cantidadEstudiantes;
+            }
+
             res.status(201).json({ msg_registro_conductor: "Conductor registrado exitosamente", nuevoConductor});
         } catch (error) {
             console.error(error);
@@ -191,11 +205,29 @@ const ActualizarRutasYSectoresId = async (req, res) => {
 const EliminarConductor = async (req, res) => {
     // Obtener el ID de los parámetros de la URL
     const {id} = req.params;
-    
    try{
         //Verificación de la existencia del conductor
         const conductor = await Conductores.findById({_id: id});
         if(!conductor) return res.status(400).json({msg:"Lo sentimos, el conductor no se encuentra trabajando en la Unidad Educativa Particular EMAÚS"})
+        if (conductor.numeroEstudiantes > 0) {
+            // Recorrer el array de los estudiantes que tienen el id de conductor que se desea eliminar
+            for (const estudiantes of conductor.estudiantesRegistrados) {
+                const estudiante = await Estudiantes.findById(estudiantes.idEstudiante);
+                if (estudiante) {
+                    //Se actualiza el campo conductor del estudiante a "null"
+                    estudiante.conductor = null;
+                    await estudiante.save();
+                    //Recorrer el array de los representates de cada estudiante 
+                    for (const representanteId of estudiante.representantes){
+                        const representante = await Representantes.findById(representanteId); 
+                        if(representante){
+                            //Envió del correo al representante 
+                            await informacionEliminacion(representante.email, representante.nombre, representante.apellido, conductor.rutaAsignada, conductor.nombre, conductor.apellido);
+                        }
+                    }
+                }
+            }
+        } 
         
         //Eliminar la imagen en Cloudinary 
         const publicId = `conductores/${conductor.nombre}_${conductor.apellido}`;
@@ -203,17 +235,17 @@ const EliminarConductor = async (req, res) => {
             await cloudinary.v2.uploader.destroy(publicId);
         }catch{
             console.error("Error al eliminar la imagen en Cloudinary");
-            return res.status(500).json({msg:"Error al eliminar la imagen"})
+            return res.status(500).json({msg:"Error al eliminar la imagen"}); 
         }
 
         //Eliminación del conductor en la base de datos
         await Conductores.findOneAndDelete({_id: id});
-    
+
         //Envio del correo al conductor
         await eliminacionDelConductor(conductor.email, conductor.nombre, conductor.apellido);
-    
+        
         //Mensaje de exito
-        res.status(200).json({msg:`El conductor ${conductor.nombre} ${conductor.apellido} ha sido eliminado exitosamente`})
+        res.status(200).json({msg:`El conductor ${conductor.nombre} ${conductor.apellido} ha sido eliminado exitosamente`}); 
     }catch(error){
         console.log(error); 
         res.status(500).json({
