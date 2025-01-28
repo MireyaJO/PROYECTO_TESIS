@@ -3,7 +3,7 @@ import fs from 'fs-extra';
 import Conductores from '../models/Administrador.js';
 import Estudiantes from '../models/Conductor.js'
 import Representantes from '../models/Representantes.js';
-import {enviarCorreoConductor, actualizacionDeConductor, eliminacionDelConductor,  informacionEliminacion} from "../config/nodemailer.js"; 
+import {enviarCorreoConductor, actualizacionDeConductor, eliminacionDelConductor,  informacionEliminacion, cambioConductor} from "../config/nodemailer.js"; 
 import crypto from 'crypto';
 
 // Registros de los conductores
@@ -96,18 +96,24 @@ const RegistroDeLosConductores = async (req, res) => {
             await nuevoConductor.save();
 
             // Actualizar los estudiantes que tienen la misma ruta asignada
-            const estudiantes = await Estudiantes.find({ rutaAsignada });
+            const estudiantes = await Estudiantes.find({ruta:nuevoConductor.rutaAsignada});
             const cantidadEstudiantes = estudiantes.length
             if(cantidadEstudiantes > 0){
                 for (const estudiante of estudiantes) {
                     await Estudiantes.findByIdAndUpdate(estudiante._id, { conductor: nuevoConductor._id });
                     const estudianteRegistrado = {idEstudiante: estudiante._id, nombreEstudiante: estudiante.nombre, apellidoEstudiante: estudiante.apellido, nivelEscolarEstudiante: estudiante.nivelEscolar, paraleloEstudiante: estudiante.paralelo, cedulaEstudiante: estudiante.cedula} 
-                    nuevoConductor.estudiantesRegistrados(estudianteRegistrado)
+                    nuevoConductor.estudiantesRegistrados.push(estudianteRegistrado); 
+                    for (const representanteId of estudiante.representantes){
+                        const representante = await Representantes.findById(representanteId); 
+                        if(representante){
+                            await cambioConductor(representante.email, representante.nombre, representante.apellido, nuevoConductor.rutaAsignada, nuevoConductor.nombre, nuevoConductor.apellido)
+                        }
+                    }
                 }
                 nuevoConductor.numeroEstudiantes = cantidadEstudiantes;
             }
 
-            res.status(201).json({ msg_registro_conductor: "Conductor registrado exitosamente", nuevoConductor});
+            res.status(200).json({ msg_registro_conductor: "Conductor registrado exitosamente", nuevoConductor});
         } catch (error) {
             console.error(error);
             res.status(500).json({ msg_registro_conductor: "Error al registrar el conductor" });

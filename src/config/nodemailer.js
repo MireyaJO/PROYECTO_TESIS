@@ -213,8 +213,26 @@ const informacionEliminacion = async (email, nombresRepresentante, apellidosRepr
         from: process.env.EMAIL_USER,
         to: email,  
         subject: "Eliminación del conductor del sistema de transporte escolar de la Unidad Educativa Particular Emaús",
-        html: `<p>Señor/a ${nombresRepresentante} ${apellidosRepresentante} el conductor de la ruta de sus representados, ${ruta}, ${nombresConductor} ${apellidosConductor}
+        html: `<p>Señor/a ${nombresRepresentante} ${apellidosRepresentante} el conductor de la ruta ${ruta} de sus representados, ${nombresConductor} ${apellidosConductor}
         ha sido eliminado del sistema. Por favor debe estar pendiente a su correo, se le notificará el nuevo conductor</p>`
+    }
+    //Creación del transportador universal con el email y el password del conductor ingresado por el administrador
+    transportador.sendMail(estructuraEmail, (error, info) => {
+        if(error){
+            console.error(error);
+        } else {
+            console.log('Correo enviado: ' + info.response);
+        }
+    });
+}
+
+const cambioConductor = async (email, nombresRepresentante, apellidosRepresentante, ruta, nombresNuevoConductor, apellidosNuevoConductor) => {
+    //Creación de la estuctura que tendrá el correo 
+    let estructuraEmail = {
+        from: process.env.EMAIL_USER,
+        to: email,  
+        subject: "Cambio del conductor del sistema de transporte escolar de la Unidad Educativa Particular Emaús",
+        html: `<p>Señor/a ${nombresRepresentante} ${apellidosRepresentante} el nuevo conductor de la ruta ${ruta} de sus representados es: ${nombresNuevoConductor} ${apellidosNuevoConductor} </p>`
     }
     //Creación del transportador universal con el email y el password del conductor ingresado por el administrador
     transportador.sendMail(estructuraEmail, (error, info) => {
@@ -236,5 +254,6 @@ export {
     confirmacionDeCorreoRepresentanteCambio, 
     confirmacionDeCorreoConductorCambio,
     eliminacionDelRepresentante, 
-    informacionEliminacion
+    informacionEliminacion, 
+    cambioConductor
 }
