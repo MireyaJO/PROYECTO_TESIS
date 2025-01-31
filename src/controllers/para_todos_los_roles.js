@@ -194,15 +194,15 @@ const ConfirmacionCorreoNuevo = async (req, res) => {
         // Buscar conductor por token
         const conductor = await Conductores.findOne({ token });
         if (conductor) {
-                // Actualizar el email
-                conductor.email = conductor.tokenEmail;
-                conductor.token = null;
-                //Almacenamiento temporal de el correo nuevo hasta que se confirme el cambio de correo
-                conductor.tokenEmail = null;
+            // Actualizar el email
+            conductor.email = conductor.tokenEmail;
+            conductor.token = null;
+            //Almacenamiento temporal de el correo nuevo hasta que se confirme el cambio de correo
+            conductor.tokenEmail = null;
         
-                // Guardar los cambios en la base de datos
-                await conductor.save();
-                res.status(200).json({ msg: "Correo electrónico actualizado exitosamente, puede logearse con su nuevo email" });
+            // Guardar los cambios en la base de datos
+            await conductor.save();
+            return res.status(200).json({ msg: "Correo electrónico actualizado exitosamente, puede logearse con su nuevo email" });
         }
 
         // Buscar representante por token

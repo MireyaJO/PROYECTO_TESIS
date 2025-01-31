@@ -234,7 +234,7 @@ test('Debe actualizar la ubicación del conductor', async () => {
 // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++//
 // Prueba para actualizar el perfil del conductor 
     test('Debe actualizar el perfil del conductor', async () => {
-        const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3OTk5MGY3MzcyOWM0OGEyZTU1NmVmMyIsImVtYWlsIjoiam9lbGZhMjMwQGdtYWlsLmNvbSIsInJvbGUiOiJjb25kdWN0b3IiLCJpYXQiOjE3MzgxMTc1MTEsImV4cCI6MTczODEyMTExMX0.vw_9bZYrTBJ4zwYlYBxX_osrZp0JvKhETatVNV7CRgs'; // Reemplaza con un token válido para pruebas
+        const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3OTk5MGY3MzcyOWM0OGEyZTU1NmVmMyIsImVtYWlsIjoiZnJhamsuMTgwM0BnbWFpbC5jb20iLCJyb2xlIjoiY29uZHVjdG9yIiwiaWF0IjoxNzM4Mjk1NTg5LCJleHAiOjE3MzgyOTkxODl9.Wm8oANhrJb4gkE412eQ9adQ3pZaJkoqRXBLMckHo6GY'; // Reemplaza con un token válido para pruebas
         // Ruta del archivo de imagen local
             const filePath = path.join(__dirname, 'files', 'hm3.jpg');
         
