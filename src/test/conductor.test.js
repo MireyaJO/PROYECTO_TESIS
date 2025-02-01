@@ -234,7 +234,7 @@ test('Debe actualizar la ubicación del conductor', async () => {
 // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++//
 // Prueba para actualizar el perfil del conductor 
     test('Debe actualizar el perfil del conductor', async () => {
-        const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3OTk5MGY3MzcyOWM0OGEyZTU1NmVmMyIsImVtYWlsIjoiZnJhamsuMTgwM0BnbWFpbC5jb20iLCJyb2xlIjoiY29uZHVjdG9yIiwiaWF0IjoxNzM4Mjk1NTg5LCJleHAiOjE3MzgyOTkxODl9.Wm8oANhrJb4gkE412eQ9adQ3pZaJkoqRXBLMckHo6GY'; // Reemplaza con un token válido para pruebas
+        const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3OTk5MGY3MzcyOWM0OGEyZTU1NmVmMyIsImVtYWlsIjoiZnJhamsuMTgwM0BnbWFpbC5jb20iLCJyb2xlIjoiY29uZHVjdG9yIiwiaWF0IjoxNzM4MzgyMTk5LCJleHAiOjE3MzgzODU3OTl9.pXB0qSmZwNRwYEZX8EBUbETcApIuAOZWQQdBhKGys0s'; // Reemplaza con un token válido para pruebas
         // Ruta del archivo de imagen local
             const filePath = path.join(__dirname, 'files', 'hm3.jpg');
         
@@ -248,7 +248,7 @@ test('Debe actualizar la ubicación del conductor', async () => {
             .set('Authorization', `Bearer ${token}`)
             .field('placaAutomovil', 'PHG2BY6')
             .field('telefono', '0973645277')
-            .field('email', 'frjoac2303@gmail.com')
+            .field('email', 'frajk.1803@gmail.com')
             .attach('fotografiaDelConductor', filePath) // Archivo local
 
         console.log(response.body); // Para depuración

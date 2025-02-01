@@ -115,7 +115,7 @@ describe('Pruebas de las rutas de todos los Roles', () => {
     //------------------------------------------------------------------------------------------------------------------//
     // Prueba: Comprobación de un token válido
     test('Debe confirmar un token válido', async () => {
-        const token = '8pgyqho4apx'; // Cambia por un token válido en tu base de datos
+        const token = 'qs1ozk98zcc'; // Cambia por un token válido en tu base de datos
 
         const response = await request(app)
             .get(`/api/comprobar/token/${token}`);
@@ -147,10 +147,10 @@ describe('Pruebas de las rutas de todos los Roles', () => {
     //------------------------------------------------------------------------------------------------------------------//
     // Prueba: Confirmación de un cambio de correo con un token válido
     test('Debe confirmar un cambio de correo con un token válido', async () => {
-        const token = 'wdtikb5pcnr'; // Cambia por un token válido en tu base de datos
+        const token = 'qs1ozk98zcc'; // Cambia por un token válido en tu base de datos
 
         const response = await request(app)
-            .get(`/api/cambio/email/${token}`);
+            .get(`/api/cambio/email/${token}`)
 
         // Imprime la respuesta para verificar errores
         console.log(response.body);
