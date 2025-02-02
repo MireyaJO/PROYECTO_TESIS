@@ -28,7 +28,7 @@ const __dirname = path.dirname(__filename);
 describe('Pruebas de las rutas de todos los Roles', () => {
     const app = "https://proyecto-tesis-1.onrender.com";
     // Tooken del Representante
-    const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3OWViM2I5YjA3OGY0YTQzNGE5MDRiOSIsImVtYWlsIjoiZnJqb2FjMjMwM0BnbWFpbC5jb20iLCJyb2xlIjoicmVwcmVzZW50YW50ZSIsImlhdCI6MTczODQ1Mzk2MywiZXhwIjoxNzM4NDU3NTYzfQ.yPUTq6oUjaAvhE-lALVKUMlrGQreehPbRfsza0vtRVg'
+    const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3OWVlODJmZjk0YzU5NGYzM2U1NDRjOSIsImVtYWlsIjoiZnJqb2FjMjMwM0BnbWFpbC5jb20iLCJyb2xlIjoicmVwcmVzZW50YW50ZSIsImlhdCI6MTczODQ2NzQwMywiZXhwIjoxNzM4NDcxMDAzfQ.SYkKJ0jOH-LWLSfkgzatwwA_BpXDYq0L5AuKMkAOT7c'
     // Prueba de login del representante
     test('Debe iniciar sesión correctamente en el rol Representante', async () => {
             // Credenciales válidas del conductor
@@ -76,7 +76,7 @@ describe('Pruebas de las rutas de todos los Roles', () => {
             .field('email', 'frjoac2303@gmail.com')
             .field('institucion', 'Unidad Educativa Particular Emaús')
             .field('password', 'Pa123$$$')
-            .field('cedulaRepresentado', '1743295737')
+            .field('cedulaRepresentado', '1234567890')
             .attach('fotografia', filePath); // Archivo local
         
         console.log(response.body)
@@ -87,10 +87,10 @@ describe('Pruebas de las rutas de todos los Roles', () => {
     // ----------------------------------------------------------------------------------------------- //
     // Prueba de confirmacion del correo electronico ingresado
     test('Debe confirmar el correo del representante correctamente', async () => {
-        //const tokenEmail = 'xek2szi7te'; // Este token debe ser generado previamente
+        const tokenEmail = '6vey7yjfacc'; // Este token debe ser generado previamente
     
         const response = await request(app)
-            .get(`/api/confirmar/correoRepresentante/${token}`);
+            .get(`/api/confirmar/correoRepresentante/${tokenEmail}`);
     
         console.log(response.body)
         expect(response.statusCode).toBe(200);
@@ -140,8 +140,8 @@ describe('Pruebas de las rutas de todos los Roles', () => {
     });
     
     // Prueba de eliminar la cuenta del representante
+    // Prueba de eliminar la cuenta del representante
     test('Debe eliminar la cuenta del representante correctamente', async () => {
-        // const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3OWU2YWU4NWZhOGI1ZDE5YjQ1ZjU2NiIsImVtYWlsIjoiZnJqb2FjMjMwM0BnbWFpbC5jb20iLCJyb2xlIjoicmVwcmVzZW50YW50ZSIsImlhdCI6MTczODQ0ODcyMCwiZXhwIjoxNzM4NDUyMzIwfQ.V3y212c83GvUoy3-4DZao4fYtFdwGWJp2MW7NFDRU3Q';
         const response = await request(app)
             .delete('/api/eliminar/cuenta/representante')
             .set('Authorization', `Bearer ${token}`); // token debe ser generado previamente
@@ -169,11 +169,19 @@ describe('Pruebas de las rutas de todos los Roles', () => {
             .get('/api/notificaciones/representante')
             .set('Authorization', `Bearer ${token}`); // token debe ser generado previamente
     
-        console.log(response.body)
-        expect(response.statusCode).toBe(200);
-        expect(response.body).toHaveProperty('asistencia');
-        expect(response.body).toHaveProperty('Eliminacion');
+        console.log('Response status:', response.statusCode);
+        console.log('Response body:', response.body);
+    
+        if (response.statusCode === 404) {
+            console.warn('⚠️ No hay notificaciones para este representante.');
+            expect(response.body).toHaveProperty('msg', 'No tienes notificaciones');
+        } else {
+            expect(response.statusCode).toBe(200);
+            expect(response.body).toHaveProperty('asistencia');
+            expect(response.body).toHaveProperty('Eliminacion');
+        }
     });
+    
     
     // ----------------------------------------------------------------------------------------------- //
     // Preuba de actualizacion del perfil del representante

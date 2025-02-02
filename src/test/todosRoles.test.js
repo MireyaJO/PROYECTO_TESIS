@@ -147,7 +147,7 @@ describe('Pruebas de las rutas de todos los Roles', () => {
     //------------------------------------------------------------------------------------------------------------------//
     // Prueba: Confirmación de un cambio de correo con un token válido
     test('Debe confirmar un cambio de correo con un token válido', async () => {
-        const token = 'qs1ozk98zcc'; // Cambia por un token válido en tu base de datos
+        const token = '6vey7yjfacc'; // Cambia por un token válido en tu base de datos
 
         const response = await request(app)
             .get(`/api/cambio/email/${token}`)

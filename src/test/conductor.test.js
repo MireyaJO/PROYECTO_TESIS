@@ -61,7 +61,7 @@ describe('Pruebas de rutas del conductor', () => {
 
     // Prueba: Registro de un estudiante 
     test('Debe registrar un nuevo estudiante', async () => {
-        const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3OGMzOTdiZWQwMjljMjNkNjEzZGExYiIsImVtYWlsIjoiZnJhbmNpc2hqMzY5QGdtYWlsLmNvbSIsInJvbGUiOiJjb25kdWN0b3IiLCJpYXQiOjE3MzcyNDM1MTgsImV4cCI6MTczNzI0NzExOH0.aeMxr6NT3mDVQJrHyQbTRZCnrN0ya9CDDByO-QqXrOQ'; // Token válido para pruebas
+        const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3OTk5MGY3MzcyOWM0OGEyZTU1NmVmMyIsImVtYWlsIjoiZnJhamsuMTgwM0BnbWFpbC5jb20iLCJyb2xlIjoiY29uZHVjdG9yIiwiaWF0IjoxNzM4NDY2OTY4LCJleHAiOjE3Mzg0NzA1Njh9.zZYobvvmhh7NX-xmqjFbx-zydjjX2bs-oHTmVcii3DU'; // Token válido para pruebas
     
         const response = await request(app)
             .post('/api/registro/estudiantes')
@@ -108,7 +108,7 @@ describe('Pruebas de rutas del conductor', () => {
 // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ // 
 // Lista de los estudiantes del conductor 
     test('Debe listar los estudiantes de la ruta del conductor logueado', async () => {
-        const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3OTk5MGY3MzcyOWM0OGEyZTU1NmVmMyIsImVtYWlsIjoiZnJhamsuMTgwM0BnbWFpbC5jb20iLCJyb2xlIjoiY29uZHVjdG9yIiwiaWF0IjoxNzM4NDQ5ODA3LCJleHAiOjE3Mzg0NTM0MDd9.9RJKx1MJDy3NGtCDFImiaIvGDq0cLpYvU4y39BSjfew'; // Reemplaza con un token válido para pruebas
+        const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3OTk5MGY3MzcyOWM0OGEyZTU1NmVmMyIsImVtYWlsIjoiZnJhamsuMTgwM0BnbWFpbC5jb20iLCJyb2xlIjoiY29uZHVjdG9yIiwiaWF0IjoxNzM4NDY2OTY4LCJleHAiOjE3Mzg0NzA1Njh9.zZYobvvmhh7NX-xmqjFbx-zydjjX2bs-oHTmVcii3DU'; // Reemplaza con un token válido para pruebas
     
         const response = await request(app)
             .get('/api/lista/estudiantes')
@@ -173,8 +173,8 @@ test('Debe actualizar los datos de un estudiante', async () => {
     
 // Eliminar a un estudiante 
     test('Debe eliminar un estudiante', async () => {
-        const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3OTk5MGY3MzcyOWM0OGEyZTU1NmVmMyIsImVtYWlsIjoiZnJhamsuMTgwM0BnbWFpbC5jb20iLCJyb2xlIjoiY29uZHVjdG9yIiwiaWF0IjoxNzM4NDQ5ODA3LCJleHAiOjE3Mzg0NTM0MDd9.9RJKx1MJDy3NGtCDFImiaIvGDq0cLpYvU4y39BSjfew'; // Reemplaza con un token válido para pruebas
-        const idEstudiante = '6799983da1e6293231bb8a0a'; // Reemplaza con un ID válido de estudiante
+        const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3OTk5MGY3MzcyOWM0OGEyZTU1NmVmMyIsImVtYWlsIjoiZnJhamsuMTgwM0BnbWFpbC5jb20iLCJyb2xlIjoiY29uZHVjdG9yIiwiaWF0IjoxNzM4NDY2OTY4LCJleHAiOjE3Mzg0NzA1Njh9.zZYobvvmhh7NX-xmqjFbx-zydjjX2bs-oHTmVcii3DU'; // Reemplaza con un token válido para pruebas
+        const idEstudiante = '679ee7bbf94c594f33e544c1'; // Reemplaza con un ID válido de estudiante
     
         const response = await request(app)
             .delete(`/api/eliminar/estudiante/${idEstudiante}`)
