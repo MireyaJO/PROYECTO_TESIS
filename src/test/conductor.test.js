@@ -108,7 +108,7 @@ describe('Pruebas de rutas del conductor', () => {
 // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ // 
 // Lista de los estudiantes del conductor 
     test('Debe listar los estudiantes de la ruta del conductor logueado', async () => {
-        const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3OTk5MGY3MzcyOWM0OGEyZTU1NmVmMyIsImVtYWlsIjoiZnJqb2FjMjMwM0BnbWFpbC5jb20iLCJyb2xlIjoiY29uZHVjdG9yIiwiaWF0IjoxNzM4MTE5MzM1LCJleHAiOjE3MzgxMjI5MzV9.kCbV5tGNzlQQ1kWfFCBcEc49klibUqNLMK73iF-EarI'; // Reemplaza con un token válido para pruebas
+        const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3OTk5MGY3MzcyOWM0OGEyZTU1NmVmMyIsImVtYWlsIjoiZnJhamsuMTgwM0BnbWFpbC5jb20iLCJyb2xlIjoiY29uZHVjdG9yIiwiaWF0IjoxNzM4NDQ5ODA3LCJleHAiOjE3Mzg0NTM0MDd9.9RJKx1MJDy3NGtCDFImiaIvGDq0cLpYvU4y39BSjfew'; // Reemplaza con un token válido para pruebas
     
         const response = await request(app)
             .get('/api/lista/estudiantes')
@@ -173,8 +173,8 @@ test('Debe actualizar los datos de un estudiante', async () => {
     
 // Eliminar a un estudiante 
     test('Debe eliminar un estudiante', async () => {
-        const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3OTk5MGY3MzcyOWM0OGEyZTU1NmVmMyIsImVtYWlsIjoiam9lbGZhMjMwQGdtYWlsLmNvbSIsInJvbGUiOiJjb25kdWN0b3IiLCJpYXQiOjE3MzgxMTc1MTEsImV4cCI6MTczODEyMTExMX0.vw_9bZYrTBJ4zwYlYBxX_osrZp0JvKhETatVNV7CRgs'; // Reemplaza con un token válido para pruebas
-        const idEstudiante = '679992db3729c48a2e556efb'; // Reemplaza con un ID válido de estudiante
+        const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3OTk5MGY3MzcyOWM0OGEyZTU1NmVmMyIsImVtYWlsIjoiZnJhamsuMTgwM0BnbWFpbC5jb20iLCJyb2xlIjoiY29uZHVjdG9yIiwiaWF0IjoxNzM4NDQ5ODA3LCJleHAiOjE3Mzg0NTM0MDd9.9RJKx1MJDy3NGtCDFImiaIvGDq0cLpYvU4y39BSjfew'; // Reemplaza con un token válido para pruebas
+        const idEstudiante = '6799983da1e6293231bb8a0a'; // Reemplaza con un ID válido de estudiante
     
         const response = await request(app)
             .delete(`/api/eliminar/estudiante/${idEstudiante}`)

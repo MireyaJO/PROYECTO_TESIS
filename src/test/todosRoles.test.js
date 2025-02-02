@@ -18,7 +18,7 @@ afterAll(async () => {
 
 // ----------------------------------------------------------------------------------------------- //
 
-// Grupo de pruebas para el administrador
+// Grupo de pruebas para las rutas de todos los Roles
 describe('Pruebas de las rutas de todos los Roles', () => {
     // Variable del despliegue del Backend
     const app = "https://proyecto-tesis-1.onrender.com";
