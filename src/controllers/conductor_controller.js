@@ -62,7 +62,7 @@ const RegistroDeLosEstudiantes = async (req, res) => {
 
         //Verificación de que el conductor exista
         if(!conductor){
-            return res.status(404).json({ msg_conductor_logeado: "Conductor no encontrado" });
+            return res.status(400).json({ msg_conductor_logeado: "Conductor no encontrado" });
         }
 
         // Inicializar el array de estudiantes registrados si no está definido
@@ -111,7 +111,7 @@ const RegistroDeLosEstudiantes = async (req, res) => {
         // Guardar los cambios en la base de datos
         await conductor.save();
 
-        res.status(201).json({ msg_registro_estudiantes: "Estudiante registrado exitosamente", nuevoEstudiante });
+        res.status(200).json({ msg_registro_estudiantes: "Estudiante registrado exitosamente", nuevoEstudiante });
     } catch (error) {
         console.error(error);
         res.status(500).json({ msg_registro_estudiantes: "Error al registrar el estudiante", error: error.message });
@@ -133,7 +133,7 @@ const ActualizarPassword = async (req, res) => {
         const conductor = await Conductores.findById(req.user.id);
         const verificarPassword = await conductor.matchPassword(passwordAnterior);
         if (!verificarPassword) {
-            return res.status(404).json({ msg_actualizacion_contrasenia: "Lo sentimos, la contraseña anterior no es la correcta" });
+            return res.status(400).json({ msg_actualizacion_contrasenia: "Lo sentimos, la contraseña anterior no es la correcta" });
         }
 
         // Verificación de la confirmación de la contrseña actual 
@@ -144,7 +144,7 @@ const ActualizarPassword = async (req, res) => {
         // Encriptar la contraseña antes de guardarla
         conductor.password = await conductor.encrypPassword(passwordActual);
         await conductor.save();
-        res.status(201).json({ msg_actualizacion_contrasenia: "La contraseña se ha actualizado satisfactoriamente, por favor vuelva a logearse" });
+        res.status(200).json({ msg_actualizacion_contrasenia: "La contraseña se ha actualizado satisfactoriamente, por favor vuelva a logearse" });
     } catch (error) {
         console.error(error);
         res.status(500).json({ msg_actualizacion_contrasenia: "Error al actualizar la contraseña" });
@@ -442,7 +442,7 @@ const ManejoActualizacionUbicacion = async (req, res) => {
         // Usar lean() para obtener un objeto simple
         const conductor = await Conductores.findById(id); 
         if (!conductor) {
-            return res.json({ msg_actualizacion_ubicacion: "Conductor no encontrado" });
+            return res.status(400).json({ msg_actualizacion_ubicacion: "Conductor no encontrado" });
         }
         
         // Actualizar la latitud y longitud del conductor
@@ -453,7 +453,7 @@ const ManejoActualizacionUbicacion = async (req, res) => {
         return res.status(200).json({ msg_actualizacion_ubicacion: "Ubicación actualizada correctamente"});
     } catch (error) {
         console.error(error);
-        return res.status(200).json({ msg_actualizacion_ubicacion: "Error al actualizar la ubicación" });
+        return res.status(500).json({ msg_actualizacion_ubicacion: "Error al actualizar la ubicación" });
     }
 }
 
@@ -680,7 +680,7 @@ const TomarListaTarde = async (req, res) => {
             }
         }
 
-        return res.status(201).json({ msg: "Asistencia registrada exitosamente", asistencia: nuevaAsistencia, notificaciones });
+        return res.status(200).json({ msg: "Asistencia registrada exitosamente", asistencia: nuevaAsistencia, notificaciones });
     } catch (error) {
         console.error(error);
         res.status(500).json({ msg: "Error al registrar la asistencia" });

@@ -135,7 +135,7 @@ const RegistroDeRepresentantes = async (req, res) => {
         //Enviar el correo de confirmación
         await confirmacionDeCorreoRepresentante(email, nombre, apellido, token);
         
-        res.status(201).json({ msg_registro_representante: "Representante registrado exitosamente", nuevoRepresentante});
+        res.status(200).json({ msg_registro_representante: "Representante registrado exitosamente", nuevoRepresentante});
     } catch (error) {
         console.error(error);
         res.status(500).json({ msg_registro_representante: "Error al registrar el representante" });
@@ -152,10 +152,10 @@ const ConfirmacionCorreo = async (req, res) => {
         const representante= await Representantes.findOne({token:token})
 
         // Verificaicón de la confirmación de la cuenta
-        if(!representante?.token) return res.status(404).json({msg:"La cuenta ya ha sido confirmada"})
+        if(!representante?.token) return res.status(400).json({msg:"La cuenta ya ha sido confirmada"})
         
         // Verificar si el representante no se encuentra registrado
-        if(!representante) return res.status(404).json({msg:"Lo sentimos, el representante no se encuentra registrado"})
+        if(!representante) return res.status(400).json({msg:"Lo sentimos, el representante no se encuentra registrado"})
         
         // Confirmar la cuenta del representante
         representante.token = null;
@@ -195,7 +195,7 @@ const ActualizarPasswordRepresentante = async (req, res) => {
         // Encriptar la contraseña antes de guardarla
         representante.password = await representante.encrypPassword(passwordActual);
         await representante.save();
-        res.status(201).json({ msg_actualizacion_contrasenia: "La contraseña se ha actualizado satisfactoriamente, por favor vuelva a logearse" });
+        res.status(200).json({ msg_actualizacion_contrasenia: "La contraseña se ha actualizado satisfactoriamente, por favor vuelva a logearse" });
     } catch (error) {
         console.error(error);
         res.status(500).json({ msg_actualizacion_contrasenia: "Error al actualizar la contraseña" });

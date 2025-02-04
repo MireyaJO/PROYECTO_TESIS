@@ -106,7 +106,7 @@ const RecuperacionDeContrasenia = async (req, res) => {
             await representante.save();
             return res.status(200).json({ msg_recuperacion_contrasenia:"Correo de recuperación de contraseña enviado satisfactoriamente"})
         }
-        return res.status(404).json({msg:"El usuario no se encuentra registrado"});
+        return res.status(400).json({msg:"El usuario no se encuentra registrado"});
     }catch(error){
         console.error(error);
         return res.status(500).json({ msg_recuperacion_contrasenia:"Error al recuperar la contraseña"});
@@ -119,7 +119,7 @@ const ComprobarTokenPassword = async (req, res) => {
         const tokenURL = req.params.token;
         
         //Verificación de que el token sea válido
-        if(!tokenURL) return res.status(404).json({msg_recuperacion_contrasenia:"Lo sentimos, el token se encuentra vacío"});
+        if(!tokenURL) return res.status(400).json({msg_recuperacion_contrasenia:"Lo sentimos, el token se encuentra vacío"});
         
         //Verificación de que exista un conductor con el token
         const conductor = await Conductores.findOne({token:tokenURL});
@@ -134,7 +134,7 @@ const ComprobarTokenPassword = async (req, res) => {
             await representante.save()
             return res.status(200).json({msg_recuperacion_contrasenia:"Token confirmado, ya puedes crear tu nuevo password"})
         } 
-        return res.status(404).json({msg_recuperacion_contrasenia:"Lo sentimos, el token no coincide con ningún usuario"});
+        return res.status(400).json({msg_recuperacion_contrasenia:"Lo sentimos, el token no coincide con ningún usuario"});
     }catch(error){
         console.error(error);
         return res.status(500).json({msg:"Error al comprobar el token"});
@@ -152,7 +152,7 @@ const NuevaPassword= async (req, res) => {
         }
 
         //Verificación de que el token sea válido
-        if(!tokenURL) return res.status(404).json({msg_recuperacion_contrasenia:"Lo sentimos, el token se encuentra vacío"});
+        if(!tokenURL) return res.status(400).json({msg_recuperacion_contrasenia:"Lo sentimos, el token se encuentra vacío"});
 
         //Verificación de que la contraseña y su confirmación coincidan
         if(passwordActual !== passwordActualConfirm){
@@ -165,7 +165,7 @@ const NuevaPassword= async (req, res) => {
             conductor.password = await conductor.encrypPassword(passwordActual);
             conductor.token = null;
             await conductor.save();
-            return res.status(201).json({msg_recuperacion_contrasenia: "La contraseña se ha actualizado satisfactoriamente, por favor vuelva a logearse"});
+            return res.status(200).json({msg_recuperacion_contrasenia: "La contraseña se ha actualizado satisfactoriamente, por favor vuelva a logearse"});
         };
         
         //Verificación de que exista un representante con el token 
@@ -175,9 +175,9 @@ const NuevaPassword= async (req, res) => {
             //Eliminar el token de la base de datos para que no se pueda volver a usar 
             representante.token = null;
             await representante.save();
-            return res.status(201).json({msg_recuperacion_contrasenia: "La contraseña se ha actualizado satisfactoriamente, por favor vuelva a logearse"});
+            return res.status(200).json({msg_recuperacion_contrasenia: "La contraseña se ha actualizado satisfactoriamente, por favor vuelva a logearse"});
         } 
-        return res.status(404).json({msg_recuperacion_contrasenia:"Lo sentimos, el token no coincide con ningún usuario, por lo que no se ha actualizado la contrasenia"});
+        return res.status(400).json({msg_recuperacion_contrasenia:"Lo sentimos, el token no coincide con ningún usuario, por lo que no se ha actualizado la contrasenia"});
 
     }catch(error){
         console.error(error);
@@ -219,7 +219,7 @@ const ConfirmacionCorreoNuevo = async (req, res) => {
             return res.status(200).json({ msg: "Correo electrónico actualizado exitosamente, puede logearse con su nuevo email" });
         }
 
-        return res.status(404).json({ msg: "El token no coincide con ningún usuario" }); 
+        return res.status(400).json({ msg: "El token no coincide con ningún usuario" }); 
     }catch(error){
         console.error(error);
         return res.status(500).json({msg:"Error al comprobar el token"});

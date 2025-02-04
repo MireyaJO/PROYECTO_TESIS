@@ -128,7 +128,7 @@ const validacionesRepresentantes = [
     check("password")
         .isLength({ min: 6, max: 10 })
         .withMessage('La contraseña debe tener entre 6 y 10 caracteres')
-        .matches(/^(?=(?:.*\d){3})(?=(?:.*[!@#$%^&*()\-_=+{};:,<.>]){3})/)
+        .matches(/^(?=.*[A-Za-z])(?=(?:.*\d){3})(?=(?:.*[!@#$%^&*()\-_=+{};:,<.>]){3})/)
         .withMessage('La contraseña debe contener al menos 3 números y 3 signos especiales')
         .customSanitizer(value => value?.trim()),
 
@@ -261,6 +261,24 @@ const validacionesActualizarEstudiante = [
         }
     }
 ]
+
+const validarContraseniaNueva = [
+    // Verificar que la contraseña tenga un mínimo de 6 y un máximo de 10 caracteres, y que contenga al menos 3 números y 3 signos especiales
+    check("passwordActual")
+        .isLength({ min: 6, max: 10 })
+        .withMessage('La contraseña debe tener entre 6 y 10 caracteres')
+        .matches(/^(?=.*[A-Za-z])(?=(?:.*\d){3})(?=(?:.*[!@#$%^&*()\-_=+{};:,<.>]){3})/)
+        .withMessage('La contraseña debe contener letras, al menos 3 números y 3 signos especiales')
+        .customSanitizer(value => value?.trim()),
+    (req,res,next)=>{
+        const errors = validationResult(req);
+        if (errors.isEmpty()) {
+            return next();
+        } else {
+            return res.status(400).send({ errors: errors.array() });
+        }
+    }
+]
 export {validacionesConductor, validacionesRepresentantes, validacionesActualizarConductorAdmin, validacionesActualizarPerfilConductor, validacionesActualizarPerfilRepresentante,
-    validacionesActualizarEstudiante
+    validacionesActualizarEstudiante, validarContraseniaNueva
 }

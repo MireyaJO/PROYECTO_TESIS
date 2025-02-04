@@ -3,11 +3,11 @@ import { RegistroDeLosEstudiantes, ActualizarPassword, BuscarEstudianteCedula,
     ActualizarEstudiante, EliminarEstudiante, ManejoActualizacionUbicacion, ListarEstudiantes, VisuallizarPerfil, ActualizarPerfil, 
     TomarListaTarde, BuscarLista, EliminarLista, ActualizarLista} from '../controllers/conductor_controller.js';
 import {verificacionConductorRol, verificacionToken} from '../middlewares/autho.js'
-import { validacionesActualizarPerfilConductor, validacionesActualizarEstudiante } from '../middlewares/validaciones.js';
+import { validacionesActualizarPerfilConductor, validacionesActualizarEstudiante, validarContraseniaNueva } from '../middlewares/validaciones.js';
 const router = Router();
 
 //Rutas Privadas
-router.patch('/actualizar/contrasenia/conductor', verificacionToken, verificacionConductorRol, ActualizarPassword); 
+router.patch('/actualizar/contrasenia/conductor', verificacionToken, verificacionConductorRol, validarContraseniaNueva, ActualizarPassword); 
 router.post('/registro/estudiantes', verificacionToken, verificacionConductorRol, RegistroDeLosEstudiantes); 
 router.get('/lista/estudiantes', verificacionToken, verificacionConductorRol, ListarEstudiantes);
 router.get('/buscar/estudiante/cedula/:cedula', verificacionToken, verificacionConductorRol, BuscarEstudianteCedula);
