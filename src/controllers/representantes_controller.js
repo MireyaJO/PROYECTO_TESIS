@@ -204,19 +204,22 @@ const ActualizarPasswordRepresentante = async (req, res) => {
 }
 
 // Información de los estudiantes representados 
-const EstudiantesRepresentados = async (req, res) => {
+const ConductorInfo = async (req, res) => {
     try {
         // Obtención del id del representante
         const { id } = req.user;
 
         // Búsqueda de los estudiantes representados por el representante y populación del conductor
-        const estudiantes = await Estudiantes.find({ representantes: id }).populate('conductor', 'nombre apellido email telefono').select("-createdAt -updatedAt -__v");
+        const estudiantes = await Estudiantes.find({ representantes: id }).populate('conductor', 'nombre apellido email telefono rutaAsignada sectoresRuta fotografiaDelConductor').select("-createdAt -updatedAt -__v");
 
         // Verificación de que el representante tenga estudiantes representados
         if (estudiantes.length === 0) return res.status(404).json({ msg: "Lo sentimos, no tiene estudiantes representados" });
 
+        // Verificación de la existencia del conductor
+        const conductor = estudiantes[0].conductor;
+
         // Envío de los estudiantes representados
-        res.status(200).json({ estudiantesRepresentados: estudiantes });
+        res.status(200).json({ conductorDeEstudiantes: conductor});
     } catch (error) {
         console.error(error);
         res.status(500).json({ msg: "Error al obtener los estudiantes representados" });
@@ -498,7 +501,7 @@ export {
     RegistroDeRepresentantes, 
     ConfirmacionCorreo, 
     ActualizarPasswordRepresentante,
-    EstudiantesRepresentados, 
+    ConductorInfo, 
     VisuallizarPerfil, 
     EliminarCuentaRepresentante, 
     AlertaLlegadaConductor, 
