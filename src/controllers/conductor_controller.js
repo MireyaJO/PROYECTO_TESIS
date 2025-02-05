@@ -481,7 +481,7 @@ const ActualizarPerfil = async (req, res) => {
     try{
         // Verificación de la existencia del conductor
         const conductor = await Conductores.findById(id);
-        if (!conductor) return res.status(404).json({ msg: "Lo sentimos, el conductor no se encuentra registrado" });
+        if (!conductor) return res.status(404).json({ msg_actualizacion_perfil: "Lo sentimos, el conductor no se encuentra registrado" });
         // Comprobar si el telefono ya está registrado
         const verificarTelefonoBDD = await Conductores.findOne({telefono, _id: { $ne: id } });
         if (verificarTelefonoBDD) {
