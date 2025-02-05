@@ -181,7 +181,7 @@ const NuevaPassword= async (req, res) => {
 
     }catch(error){
         console.error(error);
-        return res.status(500).json({msg:"Error al comprobar el token"});
+        return res.status(500).json({msg_recuperacion_contrasenia:"Error al comprobar el token"});
     }
     
 }
