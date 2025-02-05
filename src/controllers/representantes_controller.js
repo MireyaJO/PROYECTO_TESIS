@@ -148,14 +148,14 @@ const ConfirmacionCorreo = async (req, res) => {
     const token = req.params.token;
     try {
         // Verificar si el token es válido|
-        if(!token) return res.status(400).json({msg:"Lo sentimos, no se puede validar la cuenta"})
+        if(!token) return res.status(400).json({msg_confirmar_correo:"Lo sentimos, no se puede validar la cuenta"})
         const representante= await Representantes.findOne({token:token})
 
         // Verificaicón de la confirmación de la cuenta
-        if(!representante?.token) return res.status(400).json({msg:"La cuenta ya ha sido confirmada"})
+        if(!representante?.token) return res.status(400).json({msg_confirmar_correo:"La cuenta ya ha sido confirmada"})
         
         // Verificar si el representante no se encuentra registrado
-        if(!representante) return res.status(400).json({msg:"Lo sentimos, el representante no se encuentra registrado"})
+        if(!representante) return res.status(400).json({msg_confirmar_correo:"Lo sentimos, el representante no se encuentra registrado"})
         
         // Confirmar la cuenta del representante
         representante.token = null;
@@ -163,9 +163,9 @@ const ConfirmacionCorreo = async (req, res) => {
         representante.confirmacionEmail=true
         await representante.save();
 
-        res.status(200).json({ msg: "Cuenta confirmada exitosamente" });
+        res.status(200).json({ msg_confirmar_correo: "Cuenta confirmada exitosamente" });
     } catch (error) {
-        res.status(400).json({ msg: "Token inválido o expirado" });
+        res.status(400).json({ msg_confirmar_correo: "Token inválido o expirado" });
     }
 }
 
@@ -189,7 +189,7 @@ const ActualizarPasswordRepresentante = async (req, res) => {
 
         // Verificación de la confirmación de la contrseña actual 
         if(passwordActual !== passwordActualConfirm){
-            return res.status(400).json({ msg: "Lo sentimos, la contraseña nueva y su confirmación no coinciden" });
+            return res.status(400).json({ msg_actualizacion_contrasenia: "Lo sentimos, la contraseña nueva y su confirmación no coinciden" });
         }
 
         // Encriptar la contraseña antes de guardarla
