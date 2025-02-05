@@ -155,7 +155,7 @@ const ConfirmacionCorreo = async (req, res) => {
         if(!representante?.token) return res.status(400).json({msg_confirmar_correo:"La cuenta ya ha sido confirmada"})
         
         // Verificar si el representante no se encuentra registrado
-        if(!representante) return res.status(400).json({msg_confirmar_correo:"Lo sentimos, el representante no se encuentra registrado"})
+        if(!representante) return res.status(404).json({msg_confirmar_correo:"Lo sentimos, el representante no se encuentra registrado"})
         
         // Confirmar la cuenta del representante
         representante.token = null;
