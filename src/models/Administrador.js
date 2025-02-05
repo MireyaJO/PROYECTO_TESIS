@@ -76,6 +76,7 @@ const paraElRegistroDeLosConductores= new Schema(
             default: 0
         },
         estudiantesRegistrados: [{
+            _id:false,
             idEstudiante: {
                 type: mongoose.Schema.Types.ObjectId,
                 ref: 'Estudiantes',
