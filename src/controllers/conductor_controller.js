@@ -462,12 +462,12 @@ const VisuallizarPerfil = async (req, res) => {
         // Información del conductor logeado
         const conductor = await Conductores.findById(req.user.id).select("-password -createdAt -updatedAt -__v");
         // Verificación de la existencia del conductor
-        if (!conductor) return res.status(404).json({ msg: "Conductor no encontrado" });
+        if (!conductor) return res.status(404).json({ msg_visualizar_conductor: "Conductor no encontrado" });
         //Si se encuentra el conductor se envía su información
         res.status(200).json(conductor);
     } catch (error) {
         console.error(error);
-        res.status(500).json({ msg: "Error al visualizar el perfil del conductor" });
+        res.status(500).json({  msg_visualizar_conductor: "Error al visualizar el perfil del conductor" });
     }
 }
 
@@ -546,7 +546,7 @@ const ActualizarPerfil = async (req, res) => {
             await confirmacionDeCorreoConductorCambio(email, conductor.nombre, conductor.apellido, token);
 
             // Enviar una respuesta al cliente indicando que se ha enviado un enlace de confirmación
-            return res.status(200).json({ msg: "Se ha enviado un enlace de confirmación al nuevo correo electrónico" });
+            return res.status(200).json({ msg_actualizacion_perfil: "Se ha enviado un enlace de confirmación al nuevo correo electrónico" });
         }
 
         // Actualización de los datos
