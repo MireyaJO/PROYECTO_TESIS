@@ -617,11 +617,11 @@ const TomarListaTarde = async (req, res) => {
         const conductor = await Conductores.findById(id);
         // Si no se encuentra el conductor
         if (!conductor) {
-            return res.status(404).json({ msg: "Conductor no encontrado" });
+            return res.status(404).json({ msg_asistencia_tarde: "Conductor no encontrado" });
         }
         // Verificación de los campos vacíos
         if (!estudiantes || estudiantes.length === 0) {
-            return res.status(400).json({ msg: "La lista de estudiantes no puede estar vacía" });
+            return res.status(400).json({ msg_asistencia_tarde: "La lista de estudiantes no puede estar vacía" });
         }
         // Obtener la fecha actual
         const fechaDeHoy = new Date().toISOString().split('T')[0];
@@ -629,7 +629,7 @@ const TomarListaTarde = async (req, res) => {
         // Verificar si ya existe un registro de asistencia para el conductor en la fecha actual
         const asistenciaExistente = await AsistenciasTarde.findOne({ conductor: id, fecha: fechaDeHoy });
         if (asistenciaExistente) {
-            return res.status(400).json({ msg: "La lista ya ha sido tomada para el día de hoy" });
+            return res.status(400).json({ msg_asistencia_tarde: "La lista ya ha sido tomada para el día de hoy" });
         }
         
         //Verificar si los ids de los estudiantes se encuentran vinculados al conductor
@@ -638,7 +638,7 @@ const TomarListaTarde = async (req, res) => {
             const estudianteBDD = await Estudiantes.findOne({ _id: estudiante.estudiante, conductor: id });
             //¿Qué sucede si no se encuentra el estudiante?
             if (!estudianteBDD) {
-                return res.status(404).json({ msg: "Lo sentimos, el estudiante no se encuentra registrado o no pertenece a su ruta" });
+                return res.status(404).json({ msg_asistencia_tarde: "Lo sentimos, el estudiante no se encuentra registrado o no pertenece a su ruta" });
             }
         }
 
@@ -680,10 +680,10 @@ const TomarListaTarde = async (req, res) => {
             }
         }
 
-        return res.status(200).json({ msg: "Asistencia registrada exitosamente", asistencia: nuevaAsistencia, notificaciones });
+        return res.status(200).json({ msg_asistencia_tarde: "Asistencia registrada exitosamente", asistencia: nuevaAsistencia, notificaciones });
     } catch (error) {
         console.error(error);
-        res.status(500).json({ msg: "Error al registrar la asistencia" });
+        res.status(500).json({ msg_asistencia_tarde: "Error al registrar la asistencia" });
     }
 }
 
@@ -806,7 +806,7 @@ const EliminarLista = async (req, res) => {
         // Verificación y eliminación de la lista en la tarde
         const listaTarde = await AsistenciasTarde.findOneAndDelete({ _id: listaId, conductor: id });
         if (listaTarde) {
-            return res.status(200).json({ msg: `La lista de la tarde con ID: ${listaId}, se ha eliminado exitosamente` });
+            return res.status(200).json({ msg_eliminar_lista: `La lista de la tarde con ID: ${listaId}, se ha eliminado exitosamente` });
         }
 
         // Si no se encuentra ninguna lista
