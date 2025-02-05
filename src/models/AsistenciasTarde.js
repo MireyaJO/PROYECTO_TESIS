@@ -19,6 +19,7 @@ const paraElRegistroDeAsistenciasTarde = new Schema({
     },
     estudiantes: [
         {
+            _id: false,
             estudiante: {
                 type: mongoose.Schema.Types.ObjectId,
                 ref: 'Estudiantes'

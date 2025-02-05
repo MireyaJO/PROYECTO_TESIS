@@ -699,7 +699,7 @@ const BuscarLista = async (req, res) => {
         // Verificación de la existencia de lista en la tarde
         const listaTarde = await AsistenciasTarde.findOne({ conductor: id, fecha: fecha }).select("-createdAt -updatedAt -__v");
         if (listaTarde) {
-            return res.status(200).json({ msg: `La lista de la tarde con fecha: ${fecha}, se ha encontrado exitosamente`, lista: listaTarde });
+            return res.status(200).json({ msg_buscar_lista: `La lista de la tarde con fecha: ${fecha}, se ha encontrado exitosamente`, lista: listaTarde });
         }
 
         // Si no se encuentra ninguna lista
