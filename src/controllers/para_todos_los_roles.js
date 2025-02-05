@@ -106,7 +106,7 @@ const RecuperacionDeContrasenia = async (req, res) => {
             await representante.save();
             return res.status(200).json({ msg_recuperacion_contrasenia:"Correo de recuperación de contraseña enviado satisfactoriamente"})
         }
-        return res.status(400).json({msg_recuperacion_contrasenia:"El usuario no se encuentra registrado"});
+        return res.status(404).json({msg_recuperacion_contrasenia:"El usuario no se encuentra registrado"});
     }catch(error){
         console.error(error);
         return res.status(500).json({ msg_recuperacion_contrasenia:"Error al recuperar la contraseña"});
