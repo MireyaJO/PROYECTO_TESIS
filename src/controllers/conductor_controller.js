@@ -178,10 +178,10 @@ const BuscarEstudianteCedula = async (req, res) => {
         if (!estudiante) return res.status(404).json({ msg: "Lo sentimos, no se ha encontrado ningun estudiante con ese numero de cedula o no pertenece a su ruta" });
    
         // Mensaje de éxito
-        res.status(200).json({ msg: `El estudiante de la cedula ${cedula} se han encontrado exitosamente`, estudiante });
+        res.status(200).json({ msg_busqueda_estudiante: `El estudiante de la cedula ${cedula} se han encontrado exitosamente`, estudiante });
     } catch (error) {
         console.log(error)
-        res.status(500).json({ msg: "Error al buscar el estudiante por su cedula", error: error.message });
+        res.status(500).json({ msg_busqueda_estudiante: "Error al buscar el estudiante por su cedula", error: error.message });
     }
 }
 
