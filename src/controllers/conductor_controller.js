@@ -301,7 +301,7 @@ const EliminarEstudiante = async (req, res) => {
         
     //Verificación de la existencia del conductor
     const estudiante = await Estudiantes.findOne({_id:id, conductor: conductor._id});
-    if(!estudiante) return res.status(400).json({msg_eliminacion_estudiante:"Lo sentimos, el estudiante no se encuentra o no pertenece a la ruta"});
+    if(!estudiante) return res.status(404).json({msg_eliminacion_estudiante:"Lo sentimos, el estudiante no se encuentra o no pertenece a la ruta"});
     
     //Datos del estudiante 
     const {nombre, apellido, cedula} = estudiante;
@@ -442,7 +442,7 @@ const ManejoActualizacionUbicacion = async (req, res) => {
         // Usar lean() para obtener un objeto simple
         const conductor = await Conductores.findById(id); 
         if (!conductor) {
-            return res.status(400).json({ msg_actualizacion_ubicacion: "Conductor no encontrado" });
+            return res.status(404).json({ msg_actualizacion_ubicacion: "Conductor no encontrado" });
         }
         
         // Actualizar la latitud y longitud del conductor
@@ -481,7 +481,7 @@ const ActualizarPerfil = async (req, res) => {
     try{
         // Verificación de la existencia del conductor
         const conductor = await Conductores.findById(id);
-        if (!conductor) return res.status(400).json({ msg: "Lo sentimos, el conductor no se encuentra registrado" });
+        if (!conductor) return res.status(404).json({ msg: "Lo sentimos, el conductor no se encuentra registrado" });
         // Comprobar si el telefono ya está registrado
         const verificarTelefonoBDD = await Conductores.findOne({telefono, _id: { $ne: id } });
         if (verificarTelefonoBDD) {
@@ -617,7 +617,7 @@ const TomarListaTarde = async (req, res) => {
         const conductor = await Conductores.findById(id);
         // Si no se encuentra el conductor
         if (!conductor) {
-            return res.status(400).json({ msg: "Conductor no encontrado" });
+            return res.status(404).json({ msg: "Conductor no encontrado" });
         }
         // Verificación de los campos vacíos
         if (!estudiantes || estudiantes.length === 0) {
@@ -638,7 +638,7 @@ const TomarListaTarde = async (req, res) => {
             const estudianteBDD = await Estudiantes.findOne({ _id: estudiante.estudiante, conductor: id });
             //¿Qué sucede si no se encuentra el estudiante?
             if (!estudianteBDD) {
-                return res.status(400).json({ msg: "Lo sentimos, el estudiante no se encuentra registrado o no pertenece a su ruta" });
+                return res.status(404).json({ msg: "Lo sentimos, el estudiante no se encuentra registrado o no pertenece a su ruta" });
             }
         }
 
@@ -703,7 +703,7 @@ const BuscarLista = async (req, res) => {
         }
 
         // Si no se encuentra ninguna lista
-        return res.status(400).json({ msg_buscar_lista: "Lo sentimos, no se ha encontrado ninguna lista con esa fecha" });
+        return res.status(404).json({ msg_buscar_lista: "Lo sentimos, no se ha encontrado ninguna lista con esa fecha" });
     } catch (error) {
         console.log(error);
         res.status(500).json({ msg_buscar_lista: "Error al buscar la lista" });
@@ -728,14 +728,14 @@ const ActualizarLista = async (req, res) => {
         // Verificación de la existencia del conductor
         const conductor = await Conductores.findById(id);
         if (!conductor) {
-            return res.status(400).json({ msg_actualizar_lista: "Conductor no encontrado" });
+            return res.status(404).json({ msg_actualizar_lista: "Conductor no encontrado" });
         }
 
         // Verificar si los ids de los estudiantes se encuentran vinculados al conductor
         for (const estudiante of estudiantes) {
             const estudianteBDD = await Estudiantes.findOne({ _id: estudiante.estudiante, conductor: id });
             if (!estudianteBDD) {
-                return res.status(400).json({ msg_actualizar_lista: "Lo sentimos, el estudiante no se encuentra registrado o no pertenece a su ruta" });
+                return res.status(404).json({ msg_actualizar_lista: "Lo sentimos, el estudiante no se encuentra registrado o no pertenece a su ruta" });
             }
         }
 
@@ -785,7 +785,7 @@ const ActualizarLista = async (req, res) => {
 
             return res.status(200).json({ msg_actualizar_lista: `La lista de la tarde con ID: ${listaId} se ha actualizado exitosamente`, notificaciones });
         } else {
-            return res.status(400).json({ msg_actualizar_lista: `La lista de la tarde con ID: ${listaId} no se ha actualizado ya que no existe o es de una fecha antigua` });
+            return res.status(404).json({ msg_actualizar_lista: `La lista de la tarde con ID: ${listaId} no se ha actualizado ya que no existe o es de una fecha antigua` });
         }
 
     } catch (error) {
@@ -810,7 +810,7 @@ const EliminarLista = async (req, res) => {
         }
 
         // Si no se encuentra ninguna lista
-        return res.status(400).json({ msg_eliminar_lista: "Lo sentimos, no se ha encontrado ninguna lista con ese ID para eliminar" });
+        return res.status(404).json({ msg_eliminar_lista: "Lo sentimos, no se ha encontrado ninguna lista con ese ID para eliminar" });
     } catch (error) {
         console.log(error);
         res.status(500).json({ msg_eliminar_lista: "Error al eliminar la lista" });
