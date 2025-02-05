@@ -62,7 +62,7 @@ const RegistroDeLosEstudiantes = async (req, res) => {
 
         //Verificación de que el conductor exista
         if(!conductor){
-            return res.status(400).json({ msg_conductor_logeado: "Conductor no encontrado" });
+            return res.status(404).json({ msg_conductor_logeado: "Conductor no encontrado" });
         }
 
         // Inicializar el array de estudiantes registrados si no está definido
@@ -175,7 +175,7 @@ const BuscarEstudianteCedula = async (req, res) => {
         const conductor = await Conductores.findById(req.user.id);
         // Verificación de la existencia de la ruta
         const estudiante = await Estudiantes.findOne({cedula: cedula, conductor: conductor._id}).select("-updatedAt -createdAt -__v");
-        if (!estudiante) return res.status(400).json({ msg: "Lo sentimos, no se ha encontrado ningun estudiante con ese numero de cedula o no pertenece a su ruta" });
+        if (!estudiante) return res.status(404).json({ msg: "Lo sentimos, no se ha encontrado ningun estudiante con ese numero de cedula o no pertenece a su ruta" });
    
         // Mensaje de éxito
         res.status(200).json({ msg: `El estudiante de la cedula ${cedula} se han encontrado exitosamente`, estudiante });
