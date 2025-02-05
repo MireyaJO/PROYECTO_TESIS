@@ -182,8 +182,8 @@ const validacionesActualizarPerfilConductor = [
         .withMessage('El campo "teléfono" debe contener solo números')
     .customSanitizer(value => value?.trim()),
 
-    // Verificar que no ayuda campos vacíos 
-    check(["telefono","placaAutomovil"])
+    // Verificar que no hayan campos vacíos 
+    check(["telefono","placaAutomovil", "email", "fotografiaDelConductor"])
     .notEmpty()
         .withMessage('Se necesita campos para actualizar')
     .customSanitizer(value => value?.trim()),
