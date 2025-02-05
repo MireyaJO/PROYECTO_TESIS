@@ -80,7 +80,7 @@ const RecuperacionDeContrasenia = async (req, res) => {
         const {email} = req.body;
 
         //Verificación de que el email no se encuentre vacío
-        if (Object.values(req.body).includes("")) return res.status(404).json({msg:"Lo sentimos, debes llenar todos los campos"})
+        if (Object.values(req.body).includes("")) return res.status(400).json({msg:"Lo sentimos, debes llenar todos los campos"})
         const conductor = await Conductores.findOne({email: email});
         //Verificación de que el conductor exista
         if(conductor){
