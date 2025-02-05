@@ -175,7 +175,7 @@ const BuscarEstudianteCedula = async (req, res) => {
         const conductor = await Conductores.findById(req.user.id);
         // Verificación de la existencia de la ruta
         const estudiante = await Estudiantes.findOne({cedula: cedula, conductor: conductor._id}).select("-updatedAt -createdAt -__v");
-        if (!estudiante) return res.status(404).json({ msg: "Lo sentimos, no se ha encontrado ningun estudiante con ese numero de cedula o no pertenece a su ruta" });
+        if (!estudiante) return res.status(404).json({ msg_busqueda_estudiante: "Lo sentimos, no se ha encontrado ningun estudiante con ese numero de cedula o no pertenece a su ruta" });
    
         // Mensaje de éxito
         res.status(200).json({ msg_busqueda_estudiante: `El estudiante de la cedula ${cedula} se han encontrado exitosamente`, estudiante });
