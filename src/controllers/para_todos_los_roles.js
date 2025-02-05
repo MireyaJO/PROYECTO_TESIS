@@ -80,7 +80,7 @@ const RecuperacionDeContrasenia = async (req, res) => {
         const {email} = req.body;
 
         //Verificación de que el email no se encuentre vacío
-        if (Object.values(req.body).includes("")) return res.status(400).json({msg:"Lo sentimos, debes llenar todos los campos"})
+        if (Object.values(req.body).includes("")) return res.status(400).json({msg_recuperacion_contrasenia:"Lo sentimos, debes llenar todos los campos"})
         const conductor = await Conductores.findOne({email: email});
         //Verificación de que el conductor exista
         if(conductor){
@@ -106,7 +106,7 @@ const RecuperacionDeContrasenia = async (req, res) => {
             await representante.save();
             return res.status(200).json({ msg_recuperacion_contrasenia:"Correo de recuperación de contraseña enviado satisfactoriamente"})
         }
-        return res.status(400).json({msg:"El usuario no se encuentra registrado"});
+        return res.status(400).json({msg_recuperacion_contrasenia:"El usuario no se encuentra registrado"});
     }catch(error){
         console.error(error);
         return res.status(500).json({ msg_recuperacion_contrasenia:"Error al recuperar la contraseña"});
