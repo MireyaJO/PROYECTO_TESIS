@@ -496,7 +496,7 @@ const ActualizarPerfil = async (req, res) => {
 
         //Verificar si el email ya está registrado
         const verificarEmailBDD = await Conductores.findOne({email, _id: { $ne: id } });
-        const verificacionRepresentante = await Representantes.findOne({email});
+        const verificacionRepresentante = await Representantes.findOne({email: email});
         if (verificarEmailBDD) {
             return res.status(400).json({ msg_actualizacion_perfil: "Lo sentimos, el email ya se encuentra registrado como conductor" });
         }
@@ -552,6 +552,7 @@ const ActualizarPerfil = async (req, res) => {
         // Actualización de los datos
         conductor.placaAutomovil = placaAutomovil;
         conductor.telefono = telefono;
+        conductor.email = email;
 
         // Guardar los cambios en la base de datos
         await conductor.save();

@@ -52,7 +52,7 @@ const Login = async (req, res) => {
         } 
 
         // Verificación en la base de datos del representante
-        const representante = await Representantes.findOne({ email });
+        const representante = await Representantes.findOne({ email: email });
         if (representante) {
             // Verificación de la contraseña
             const verificacionContrasenia = await representante.matchPassword(password);
@@ -206,7 +206,7 @@ const ConfirmacionCorreoNuevo = async (req, res) => {
         }
 
         // Buscar representante por token
-        const representante = await Representantes.findOne({}); 
+        const representante = await Representantes.findOne({token}); 
         if (representante) {
             // Actualizar el email
             representante.email = representante.tokenEmail;
