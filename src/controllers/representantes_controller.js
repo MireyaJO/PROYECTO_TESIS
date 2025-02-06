@@ -262,13 +262,13 @@ const EliminarCuentaRepresentante = async (req, res) => {
 
             //Eliminación del representante en la base de datos
             await Representantes.findByIdAndDelete(id);
-            res.status(200).json({ msg: "Cuenta eliminada satisfactoriamente" });
+            res.status(200).json({ msg_eliminacion_cuenta: "Cuenta eliminada satisfactoriamente" });
         } else if(representante.cedulaRepresentado.length > 0){
-            return res.status(400).json({msg:"Lo sentimos, no puedes eliminar tu cuenta si aún tienes estudiantes representados"})
+            return res.status(400).json({msg_eliminacion_cuenta:"Lo sentimos, no puedes eliminar tu cuenta si aún tienes estudiantes representados"})
         }
     } catch (error) {
         console.error(error);
-        res.status(500).json({ msg: "Error al eliminar la cuenta del representante" });
+        res.status(500).json({ msg_eliminacion_cuenta: "Error al eliminar la cuenta del representante" });
     }
 }
 
@@ -281,7 +281,7 @@ const AlertaLlegadaConductor = async (req, res) => {
         const estudiantes = await Estudiantes.find({ representantes: id }).populate('conductor', 'latitud longitud');
 
         // Verificación de que el representante tenga estudiantes representados
-        if (estudiantes.length === 0) return res.status(404).json({ msg: "Lo sentimos, no tienes estudiantes representados" });
+        if (estudiantes.length === 0) return res.status(404).json({ msg_alerta: "Lo sentimos, no tienes estudiantes representados" });
 
         // Creación de un array para las alertas
         const alertas = [];
@@ -366,7 +366,7 @@ const AlertaLlegadaConductor = async (req, res) => {
         res.status(200).json({ alertas });
     } catch (error) {
         console.error(error);
-        res.status(500).json({ msg: "Error al recibir la alerta" });
+        res.status(500).json({ msg_alerta: "Error al recibir la alerta" });
     }
 };
 
@@ -390,13 +390,13 @@ const VerNotificaciones = async (req, res) => {
 
         // Verificación de que el representante tenga notificaciones
         if (notificacionesAsistencia.length === 0 && notificacionesEliminacionFiltradas.length === 0) {
-            return res.status(404).json({ msg: "No tienes notificaciones" });
+            return res.status(404).json({ msg_notificaciones: "No tienes notificaciones" });
         }
 
         res.status(200).json({ asistencia: notificacionesAsistencia , Eliminacion: notificacionesEliminacionFiltradas });
     } catch (error) {
         console.error(error);
-        res.status(500).json({ msg: "Error al obtener las notificaciones", error: error.message });
+        res.status(500).json({ msg_notificaciones: "Error al obtener las notificaciones", error: error.message });
     }
 };
 
@@ -413,7 +413,7 @@ const ActualizarPerfilRepresentante = async (req, res) => {
     try {
         // Verificación de la existencia del representante
         const representante = await Representantes.findById(id);
-        if (!representante) return res.status(400).json({ msg: "Lo sentimos, el representante no se encuentra registrado" });
+        if (!representante) return res.status(404).json({ msg_actualizacion_perfil: "Lo sentimos, el representante no se encuentra registrado" });
 
         // Comprobar si el teléfono ya está registrado por otro representante
         const verificarTelefonoBDD = await Representantes.findOne({ telefono, _id: { $ne: id } });
@@ -478,7 +478,7 @@ const ActualizarPerfilRepresentante = async (req, res) => {
             await confirmacionDeCorreoRepresentanteCambio(email, representante.nombre, representante.apellido, token);
 
             // Enviar una respuesta al cliente indicando que se ha enviado un enlace de confirmación
-            return res.status(200).json({ msg: "Se ha enviado un enlace de confirmación al nuevo correo electrónico" });
+            return res.status(200).json({ msg_actualizacion_perfil: "Se ha enviado un enlace de confirmación al nuevo correo electrónico" });
         }
 
         // Actualización del perfil del representante
