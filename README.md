@@ -36,26 +36,27 @@ Roles:
 Administrador
 
 
-![image](https://github.com/user-attachments/assets/8ef98a7c-511d-4548-9431-d08a19ae5d45)
-
-
+![image](https://github.com/user-attachments/assets/03f8c1aa-f488-4ccd-b881-9618d3c53d81)
 
 
 Conductor
 
 
 
-![image](https://github.com/user-attachments/assets/666c96ca-68c0-4e4a-964a-d3fbbe6e2b5e)
-
-
+![image](https://github.com/user-attachments/assets/5642b2c6-654c-4514-90b1-0f6c6e111f17)
 
 
 
 Padres de familia
 
 
+![image](https://github.com/user-attachments/assets/cf443083-32bb-4416-9385-1f35f80372b5)
 
-- Se lo esta realizando. Estado: en proceso
+
+Rutas públicas
+
+![image](https://github.com/user-attachments/assets/0c862f26-1ded-4166-9b85-c6a62eeb114c)
+
 
 
 
