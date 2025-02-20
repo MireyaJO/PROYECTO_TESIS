@@ -1,55 +1,44 @@
-import Conductores from '../models/Administrador.js';
-import Estudiantes from '../models/Conductor.js';
+import Conductores from '../models/Conductores.js';
+import Estudiantes from '../models/Estudiantes.js';
 import Representantes from '../models/Representantes.js';
 import { createToken } from '../middlewares/autho.js';
 import {recuperacionContrasenia} from "../config/nodemailer.js"; 
 import {recuperacionContraseniaRepresentante} from '../config/nodemailer.js';
 import crypto from 'crypto';
-// Perfil quemado del administrador
-const perfilAdministrador = {
-    nombre: "Mireya",
-    apellido: "Garcia",
-    email: process.env.ADMIN_EMAIL,
-    telefono: "0964531123",
-    rol: "Administrador",
-    institucion: "Unidad Educativa Particular EMAÚS"
-};
 
 // Logeo de todos los roles
 const Login = async (req, res) => {
     try {
-        const { email, password } = req.body;
+        const { email, password, role } = req.body;
 
         // Verificación de los campos vacíos
-        if (!email || !password) {
-            return res.status(400).json({ msg: "Lo sentimos, debes llenar todos los campos" });
+        if (!email || !password ||  !role) {
+            return res.status(400).json({ msg_autenticacion: "Lo sentimos, debes llenar todos los campos" });
         }
 
-        // Verificación de las credenciales del administrador
-        if (email === process.env.ADMIN_EMAIL) {
-            // Verificación de la contraseña
-            if (password === process.env.ADMIN_PASSWORD) {
-                // Si la contraseña es correcta se crea el token JWT
-                const token = createToken({ email, role: 'admin' });
-                return res.status(200).json({ token, msg_login_admin: "Bienvenido administrador", administrador: perfilAdministrador });
-            } else {
-                return res.status(400).json({ msg: "Contraseña incorrecta" });
-            }
-        } 
+        // Verificación del rol
+        if (role !== 'Conductor' || role !== 'Representante' || role !== 'Administrador') {
+            return res.status(400).json({ msg_autenticacion: "Dicho rol no es una entidad participativa en el sistema" });
+        };   
 
         // Verificación en la base de datos del conductor
         const conductor = await Conductores.findOne({ email: email });
         if (conductor) {
+            // Verificar el rol seleccionado
+            if (!conductor.roles.includes(role)) {
+                return res.status(403).json({ msg: "No tiene permisos para acceder con este rol" });
+            }
+
             // Verificación de la contraseña
             const verificacionContrasenia = await conductor.matchPassword(password);
             // Si la contraseña es correcta se crea el token JWT
             if (verificacionContrasenia) {
-                const token = createToken({ id: conductor._id, email: conductor.email, role: 'conductor' });
-                return res.status(200).json({ token, msg_login_conductor: "Bienvenido conductor", conductor: conductor });
+                const token = createToken({ id: conductor._id, email: conductor.email, role: role });
+                return res.status(200).json({ token, msg_login_conductor: "Bienvenido", conductor: conductor });
             } else {
                 return res.status(400).json({ msg: "Contraseña incorrecta" });
             }
-        } 
+        }
 
         // Verificación en la base de datos del representante
         const representante = await Representantes.findOne({ email: email });
@@ -192,7 +181,7 @@ const ConfirmacionCorreoNuevo = async (req, res) => {
         const { token } = req.params;
 
         // Buscar conductor por token
-        const conductor = await Conductores.findOne({ token });
+        const conductor = await Conductores.findOne({ token: token });
         if (conductor) {
             // Actualizar el email
             conductor.email = conductor.tokenEmail;
@@ -206,7 +195,7 @@ const ConfirmacionCorreoNuevo = async (req, res) => {
         }
 
         // Buscar representante por token
-        const representante = await Representantes.findOne({token}); 
+        const representante = await Representantes.findOne({token: token}); 
         if (representante) {
             // Actualizar el email
             representante.email = representante.tokenEmail;

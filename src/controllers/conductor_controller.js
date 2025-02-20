@@ -1,5 +1,5 @@
-import Conductores from '../models/Administrador.js';
-import Estudiantes from '../models/Conductor.js';
+import Conductores from '../models/Conductores.js';
+import Estudiantes from '../models/Estudiantes.js';
 import Representantes from '../models/Representantes.js';
 import AsistenciasTarde from '../models/AsistenciasTarde.js';
 import Notificaciones from '../models/Notificaciones.js';

@@ -5,6 +5,10 @@ import bcrypt from 'bcryptjs'
 //Esquema para el registro de los representates de los estudiantes
 const paraElRegistroDeLosRepresentantes = new Schema(
     {
+        rol: {
+            type: String,
+            default: 'Representante'
+        }, 
         nombre:{
             type: String, 
             required: true, 

@@ -1,9 +1,15 @@
 import mongoose, {Schema, model} from 'mongoose'
 import bcrypt from 'bcryptjs'
+import { env } from 'process';
 //Definición de la estructura en la base de datos 
 //Esquema para el registro de los conductores
 const paraElRegistroDeLosConductores= new Schema(
     {
+        roles: {
+            type: [String],
+            enum: ['Conductor', 'Administrador'],
+            default: ['Conductor']
+        },
         nombre:{
             type: String, 
             required: true, 
@@ -15,7 +21,7 @@ const paraElRegistroDeLosConductores= new Schema(
             trim: true 
         }, 
         telefono:{
-            type: Number, 
+            type: String, 
             required: true, 
             unique: true,
             trim: true
@@ -169,5 +175,40 @@ paraElRegistroDeLosConductores.methods.eliminarEstudiante = function(estudianteI
     // Elimina el estudiante de la lista
     this.estudiantesRegistrados.splice(index, 1);
 };
+
+//Metodo para ingresar apenas inicie el servidor un conductor administrador que registrará a los demás conductores
+paraElRegistroDeLosConductores.statics.ingresarConductorAdministrador = async function(){
+    const existeElConductorAdmin = await this.findOne({ roles: { $in: ['Administrador'] } }); 
+    const contraseniaQuemada = process.env.ADMIN_PASSWORD; 
+
+    if(!existeElConductorAdmin){
+        const conductorAdmin = new this({
+            roles: ['Administrador', 'Conductor'],
+            nombre: 'Mireya',
+            apellido: 'García',
+            telefono: '0984562234',
+            generoConductor: 'Femenino',
+            cedula: 1724256899,   
+            placaAutomovil: 'PUH-3967',
+            rutaAsignada: 1,
+            sectoresRuta: 'La Magdalena',
+            institucion: 'Unidad Educativa Particular Emaús',
+            fotografiaDelConductor: 'https://res.cloudinary.com/dwvqq3ugp/image/upload/v1739850955/imagen_prueba_01_zdvioa.jpg',
+            email: process.env.ADMIN_EMAIL, 
+            password: contraseniaQuemada
+        });
+
+        //Encriptar la contraseña anteriormente quemada
+        conductorAdmin.password = await conductorAdmin.encrypPassword(contraseniaQuemada);
+
+        //Guardar en la base de datos 
+        await conductorAdmin.save();
+
+        console.log('Conductor administrador creado exitosamente');
+    } else{
+        console.log('El conductor administrador ya existe');
+    }
+}
+    
 
 export default model('Conductores',paraElRegistroDeLosConductores)

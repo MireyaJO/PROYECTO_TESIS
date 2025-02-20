@@ -1,8 +1,73 @@
 import { check, validationResult } from 'express-validator'
 
+//Validaciones para el administrador 
+const validacionesAdmin = [
+    // Verificar que se encuentren los campos obligatorios y no estén vacíos
+    check(["nombre","apellido","telefono","cedula","placaAutomovil", 
+        "email"
+    ])
+    .exists()
+        .withMessage('Los campos "nombre","apellido","telefono","cedula","placaAutomovil", "fotografiaDelConductor" y/o "email"  son obligatorios')
+    .notEmpty()
+        .withMessage('Los campos "nombre","apellido","telefonor","cedula","placaAutomovil", "fotografiaDelConductor" y/o "email" no pueden estar vacíos')
+    .customSanitizer(value => value?.trim()),
+
+    //Verificación de que todo sea un string
+    check(["nombre", "apellido"])
+    .matches(/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/)
+        .withMessage('El campo debe ser un texto y puede contener espacios')
+    .customSanitizer(value => value?.trim()),
+
+    // Verificar que el numero de telefono sea de 10 digitos
+    check("telefono")
+    .isLength({ min: 10, max: 10 })
+        .withMessage('El teléfono debe ser de 10 digitos')
+    .matches(/^\d{10}$/)
+        .withMessage('El campo "teléfono" debe contener solo números')
+    .customSanitizer(value => value?.trim()),
+
+    // Verificar que el número de cédula tenga 10 dígitos
+    check("cedula")
+    .isLength({ min: 10, max: 10 })
+        .withMessage('La cedula debe ser de 10 digitos')
+    .isNumeric()
+        .withMessage('El campo "teléfono" debe contener solo números')
+    .customSanitizer(value => value?.trim()), 
+    
+    // Verificar que el número de placa tenga 7 dígitos
+    check("placaAutomovil")
+    .isLength({ min: 7, max: 7 })
+        .withMessage('La placa debe ser de 7 digitos')
+    .matches(/^[A-Z]{3}-\d{4}$/i)
+        .withMessage('El campo "placa" debe seguir el formato de tres letras, un guion y cuatro números,  Ejemplo: PUH-7869')
+    .customSanitizer(value => value?.trim()),
+
+    // Verificar que el email se enceuntre bien escrito
+    check("email")
+    .isEmail()
+        .withMessage('El email debe ser un correo válido')
+    .customSanitizer(value => value?.trim()),
+    
+    // Verificar que el género sea uno de los valores permitidos
+    check("generoConductor")
+    .isIn(["Femenino", "Masculino", "Prefiero no decirlo"])
+        .withMessage('El género debe ser "Femenino", "Masculino" o "Prefiero no decirlo"')
+    .customSanitizer(value => value?.trim()),
+    
+    (req,res,next)=>{
+        const errors = validationResult(req);
+        if (errors.isEmpty()) {
+            return next();
+        } else {
+            return res.status(400).send({ errors: errors.array() });
+        }
+    }
+
+]
+
 //Validaciones para el conductor 
 const validacionesConductor = [
-     // Verificar que se encuentren los campos obligatorios y no estén vacíos
+    // Verificar que se encuentren los campos obligatorios y no estén vacíos
     check(["nombre","apellido","telefono","cedula","placaAutomovil","rutaAsignada", "sectoresRuta", "institucion", 
         "email"
     ])
@@ -22,7 +87,7 @@ const validacionesConductor = [
     check("telefono")
     .isLength({ min: 10, max: 10 })
         .withMessage('El teléfono debe ser de 10 digitos')
-    .isNumeric()
+    .matches(/^\d{10}$/)
         .withMessage('El campo "teléfono" debe contener solo números')
     .customSanitizer(value => value?.trim()),
 
@@ -38,6 +103,8 @@ const validacionesConductor = [
     check("placaAutomovil")
     .isLength({ min: 7, max: 7 })
         .withMessage('La placa debe ser de 7 digitos')
+    .matches(/^[A-Z]{3}-\d{4}$/i)
+        .withMessage('El campo "placa" debe seguir el formato de tres letras, un guion y cuatro números,  Ejemplo: PUH-7869')
     .customSanitizer(value => value?.trim()),
 
     // Verificar que la ruta sea un número y que solo existan 12 rutaa
@@ -98,7 +165,7 @@ const validacionesRepresentantes = [
     check("telefono")
     .isLength({ min: 10, max: 10 })
         .withMessage('El teléfono debe ser de 10 digitos')
-    .isNumeric()
+    .matches(/^\d{10}$/)
         .withMessage('El campo "teléfono" debe contener solo números')
     .customSanitizer(value => value?.trim()),
 
@@ -150,6 +217,47 @@ const validacionesRepresentantes = [
     
 ]
 
+const validacionesActualizarPerfilAdmin = [
+    // Verificar que el numero de telefono sea de 10 digitos
+    check("telefono")
+    .isLength({ min: 10, max: 10 })
+        .withMessage('El teléfono debe ser de 10 digitos')
+    .matches(/^\d{10}$/)
+        .withMessage('El campo "teléfono" debe contener solo números')
+    .customSanitizer(value => value?.trim()), 
+
+    // Verificar que el número de placa tenga 7 dígitos
+    check("placaAutomovil")
+    .isLength({ min: 7, max: 7 })
+        .withMessage('La placa debe ser de 7 digitos')
+    .matches(/^[A-Z]{3}-\d{4}$/i)
+        .withMessage('El campo "placa" debe seguir el formato de tres letras, un guion y cuatro números,  Ejemplo: PUH-7869')
+    .customSanitizer(value => value?.trim()),
+
+    // Verificar que la ruta sea un número y que solo existan 12 rutaa
+    check("rutaAsignada")
+    .isNumeric()
+        .withMessage('La ruta debe ser un número, no se acepta otro tipo de dato')
+    .isInt({ min: 1, max: 12 })
+        .withMessage('Solo existen 12 rutas disponibles en la Unidad Educativa Particular Emaús')
+    .customSanitizer(value => value?.trim()),
+
+    // Verificar que el email se enceuntre bien escrito
+    check("email")
+    .isEmail()
+        .withMessage('El email debe ser un correo válido')
+    .customSanitizer(value => value?.trim()),
+
+    (req,res,next)=>{
+        const errors = validationResult(req);
+        if (errors.isEmpty()) {
+            return next();
+        } else {
+            return res.status(400).send({ errors: errors.array() });
+        }
+    }
+]
+
 const validacionesActualizarConductorAdmin = [
     // Verificar que la ruta sea un número y que solo existan 12 ruta
     check("rutaAsignada")
@@ -158,6 +266,7 @@ const validacionesActualizarConductorAdmin = [
     .isInt({ min: 1, max: 12 })
         .withMessage('Solo existen 12 rutas disponibles en la Unidad Educativa Particular Emaús')
     .customSanitizer(value => value?.trim()),
+
     (req,res,next)=>{
         const errors = validationResult(req);
         if (errors.isEmpty()) {
@@ -168,10 +277,12 @@ const validacionesActualizarConductorAdmin = [
     }
 ]
 const validacionesActualizarPerfilConductor = [
-    // Verificar que el numero de placa automovil sea de 10 digitos
-    check("placaAutomovil")
-    .isLength({ min: 7, max: 7 })
+    // Verificar que el numero de telefono sea de 10 digitos
+    check("telefono")
+    .isLength({ min: 10, max: 10 })
         .withMessage('El teléfono debe ser de 10 digitos')
+    .matches(/^\d{10}$/)
+        .withMessage('El campo "teléfono" debe contener solo números')
     .customSanitizer(value => value?.trim()),
 
     // Verificar que el numero de telefono sea de 10 digitos
@@ -210,7 +321,7 @@ const validacionesActualizarPerfilRepresentante = [
     check("telefono")
     .isLength({ min: 10, max: 10 })
         .withMessage('El teléfono debe ser de 10 digitos')
-    .isNumeric()
+    .matches(/^\d{10}$/)
         .withMessage('El campo "teléfono" debe contener solo números')
     .customSanitizer(value => value?.trim()),
 
@@ -279,6 +390,14 @@ const validarContraseniaNueva = [
         }
     }
 ]
-export {validacionesConductor, validacionesRepresentantes, validacionesActualizarConductorAdmin, validacionesActualizarPerfilConductor, validacionesActualizarPerfilRepresentante,
-    validacionesActualizarEstudiante, validarContraseniaNueva
+export {
+    validacionesAdmin,
+    validacionesConductor, 
+    validacionesRepresentantes, 
+    validacionesActualizarConductorAdmin, 
+    validacionesActualizarPerfilConductor, 
+    validacionesActualizarPerfilRepresentante,
+    validacionesActualizarEstudiante, 
+    validarContraseniaNueva, 
+    validacionesActualizarPerfilAdmin
 }

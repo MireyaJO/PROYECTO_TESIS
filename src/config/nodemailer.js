@@ -24,8 +24,7 @@ const enviarCorreoConductor = (email, password, ruta, sectores) =>{
         subject: "Credenciales de acceso a la aplicación para los conductores de la Unidad Educativa Particular Emaús",
         html: `
             <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; background-color: #e0f7fa; padding: 20px; border-radius: 10px;">
-                <img src="https://scontent.fuio1-1.fna.fbcdn.net/v/t39.30808-6/473806187_1029754585625597_5323957965040517382_n.jpg?_nc_cat=109&ccb=1-7&_nc_sid=6ee11a&_nc_eui2=AeHdf2hdnAOn_cNYBimK26NO1FjI_Lx8asvUWMj8vHxqyxGKOybUXalYc7GYNujV6Qx9AN_rUinZtd5i9Tb46lwk&_nc_ohc=k4KKr-EI_LEQ7kNvgE9dhsd&_nc_oc=AdgyXYkNQug99SfKXoV5kZHKsqOp9aTJ2MzfS3DtmfdacCYjaENXC2dI2_fYEGci_tnP2_l78yBGrPoCMuH3AEC_&_nc_zt=23&_nc_ht=scontent.fuio1-1.fna&_nc_gid=ABmP3IHMt6AcGyi7pFR2N9p&oh=00_AYDwX3J4AgKHALGfnuoFFQ2j93kr84QCLlOszjwMEJpvGw&oe=67A9D73C" alt="Logo" style="width: 100%; max-width: 600px; border-radius: 10px;">
-                <h2 style="color: #00796b;">Unidad Educativa Particular “Emaús”</h2>
+                <h2 style="color: #00796b;">Transportistas de la Unidad Educativa Particular “Emaús</h2>
                 <p>Estimado(a) Conductor,</p>
                 <p>Usted ha sido asignado como conductor en nuestra institución. A continuación, encontrará los detalles de su ruta y sus credenciales para acceder a la aplicación:</p>
                 <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
@@ -73,8 +72,7 @@ const actualizacionDeConductor = (email, ruta, sectores) =>{
         html: 
         `
             <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; background-color: #e0f7fa; padding: 20px; border-radius: 10px;">
-                <img src="https://scontent.fuio1-1.fna.fbcdn.net/v/t39.30808-6/473806187_1029754585625597_5323957965040517382_n.jpg?_nc_cat=109&ccb=1-7&_nc_sid=6ee11a&_nc_eui2=AeHdf2hdnAOn_cNYBimK26NO1FjI_Lx8asvUWMj8vHxqyxGKOybUXalYc7GYNujV6Qx9AN_rUinZtd5i9Tb46lwk&_nc_ohc=k4KKr-EI_LEQ7kNvgE9dhsd&_nc_oc=AdgyXYkNQug99SfKXoV5kZHKsqOp9aTJ2MzfS3DtmfdacCYjaENXC2dI2_fYEGci_tnP2_l78yBGrPoCMuH3AEC_&_nc_zt=23&_nc_ht=scontent.fuio1-1.fna&_nc_gid=ABmP3IHMt6AcGyi7pFR2N9p&oh=00_AYDwX3J4AgKHALGfnuoFFQ2j93kr84QCLlOszjwMEJpvGw&oe=67A9D73C" alt="Logo" style="width: 100%; max-width: 600px; border-radius: 10px;">
-                <h2 style="color: #00796b;">Unidad Educativa Particular “Emaús”</h2>
+                <h2 style="color: #00796b;">Transportistas de la Unidad Educativa Particular “Emaús</h2>
                 <p>Estimado(a) Conductor,</p>
                 <p>Usted es conductor de la Unidad Educativa Particular “Emaús”. A continuación, encontrará los detalles actualizados de su ruta y sectores:</p>
                 <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
@@ -112,8 +110,7 @@ const eliminacionDelConductor = (email, nombres, apellidos) =>{
         subject: "Eliminación del conductor del Unidad Educativa Particular Emaús",
         html: `
             <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; background-color: #e0f7fa; padding: 20px; border-radius: 10px;">
-                <img src="https://scontent.fuio1-1.fna.fbcdn.net/v/t39.30808-6/473806187_1029754585625597_5323957965040517382_n.jpg?_nc_cat=109&ccb=1-7&_nc_sid=6ee11a&_nc_eui2=AeHdf2hdnAOn_cNYBimK26NO1FjI_Lx8asvUWMj8vHxqyxGKOybUXalYc7GYNujV6Qx9AN_rUinZtd5i9Tb46lwk&_nc_ohc=k4KKr-EI_LEQ7kNvgE9dhsd&_nc_oc=AdgyXYkNQug99SfKXoV5kZHKsqOp9aTJ2MzfS3DtmfdacCYjaENXC2dI2_fYEGci_tnP2_l78yBGrPoCMuH3AEC_&_nc_zt=23&_nc_ht=scontent.fuio1-1.fna&_nc_gid=ABmP3IHMt6AcGyi7pFR2N9p&oh=00_AYDwX3J4AgKHALGfnuoFFQ2j93kr84QCLlOszjwMEJpvGw&oe=67A9D73C" alt="Logo" style="width: 100%; max-width: 600px; border-radius: 10px;">
-                <h2 style="color: #00796b;">Unidad Educativa Particular “Emaús”</h2>
+                <h2 style="color: #00796b;">Transportistas de la Unidad Educativa Particular “Emaús”</h2>
                 <p>Estimado(a) ${nombres} ${apellidos},</p>
                 <p>Lamentamos informarle que ha sido eliminado del sistema de la Unidad Educativa Particular “Emaús”. A partir de ahora, usted ya no tiene una ruta asignada en nuestra institución.</p>
                 <p>Si tiene alguna pregunta o necesita más información, por favor, póngase en contacto con nosotros.</p>
@@ -140,8 +137,7 @@ const recuperacionContrasenia = (email, nombres, apellidos, token) => {
         subject: "Recuperación de contraseña del conductor del Unidad Educativa Particular Emaús",
         html: `
             <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; background-color: #e0f7fa; padding: 20px; border-radius: 10px;">
-                <img src="https://scontent.fuio1-1.fna.fbcdn.net/v/t39.30808-6/473806187_1029754585625597_5323957965040517382_n.jpg?_nc_cat=109&ccb=1-7&_nc_sid=6ee11a&_nc_eui2=AeHdf2hdnAOn_cNYBimK26NO1FjI_Lx8asvUWMj8vHxqyxGKOybUXalYc7GYNujV6Qx9AN_rUinZtd5i9Tb46lwk&_nc_ohc=k4KKr-EI_LEQ7kNvgE9dhsd&_nc_oc=AdgyXYkNQug99SfKXoV5kZHKsqOp9aTJ2MzfS3DtmfdacCYjaENXC2dI2_fYEGci_tnP2_l78yBGrPoCMuH3AEC_&_nc_zt=23&_nc_ht=scontent.fuio1-1.fna&_nc_gid=ABmP3IHMt6AcGyi7pFR2N9p&oh=00_AYDwX3J4AgKHALGfnuoFFQ2j93kr84QCLlOszjwMEJpvGw&oe=67A9D73C" alt="Logo" style="width: 100%; max-width: 600px; border-radius: 10px;">
-                <h2 style="color: #00796b;">Unidad Educativa Particular “Emaús”</h2>
+                <h2 style="color: #00796b;">Transportistas de la Unidad Educativa Particular “Emaús”</h2>
                 <p>Estimado(a) ${nombres} ${apellidos},</p>
                 <p>Usted ha solicitado recuperar su contraseña. Para ello, por favor haga clic en el siguiente enlace:</p>
                 <p style="text-align: center; margin: 20px 0;">
@@ -171,8 +167,7 @@ const confirmacionDeCorreoRepresentante = async (email, nombre, apellido, token)
         subject: "Confirmación de correo electrónico",
         html: `
             <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; background-color: #e0f7fa; padding: 20px; border-radius: 10px;">
-                <img src="https://scontent.fuio1-1.fna.fbcdn.net/v/t39.30808-6/473806187_1029754585625597_5323957965040517382_n.jpg?_nc_cat=109&ccb=1-7&_nc_sid=6ee11a&_nc_eui2=AeHdf2hdnAOn_cNYBimK26NO1FjI_Lx8asvUWMj8vHxqyxGKOybUXalYc7GYNujV6Qx9AN_rUinZtd5i9Tb46lwk&_nc_ohc=k4KKr-EI_LEQ7kNvgE9dhsd&_nc_oc=AdgyXYkNQug99SfKXoV5kZHKsqOp9aTJ2MzfS3DtmfdacCYjaENXC2dI2_fYEGci_tnP2_l78yBGrPoCMuH3AEC_&_nc_zt=23&_nc_ht=scontent.fuio1-1.fna&_nc_gid=ABmP3IHMt6AcGyi7pFR2N9p&oh=00_AYDwX3J4AgKHALGfnuoFFQ2j93kr84QCLlOszjwMEJpvGw&oe=67A9D73C" alt="Logo" style="width: 100%; max-width: 600px; border-radius: 10px;">
-                <h2 style="color: #00796b;">Unidad Educativa Particular “Emaús”</h2>
+                <h2 style="color: #00796b;">Transportistas de la Unidad Educativa Particular “Emaús”</h2>
                 <p>Estimado(a) ${nombre} ${apellido},</p>
                 <p>Usted ha sido registrado en el sistema de la Unidad Educativa Particular Emaús. Para confirmar su correo electrónico, haga clic en el siguiente enlace:</p>
                 <p style="text-align: center; margin: 20px 0;">
@@ -203,8 +198,7 @@ const recuperacionContraseniaRepresentante = async (email, nombre, apellido, tok
         subject: "Recuperación de contraseña del representante de la Unidad Educativa Particular Emaús",
         html:  `
         <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; background-color: #e0f7fa; padding: 20px; border-radius: 10px;">
-            <img src="https://scontent.fuio1-1.fna.fbcdn.net/v/t39.30808-6/473806187_1029754585625597_5323957965040517382_n.jpg?_nc_cat=109&ccb=1-7&_nc_sid=6ee11a&_nc_eui2=AeHdf2hdnAOn_cNYBimK26NO1FjI_Lx8asvUWMj8vHxqyxGKOybUXalYc7GYNujV6Qx9AN_rUinZtd5i9Tb46lwk&_nc_ohc=k4KKr-EI_LEQ7kNvgE9dhsd&_nc_oc=AdgyXYkNQug99SfKXoV5kZHKsqOp9aTJ2MzfS3DtmfdacCYjaENXC2dI2_fYEGci_tnP2_l78yBGrPoCMuH3AEC_&_nc_zt=23&_nc_ht=scontent.fuio1-1.fna&_nc_gid=ABmP3IHMt6AcGyi7pFR2N9p&oh=00_AYDwX3J4AgKHALGfnuoFFQ2j93kr84QCLlOszjwMEJpvGw&oe=67A9D73C" alt="Logo" style="width: 100%; max-width: 600px; border-radius: 10px;">
-            <h2 style="color: #00796b;">Unidad Educativa Particular “Emaús”</h2>
+            <h2 style="color: #00796b;">Transportistas de la Unidad Educativa Particular “Emaús”</h2>
             <p>Estimado(a) ${nombre} ${apellido},</p>
             <p>Usted ha solicitado recuperar su contraseña. Para ello, por favor haga clic en el siguiente enlace:</p>
             <p style="text-align: center; margin: 20px 0;">
@@ -234,8 +228,7 @@ const confirmacionDeCorreoRepresentanteCambio = async (email, nombre, apellido, 
         subject: "Confirmación del nuevo correo electrónico para el representante de un estudiante de la Unidad Educativa Particular Emaús",
         html:  `
         <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; background-color: #e0f7fa; padding: 20px; border-radius: 10px;">
-            <img src="https://scontent.fuio1-1.fna.fbcdn.net/v/t39.30808-6/473806187_1029754585625597_5323957965040517382_n.jpg?_nc_cat=109&ccb=1-7&_nc_sid=6ee11a&_nc_eui2=AeHdf2hdnAOn_cNYBimK26NO1FjI_Lx8asvUWMj8vHxqyxGKOybUXalYc7GYNujV6Qx9AN_rUinZtd5i9Tb46lwk&_nc_ohc=k4KKr-EI_LEQ7kNvgE9dhsd&_nc_oc=AdgyXYkNQug99SfKXoV5kZHKsqOp9aTJ2MzfS3DtmfdacCYjaENXC2dI2_fYEGci_tnP2_l78yBGrPoCMuH3AEC_&_nc_zt=23&_nc_ht=scontent.fuio1-1.fna&_nc_gid=ABmP3IHMt6AcGyi7pFR2N9p&oh=00_AYDwX3J4AgKHALGfnuoFFQ2j93kr84QCLlOszjwMEJpvGw&oe=67A9D73C" alt="Logo" style="width: 100%; max-width: 600px; border-radius: 10px;">
-            <h2 style="color: #00796b;">Unidad Educativa Particular “Emaús”</h2>
+            <h2 style="color: #00796b;">Transportistas de la Unidad Educativa Particular “Emaús”</h2>
             <p>Estimado(a) ${nombre} ${apellido},</p>
             <p>Usted ha solicitado cambiar su correo electrónico. Para confirmar el cambio, haga clic en el siguiente enlace:</p>
             <p style="text-align: center; margin: 20px 0;">
@@ -266,8 +259,7 @@ const confirmacionDeCorreoConductorCambio = async (email, nombre, apellido, toke
         subject: "Confirmación del nuevo correo electrónico para el conductor de un estudiante de la Unidad Educativa Particular Emaús",
         html: `
             <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; background-color: #e0f7fa; padding: 20px; border-radius: 10px;">
-                <img src="https://scontent.fuio1-1.fna.fbcdn.net/v/t39.30808-6/473806187_1029754585625597_5323957965040517382_n.jpg?_nc_cat=109&ccb=1-7&_nc_sid=6ee11a&_nc_eui2=AeHdf2hdnAOn_cNYBimK26NO1FjI_Lx8asvUWMj8vHxqyxGKOybUXalYc7GYNujV6Qx9AN_rUinZtd5i9Tb46lwk&_nc_ohc=k4KKr-EI_LEQ7kNvgE9dhsd&_nc_oc=AdgyXYkNQug99SfKXoV5kZHKsqOp9aTJ2MzfS3DtmfdacCYjaENXC2dI2_fYEGci_tnP2_l78yBGrPoCMuH3AEC_&_nc_zt=23&_nc_ht=scontent.fuio1-1.fna&_nc_gid=ABmP3IHMt6AcGyi7pFR2N9p&oh=00_AYDwX3J4AgKHALGfnuoFFQ2j93kr84QCLlOszjwMEJpvGw&oe=67A9D73C" alt="Logo" style="width: 100%; max-width: 600px; border-radius: 10px;">
-                <h2 style="color: #00796b;">Unidad Educativa Particular “Emaús”</h2>
+                <h2 style="color: #00796b;">Transportistas de la Unidad Educativa Particular “Emaús”</h2>
                 <p>Estimado(a) ${nombre} ${apellido},</p>
                 <p>Usted ha solicitado cambiar su correo electrónico. Para confirmar el cambio, haga clic en el siguiente enlace:</p>
                 <p style="text-align: center; margin: 20px 0;">
@@ -298,8 +290,7 @@ const eliminacionDelRepresentante = async (email, nombresRepresentante, apellido
         subject: "Eliminación del sistema de transporte escolar de la Unidad Educativa Particular Emaús",
         html: `
             <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; background-color: #e0f7fa; padding: 20px; border-radius: 10px;">
-                <img src="https://scontent.fuio1-1.fna.fbcdn.net/v/t39.30808-6/473806187_1029754585625597_5323957965040517382_n.jpg?_nc_cat=109&ccb=1-7&_nc_sid=6ee11a&_nc_eui2=AeHdf2hdnAOn_cNYBimK26NO1FjI_Lx8asvUWMj8vHxqyxGKOybUXalYc7GYNujV6Qx9AN_rUinZtd5i9Tb46lwk&_nc_ohc=k4KKr-EI_LEQ7kNvgE9dhsd&_nc_oc=AdgyXYkNQug99SfKXoV5kZHKsqOp9aTJ2MzfS3DtmfdacCYjaENXC2dI2_fYEGci_tnP2_l78yBGrPoCMuH3AEC_&_nc_zt=23&_nc_ht=scontent.fuio1-1.fna&_nc_gid=ABmP3IHMt6AcGyi7pFR2N9p&oh=00_AYDwX3J4AgKHALGfnuoFFQ2j93kr84QCLlOszjwMEJpvGw&oe=67A9D73C" alt="Logo" style="width: 100%; max-width: 600px; border-radius: 10px;">
-                <h2 style="color: #00796b;">Unidad Educativa Particular “Emaús”</h2>
+                <h2 style="color: #00796b;">Transportistas de la Unidad Educativa Particular “Emaús”</h2>
                 <p>Estimado(a) ${nombresRepresentante} ${apellidosRepresentante},</p>
                 <p>Lamentamos informarle que el estudiante ${nombresEstudiante} ${apellidosEstudiante}, del cual usted es representante, ha sido eliminado del sistema de transporte escolar de la Unidad Educativa Particular Emaús. Como resultado, usted ya no tiene representados vinculados y ha sido eliminado del sistema.</p>
                 <p>Si tiene alguna pregunta o necesita más información, por favor, póngase en contacto con nosotros.</p>
@@ -326,8 +317,7 @@ const informacionEliminacion = async (email, nombresRepresentante, apellidosRepr
         subject: "Eliminación del conductor del sistema de transporte escolar de la Unidad Educativa Particular Emaús",
         html: `
             <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; background-color: #e0f7fa; padding: 20px; border-radius: 10px;">
-                <img src="https://scontent.fuio1-1.fna.fbcdn.net/v/t39.30808-6/473806187_1029754585625597_5323957965040517382_n.jpg?_nc_cat=109&ccb=1-7&_nc_sid=6ee11a&_nc_eui2=AeHdf2hdnAOn_cNYBimK26NO1FjI_Lx8asvUWMj8vHxqyxGKOybUXalYc7GYNujV6Qx9AN_rUinZtd5i9Tb46lwk&_nc_ohc=k4KKr-EI_LEQ7kNvgE9dhsd&_nc_oc=AdgyXYkNQug99SfKXoV5kZHKsqOp9aTJ2MzfS3DtmfdacCYjaENXC2dI2_fYEGci_tnP2_l78yBGrPoCMuH3AEC_&_nc_zt=23&_nc_ht=scontent.fuio1-1.fna&_nc_gid=ABmP3IHMt6AcGyi7pFR2N9p&oh=00_AYDwX3J4AgKHALGfnuoFFQ2j93kr84QCLlOszjwMEJpvGw&oe=67A9D73C" alt="Logo" style="width: 100%; max-width: 600px; border-radius: 10px;">
-                <h2 style="color: #00796b;">Unidad Educativa Particular “Emaús”</h2>
+                <h2 style="color: #00796b;">Transportistas de la Unidad Educativa Particular “Emaús”</h2>
                 <p>Estimado(a) ${nombresRepresentante} ${apellidosRepresentante},</p>
                 <p>Le informamos que el conductor de la ruta ${ruta} de sus representados, ${nombresConductor} ${apellidosConductor}, ha sido eliminado del sistema.</p>
                 <p>Por favor, esté pendiente a su correo, se le notificará el nuevo conductor asignado.</p>
@@ -346,12 +336,67 @@ const informacionEliminacion = async (email, nombresRepresentante, apellidosRepr
     });
 }
 
+const cambioAdmin = async (nombreConductorNuevo, apellidoConductorNuevo, emailConductor, nombreConductor, apellidoConductor)=>{
+    //Creación de la estuctura que tendrá el correo 
+    let estructuraEmail = {
+        from: process.env.EMAIL_USER,
+        to: emailConductor,  
+        subject: "Nuevo Coordinador de Rutas en la Unidad Educativa Particular Emaús",
+        html: `
+            <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; background-color: #e0f7fa; padding: 20px; border-radius: 10px;">
+                <h2 style="color: #00796b;"> Transportistas de la Unidad Educativa Particular “Emaús”</h2>
+                <p>Estimado(a) ${nombreConductor} ${apellidoConductor}</p>
+                <p>Le informamos que existe un nuevo coordinador de rutas en nuestra institución. El nuevo coordinador es ${nombreConductorNuevo} ${apellidoConductorNuevo}.</p>
+                <p>Por favor, póngase en contacto con el nuevo coordinador para cualquier consulta o coordinación relacionada con su ruta.</p>
+                <p>Atentamente,</p>
+                <p><strong>Un dirigente de la Cooperativa de Transporte Escolar y Turismo Ciudad de Quito</strong></p>
+            </div>
+        `   
+    };
+    //Creación del transportador universal con el email y el password del conductor ingresado por el administrador
+    transportador.sendMail(estructuraEmail, (error, info) => {
+        if(error){
+            console.error(error);
+        } else {
+            console.log('Correo enviado: ' + info.response);
+        }
+    });
+}
+
 const cambioConductor = async (email, nombresRepresentante, apellidosRepresentante, ruta, nombresNuevoConductor, apellidosNuevoConductor) => {
     //Creación de la estuctura que tendrá el correo 
     let estructuraEmail = {
         from: process.env.EMAIL_USER,
         to: email,  
         subject: "Cambio del conductor del sistema de transporte escolar de la Unidad Educativa Particular Emaús",
+        html: `
+            <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; background-color: #e0f7fa; padding: 20px; border-radius: 10px;">
+                <img src="https://scontent.fuio1-1.fna.fbcdn.net/v/t39.30808-6/473806187_1029754585625597_5323957965040517382_n.jpg?_nc_cat=109&ccb=1-7&_nc_sid=6ee11a&_nc_eui2=AeHdf2hdnAOn_cNYBimK26NO1FjI_Lx8asvUWMj8vHxqyxGKOybUXalYc7GYNujV6Qx9AN_rUinZtd5i9Tb46lwk&_nc_ohc=k4KKr-EI_LEQ7kNvgE9dhsd&_nc_oc=AdgyXYkNQug99SfKXoV5kZHKsqOp9aTJ2MzfS3DtmfdacCYjaENXC2dI2_fYEGci_tnP2_l78yBGrPoCMuH3AEC_&_nc_zt=23&_nc_ht=scontent.fuio1-1.fna&_nc_gid=ABmP3IHMt6AcGyi7pFR2N9p&oh=00_AYDwX3J4AgKHALGfnuoFFQ2j93kr84QCLlOszjwMEJpvGw&oe=67A9D73C" alt="Logo" style="width: 100%; max-width: 600px; border-radius: 10px;">
+                <h2 style="color: #00796b;">Transportistas de la Unidad Educativa Particular “Emaús”</h2>
+                <p>Estimado(a) ${nombresRepresentante} ${apellidosRepresentante},</p>
+                <p>Le informamos que el nuevo conductor de la ruta ${ruta} de sus representados es: ${nombresNuevoConductor} ${apellidosNuevoConductor}.</p>
+                <p>Por favor, póngase en contacto con el nuevo conductor para coordinar los detalles del transporte.</p>
+                <p>Atentamente,</p>
+                <p><strong>Un dirigente de la Cooperativa de Transporte Escolar y Turismo Ciudad de Quito</strong></p>
+            </div>
+        `
+    };
+    //Creación del transportador universal con el email y el password del conductor ingresado por el administrador
+    transportador.sendMail(estructuraEmail, (error, info) => {
+        if(error){
+            console.error(error);
+        } else {
+            console.log('Correo enviado: ' + info.response);
+        }
+    });
+}
+
+const informacionAlAdministrador = async (email, nombre, apellido, ruta, sectores, password) => {
+    //Creación de la estuctura que tendrá el correo 
+    let estructuraEmail = {
+        from: process.env.EMAIL_USER,
+        to: email,  
+        subject: "Nue del sistema de transporte escolar de la Unidad Educativa Particular Emaús",
         html: `
             <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; background-color: #e0f7fa; padding: 20px; border-radius: 10px;">
                 <img src="https://scontent.fuio1-1.fna.fbcdn.net/v/t39.30808-6/473806187_1029754585625597_5323957965040517382_n.jpg?_nc_cat=109&ccb=1-7&_nc_sid=6ee11a&_nc_eui2=AeHdf2hdnAOn_cNYBimK26NO1FjI_Lx8asvUWMj8vHxqyxGKOybUXalYc7GYNujV6Qx9AN_rUinZtd5i9Tb46lwk&_nc_ohc=k4KKr-EI_LEQ7kNvgE9dhsd&_nc_oc=AdgyXYkNQug99SfKXoV5kZHKsqOp9aTJ2MzfS3DtmfdacCYjaENXC2dI2_fYEGci_tnP2_l78yBGrPoCMuH3AEC_&_nc_zt=23&_nc_ht=scontent.fuio1-1.fna&_nc_gid=ABmP3IHMt6AcGyi7pFR2N9p&oh=00_AYDwX3J4AgKHALGfnuoFFQ2j93kr84QCLlOszjwMEJpvGw&oe=67A9D73C" alt="Logo" style="width: 100%; max-width: 600px; border-radius: 10px;">
@@ -385,5 +430,6 @@ export {
     confirmacionDeCorreoConductorCambio,
     eliminacionDelRepresentante, 
     informacionEliminacion, 
+    cambioAdmin,
     cambioConductor
 }

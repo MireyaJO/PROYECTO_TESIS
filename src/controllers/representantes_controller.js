@@ -1,8 +1,8 @@
 import cloudinary from 'cloudinary';
 import fs from 'fs-extra';
-import Conductores from '../models/Administrador.js';
+import Conductores from '../models/Conductores.js';
 import NotificacionesRepresentantes from '../models/Notificaciones.js';
-import Estudiantes from '../models/Conductor.js';
+import Estudiantes from '../models/Estudiantes.js';
 import Representantes from '../models/Representantes.js';
 import {createToken} from '../middlewares/autho.js';
 import {confirmacionDeCorreoRepresentante, confirmacionDeCorreoRepresentanteCambio } from '../config/nodemailer.js';
