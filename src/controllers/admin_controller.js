@@ -3,7 +3,7 @@ import fs from 'fs-extra';
 import Conductores from '../models/Conductores.js';
 import Estudiantes from '../models/Estudiantes.js'
 import Representantes from '../models/Representantes.js';
-import {enviarCorreoConductor, actualizacionDeConductor, eliminacionDelConductor,  informacionEliminacion, cambioAdmin, cambioConductor} from "../config/nodemailer.js"; 
+import {enviarCorreoConductor, actualizacionDeConductor, eliminacionDelConductor,  informacionEliminacion, cambioAdmin, cambioConductor, asignacionAdministrador, nuevoAdministrador} from "../config/nodemailer.js"; 
 import crypto from 'crypto';
 
 // Registros de los conductores
@@ -408,7 +408,6 @@ const AsignarPrivilegiosDeAdmin = async (req, res) => {
         for(const conductor of conductores){
             await cambioAdmin(nuevoConductor.nombre, nuevoConductor.apellido, conductor.email, conductor.nombre, conductor.apellido); 
         }
-
         //Id del conductor logeado
         const conductorAdmin = await Conductores.findById(id_admin);
         //Verificación de la existencia del conductor
@@ -421,6 +420,10 @@ const AsignarPrivilegiosDeAdmin = async (req, res) => {
         if (index > -1) {
             conductorAdmin.roles.splice(index, 1);
         }
+        //Información al conductor que se le han asignado los privilegios de administrador
+        await asignacionAdministrador(conductor.email, conductor.nombre, conductor.apellido, conductor.rutaAsignada, 
+            conductor.sectoresRuta, conductorAdmin.nombre, conductorAdmin.apellido);
+        //Guardado de los cambios en la base de datos
         await conductorAdmin.save();
 
         res.status(200).json({ msg: "Los privilegios de administrador han sido asignados al conductor  exitosamente" });
@@ -509,7 +512,7 @@ const RegistrarNuevoAdmin = async (req,res) =>{
             try {
                 // Subir la imagen a Cloudinary con el nombre del conductor como public_id
                 const result = await cloudinary.v2.uploader.upload(file.tempFilePath, {
-                    public_id: `${nombre}_${apellido}`.replace(/\s+/g, '_'),
+                    public_id: `${nombre}_${apellido}_admin`.replace(/\s+/g, '_'),
                     folder: "conductores"
                 });
 
@@ -535,7 +538,11 @@ const RegistrarNuevoAdmin = async (req,res) =>{
 
         //No se crea un token de confirmación, ya que, al conductor solo se le necesita enviar un correo para que se diriga a su cuenta
         try {
-            await enviarCorreoConductor(email, randomPassword, rutaAsignada, sectoresRuta); 
+            // Conductor logeado 
+            const conductorAdmin = await Conductores.findById(req.user.id);
+            //Aviso al nuevo coordinador de rutas
+            await nuevoAdministrador(nuevoConductor.email, nuevoConductor.nombre, nuevoConductor.apellido, 
+                randomPassword, nuevoConductor.rutaAsignada, nuevoConductor.sectoresRuta, conductorAdmin.nombre, conductorAdmin.apellido);
             // Guardar el nuevo conductor en la base de datos
             await nuevoConductor.save();
 
@@ -589,6 +596,38 @@ const RegistrarNuevoAdmin = async (req,res) =>{
     }
 }
 
+const ActualizarPassword = async (req, res) => {
+    // Toma de los datos del conductor que desea cambiar su contraseña
+    const {passwordAnterior, passwordActual, passwordActualConfirm} = req.body;
+
+    // Verificar que no haya campos vacíos
+    if (Object.values(req.body).includes("")) {
+        return res.status(400).json({ msg_actualizacion_contrasenia: "Lo sentimos, debes llenar todos los campos" });
+    }
+
+    try{
+        // Verificación de la contraseña anterior
+        const conductor = await Conductores.findById(req.user.id);
+        const verificarPassword = await conductor.matchPassword(passwordAnterior);
+        if (!verificarPassword) {
+            return res.status(400).json({ msg_actualizacion_contrasenia: "Lo sentimos, la contraseña anterior no es la correcta" });
+        }
+
+        // Verificación de la confirmación de la contrseña actual 
+        if(passwordActual !== passwordActualConfirm){
+            return res.status(400).json({ msg: "Lo sentimos, la contraseña nueva y su confirmación no coinciden" });
+        }
+
+        // Encriptar la contraseña antes de guardarla
+        conductor.password = await conductor.encrypPassword(passwordActual);
+        await conductor.save();
+        res.status(200).json({ msg_actualizacion_contrasenia: "La contraseña se ha actualizado satisfactoriamente, por favor vuelva a logearse" });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ msg_actualizacion_contrasenia: "Error al actualizar la contraseña" });
+    }
+}
+
 export {
     RegistroDeLosConductores,
     BuscarConductorRuta,
@@ -598,5 +637,6 @@ export {
     VisualizarPerfil, 
     ActualizarInformacionAdmin, 
     AsignarPrivilegiosDeAdmin, 
-    RegistrarNuevoAdmin
+    RegistrarNuevoAdmin, 
+    ActualizarPassword
 };
