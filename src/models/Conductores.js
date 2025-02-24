@@ -7,8 +7,8 @@ const paraElRegistroDeLosConductores= new Schema(
     {
         roles: {
             type: [String],
-            enum: ['Conductor', 'Administrador'],
-            default: ['Conductor']
+            enum: ['conductor', 'admin'],
+            default: ['conductor']
         },
         nombre:{
             type: String, 
@@ -183,7 +183,7 @@ paraElRegistroDeLosConductores.statics.ingresarConductorAdministrador = async fu
 
     if(!existeElConductorAdmin){
         const conductorAdmin = new this({
-            roles: ['Administrador', 'Conductor'],
+            roles: ['admin', 'conductor'],
             nombre: 'Mireya',
             apellido: 'García',
             telefono: '0984562234',

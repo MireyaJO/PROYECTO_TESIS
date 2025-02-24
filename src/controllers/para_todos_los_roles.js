@@ -17,7 +17,7 @@ const Login = async (req, res) => {
         }
 
         // Verificación del rol
-        if (role !== 'Conductor' && role !== 'Representante' && role !== 'Administrador') {
+        if (role !== 'conductor' && role !== 'representante' && role !== 'admin') {
             return res.status(400).json({ msg_autenticacion: "Dicho rol no es una entidad participativa en el sistema" });
         };   
 
