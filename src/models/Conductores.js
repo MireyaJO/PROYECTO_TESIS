@@ -178,7 +178,7 @@ paraElRegistroDeLosConductores.methods.eliminarEstudiante = function(estudianteI
 
 //Metodo para ingresar apenas inicie el servidor un conductor administrador que registrará a los demás conductores
 paraElRegistroDeLosConductores.statics.ingresarConductorAdministrador = async function(){
-    const existeElConductorAdmin = await this.findOne({ roles: { $in: ['Administrador'] } }); 
+    const existeElConductorAdmin = await this.findOne({ roles: { $in: ['admin'] } }); 
     const contraseniaQuemada = process.env.ADMIN_PASSWORD; 
 
     if(!existeElConductorAdmin){
