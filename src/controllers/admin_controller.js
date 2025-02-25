@@ -398,13 +398,13 @@ const AsignarPrivilegiosDeAdmin = async (req, res) => {
         const conductor = await Conductores.findById(id);
         if (!conductor) return res.status(404).json({ msg: "Lo sentimos, el conductor no se encuentra registrado" });
         //Verificación de que el conductor no sea un administrador
-        if (conductor.roles.includes("Administrador")) return res.status(400).json({ msg: "Lo sentimos, el conductor ya posee privilegios de administrador" });
+        if (conductor.roles.includes("admin")) return res.status(400).json({ msg: "Lo sentimos, el conductor ya posee privilegios de administrador" });
         //Asignación de los privilegios de administrador
-        conductor.roles.push("Administrador");
+        conductor.roles.push("admin");
         //Guardado de los cambios en la base de datos
         await conductor.save();
         //Envio del correo a los conductores que no poseen privilegios de administrador
-        const conductores = await Conductores.find({roles: 'Conductor'});
+        const conductores = await Conductores.find({roles: 'conductor'});
         for(const conductor of conductores){
             await cambioAdmin(nuevoConductor.nombre, nuevoConductor.apellido, conductor.email, conductor.nombre, conductor.apellido); 
         }
@@ -413,9 +413,9 @@ const AsignarPrivilegiosDeAdmin = async (req, res) => {
         //Verificación de la existencia del conductor
         if (!conductorAdmin) return res.status(404).json({ msg: "Lo sentimos, el conductor no se encuentra registrado" });
         //Verificación de que el conductor sea un administrador
-        if (!conductorAdmin.roles.includes("Administrador")) return res.status(400).json({ msg: "Lo sentimos, el conductor no posee privilegios de administrador" });
+        if (!conductorAdmin.roles.includes("admin")) return res.status(400).json({ msg: "Lo sentimos, el conductor no posee privilegios de administrador" });
         //Quitar los privilegios de administrador
-        const index = conductorAdmin.roles.indexOf("Administrador");
+        const index = conductorAdmin.roles.indexOf("admin");
         //Eliminar el rol de administrador
         if (index > -1) {
             conductorAdmin.roles.splice(index, 1);
@@ -502,7 +502,7 @@ const RegistrarNuevoAdmin = async (req,res) =>{
             placaAutomovil,
             cedula,
             email,
-            roles: ["Conductor", "Administrador"]
+            roles: ["conductor", "admin"]
         });
 
         // Verificar si se envió un archivo de imagen
@@ -547,7 +547,7 @@ const RegistrarNuevoAdmin = async (req,res) =>{
             await nuevoConductor.save();
 
             //Quitar los privilegios de administrador al conductor que realizó la acción
-            const index = conductorAdmin.roles.indexOf("Administrador");
+            const index = conductorAdmin.roles.indexOf("admin");
             //Eliminar el rol de administrador
             if (index > -1) {
                 conductorAdmin.roles.splice(index, 1);
@@ -574,7 +574,7 @@ const RegistrarNuevoAdmin = async (req,res) =>{
             }
 
             //Información a los conductores que se ha registrado un nuevo administrador
-            const conductores = await Conductores.find({roles: 'Conductor'});
+            const conductores = await Conductores.find({roles: 'conductor'});
             for(const conductor of conductores){
                 await cambioAdmin(nuevoConductor.nombre, nuevoConductor.apellido, conductor.email, conductor.nombre, conductor.apellido); 
             }
