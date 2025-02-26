@@ -444,7 +444,7 @@ const nuevoAdministrador = async (email, nombreConductor, apellidoConductor, pas
             <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; background-color: #e0f7fa; padding: 20px; border-radius: 10px;">
                 <h2 style="color: #00796b;">Transportistas de la Unidad Educativa Particular “Emaús</h2>
                 <p>Estimado(a) ${nombreConductor} ${apellidoConductor},</p>
-                <p>Usted ha sido asignado como conductor administrador en nuestra institución. A continuación, encontrará los detalles de su ruta y sus credenciales para acceder a la aplicación:</p>
+                <p>Usted ha sido registrado como conductor administrador en nuestra institución. A continuación, encontrará los detalles de su ruta y sus credenciales para acceder a la aplicación:</p>
                 <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
                     <tr>
                         <td style="padding: 8px; border: 1px solid #ddd;"><strong>Ruta:</strong></td>

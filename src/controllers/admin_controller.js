@@ -397,32 +397,43 @@ const AsignarPrivilegiosDeAdmin = async (req, res) => {
         //Verificación de la existencia del conductor
         const conductor = await Conductores.findById(id);
         if (!conductor) return res.status(404).json({ msg: "Lo sentimos, el conductor no se encuentra registrado" });
+
         //Verificación de que el conductor no sea un administrador
         if (conductor.roles.includes("admin")) return res.status(400).json({ msg: "Lo sentimos, el conductor ya posee privilegios de administrador" });
+        
         //Asignación de los privilegios de administrador
         conductor.roles.push("admin");
+        
         //Guardado de los cambios en la base de datos
         await conductor.save();
+        
         //Envio del correo a los conductores que no poseen privilegios de administrador
         const conductores = await Conductores.find({roles: 'conductor'});
-        for(const conductor of conductores){
-            await cambioAdmin(nuevoConductor.nombre, nuevoConductor.apellido, conductor.email, conductor.nombre, conductor.apellido); 
+        for(const conductorNormal of conductores){
+            await cambioAdmin(conductor.nombre, conductor.apellido, conductorNormal.email, conductorNormal.nombre, conductorNormal.apellido); 
         }
+        
         //Id del conductor logeado
         const conductorAdmin = await Conductores.findById(id_admin);
+        
         //Verificación de la existencia del conductor
         if (!conductorAdmin) return res.status(404).json({ msg: "Lo sentimos, el conductor no se encuentra registrado" });
+        
         //Verificación de que el conductor sea un administrador
         if (!conductorAdmin.roles.includes("admin")) return res.status(400).json({ msg: "Lo sentimos, el conductor no posee privilegios de administrador" });
+        
         //Quitar los privilegios de administrador
         const index = conductorAdmin.roles.indexOf("admin");
+        
         //Eliminar el rol de administrador
         if (index > -1) {
             conductorAdmin.roles.splice(index, 1);
         }
+        
         //Información al conductor que se le han asignado los privilegios de administrador
         await asignacionAdministrador(conductor.email, conductor.nombre, conductor.apellido, conductor.rutaAsignada, 
             conductor.sectoresRuta, conductorAdmin.nombre, conductorAdmin.apellido);
+        
         //Guardado de los cambios en la base de datos
         await conductorAdmin.save();
 
@@ -506,13 +517,13 @@ const RegistrarNuevoAdmin = async (req,res) =>{
         });
 
         // Verificar si se envió un archivo de imagen
-        if (req.files && req.files.fotografiaDelConductor) {
+        if (req.files && req.files.fotografiaDelConductor) {    
             const file = req.files.fotografiaDelConductor;
 
             try {
                 // Subir la imagen a Cloudinary con el nombre del conductor como public_id
                 const result = await cloudinary.v2.uploader.upload(file.tempFilePath, {
-                    public_id: `${nombre}_${apellido}_admin`.replace(/\s+/g, '_'),
+                    public_id: `${nombre}_${apellido}`.replace(/\s+/g, '_'),
                     folder: "conductores"
                 });
 
@@ -585,12 +596,12 @@ const RegistrarNuevoAdmin = async (req,res) =>{
             });
         } catch (error) {
             console.error(error);
-            res.status(500).json({ msg_registro_conductor: "Error al reemplazar al conductor eliminado  " });
+            res.status(500).json({ msg_registro_conductor: "Error al reemplazar al conductor administrador" });
         }
     }catch(error){
         console.log(error); 
         res.status(500).json({
-            msg: "Error al registrar el conductor",
+            msg: "Error al registrar el conductor administrador",
             error: error.message
         });
     }
