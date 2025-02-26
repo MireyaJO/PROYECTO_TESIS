@@ -14,7 +14,7 @@ router.get('/buscar/conductor/ruta/:rutaAsignada', verificacionToken, BuscarCond
 router.get('/visualizar/perfil/admin', verificacionToken, verificacionAdminRol, VisualizarPerfil);
 router.patch('/actualizar/conductor/:id', verificacionToken, verificacionAdminRol, validacionesActualizarConductorAdmin, ActualizarRutasYSectoresId);
 router.patch('/actualizar/informacion/admin', verificacionToken, verificacionAdminRol, validacionesActualizarPerfilAdmin, ActualizarInformacionAdmin);
-router.patch('/asignar/privilegios/admin/:id', verificacionToken, verificacionAdminRol, AsignarPrivilegiosDeAdmin);
+router.patch('/asignar/privilegios/admin/:idAsignacion', verificacionToken, verificacionAdminRol, AsignarPrivilegiosDeAdmin);
 router.patch('/actualizar/contrasenia/admin', verificacionToken, verificacionAdminRol, validarContraseniaNueva, ActualizarPassword); 
 router.delete('/eliminar/conductor/:id', verificacionToken, verificacionAdminRol, EliminarConductor);
 

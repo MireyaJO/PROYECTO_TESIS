@@ -391,11 +391,11 @@ const ActualizarInformacionAdmin = async (req, res) => {
 
 const AsignarPrivilegiosDeAdmin = async (req, res) => {
     //Obtener el id del conductor que se desea convertir en administrador
-    const {id} = req.params;
-    const {id_admin} = req.user;
+    const {idAsignacion} = req.params;
+    const {id} = req.user;
     try{
         //Verificación de la existencia del conductor
-        const conductor = await Conductores.findById(id);
+        const conductor = await Conductores.findById(idAsignacion);
         if (!conductor) return res.status(404).json({ msg: "Lo sentimos, el conductor no se encuentra registrado" });
 
         //Verificación de que el conductor no sea un administrador
@@ -408,7 +408,7 @@ const AsignarPrivilegiosDeAdmin = async (req, res) => {
         await conductor.save();
         
         //Id del conductor logeado
-        const conductorAdmin = await Conductores.findById(id_admin);
+        const conductorAdmin = await Conductores.findById(id);
         
         //Verificación de la existencia del conductor
         if (!conductorAdmin) return res.status(404).json({ msg: "Lo sentimos, el conductor no se encuentra registrado" });
@@ -432,7 +432,7 @@ const AsignarPrivilegiosDeAdmin = async (req, res) => {
         for(const conductorNormal of conductores){
             await cambioAdmin(conductor.nombre, conductor.apellido, conductorNormal.email, conductorNormal.nombre, conductorNormal.apellido); 
         }
-        
+
         //Información al conductor que se le han asignado los privilegios de administrador
         await asignacionAdministrador(conductor.email, conductor.nombre, conductor.apellido, conductor.rutaAsignada, 
             conductor.sectoresRuta, conductorAdmin.nombre, conductorAdmin.apellido);
