@@ -407,12 +407,6 @@ const AsignarPrivilegiosDeAdmin = async (req, res) => {
         //Guardado de los cambios en la base de datos
         await conductor.save();
         
-        //Envio del correo a los conductores que no poseen privilegios de administrador
-        const conductores = await Conductores.find({roles: 'conductor'});
-        for(const conductorNormal of conductores){
-            await cambioAdmin(conductor.nombre, conductor.apellido, conductorNormal.email, conductorNormal.nombre, conductorNormal.apellido); 
-        }
-        
         //Id del conductor logeado
         const conductorAdmin = await Conductores.findById(id_admin);
         
@@ -428,6 +422,15 @@ const AsignarPrivilegiosDeAdmin = async (req, res) => {
         //Eliminar el rol de administrador
         if (index > -1) {
             conductorAdmin.roles.splice(index, 1);
+        }
+        
+        //Guardado de los cambios en la base de datos
+        await conductorAdmin.save();
+
+        //Envio del correo a los conductores que no poseen privilegios de administrador
+        const conductores = await Conductores.find({roles: 'conductor'});
+        for(const conductorNormal of conductores){
+            await cambioAdmin(conductor.nombre, conductor.apellido, conductorNormal.email, conductorNormal.nombre, conductorNormal.apellido); 
         }
         
         //Información al conductor que se le han asignado los privilegios de administrador
