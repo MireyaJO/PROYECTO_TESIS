@@ -34,7 +34,7 @@ const Login = async (req, res) => {
             // Si la contraseña es correcta se crea el token JWT
             if (verificacionContrasenia) {
                 const token = createToken({ id: conductor._id, email: conductor.email, role: role });
-                return res.status(200).json({ token, msg_login_conductor: "Bienvenido", conductor: conductor });
+                return res.status(200).json({ token, msg_login_conductor: `Bienvenido ${role} ${conductor.nombre} ${conductor.apellido}`, rol: role });
             } else {
                 return res.status(400).json({ msg: "Contraseña incorrecta" });
             }
@@ -48,7 +48,7 @@ const Login = async (req, res) => {
             // Si la contraseña es correcta se crea el token JWT
             if (verificacionContrasenia) {
                 const token = createToken({ id: representante._id, email: representante.email, role: 'representante' });
-                return res.status(200).json({ token, msg_login_representante: "Bienvenido representante", representante: representante});
+                return res.status(200).json({ token, msg_login_representante: `Bienvenido representante ${representante.nombre} ${representante.apellido}`, rol:"representante"});
             } else {
                 return res.status(400).json({ msg: "Contraseña incorrecta" });
             }
