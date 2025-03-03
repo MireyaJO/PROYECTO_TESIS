@@ -68,13 +68,13 @@ const validacionesAdmin = [
 //Validaciones para el conductor 
 const validacionesConductor = [
     // Verificar que se encuentren los campos obligatorios y no estén vacíos
-    check(["nombre","apellido","telefono","cedula","placaAutomovil","rutaAsignada", "sectoresRuta", "institucion", 
+    check(["nombre","apellido", "cooperativa", "telefono","cedula","placaAutomovil","rutaAsignada", "sectoresRuta", 
         "email"
     ])
     .exists()
-        .withMessage('Los campos "nombre","apellido","telefono","cedula","placaAutomovil","rutaAsignada", "sectoresRuta", "institucion", "fotografiaDelConductor" y/o "email"  son obligatorios')
+        .withMessage('Los campos "nombre","apellido","cooperativa","telefono","cedula","placaAutomovil","rutaAsignada", "sectoresRuta", "institucion", "fotografiaDelConductor" y/o "email"  son obligatorios')
     .notEmpty()
-        .withMessage('Los campos "nombre","apellido","telefonor","cedula","placaAutomovil","rutaAsignada", "sectoresRuta", "institucion", "fotografiaDelConductor" y/o "email" no pueden estar vacíos')
+        .withMessage('Los campos "nombre","apellido","cooperativa","telefonor","cedula","placaAutomovil","rutaAsignada", "sectoresRuta", "institucion", "fotografiaDelConductor" y/o "email" no pueden estar vacíos')
     .customSanitizer(value => value?.trim()),
 
     //Verificación de que todo sea un string
@@ -121,14 +121,6 @@ const validacionesConductor = [
         .withMessage('El email debe ser un correo válido')
     .customSanitizer(value => value?.trim()),
 
-    //Verificar la institución
-    check("institucion")
-    .equals("Unidad Educativa Particular Emaús")
-        .withMessage('La institución debe ser la Unidad Educativa Particular Emaús')
-    .isString()
-        .withMessage('La institución debe ser un texto, no se acepta otro tipo de dato')
-        .customSanitizer(value => value?.trim()),
-    
     // Verificar que el género sea uno de los valores permitidos
     check("generoConductor")
     .isIn(["Femenino", "Masculino", "Prefiero no decirlo"])

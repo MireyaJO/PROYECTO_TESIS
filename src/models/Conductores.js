@@ -20,6 +20,11 @@ const paraElRegistroDeLosConductores= new Schema(
             required: true, 
             trim: true 
         }, 
+        cooperativa:{
+            type: String,
+            required: true,
+            trim: true
+        },
         telefono:{
             type: String, 
             required: true, 
@@ -186,6 +191,7 @@ paraElRegistroDeLosConductores.statics.ingresarConductorAdministrador = async fu
             roles: ['admin', 'conductor'],
             nombre: 'Mireya',
             apellido: 'García',
+            cooperativa: 'FurgoPlanta',
             telefono: '0984562234',
             generoConductor: 'Femenino',
             cedula: 1724256899,   

@@ -12,6 +12,7 @@ const RegistroDeLosConductores = async (req, res) => {
     const {
         nombre,
         apellido,
+        cooperativa,
         rutaAsignada, 
         sectoresRuta,
         telefono, 
@@ -19,6 +20,9 @@ const RegistroDeLosConductores = async (req, res) => {
         cedula,
         email,
     } = req.body;
+
+    //Id del admin logeado 
+    const {id} = req.user;
     try{
         // Comprobar si el email ya está registrado
         const verificarEmailBDD = await Conductores.findOne({email});
@@ -62,8 +66,23 @@ const RegistroDeLosConductores = async (req, res) => {
             return res.status(400).json({ msg_registro_conductor: "Lo sentimos, la placa ya se encuentra registrada" })
         };
 
+        //Datos del coordinador de rutas
+        const coordinadorRutas = await Conductores.findById(id);
+        if (!coordinadorRutas) return res.status(404).json({ msg_registro_conductor: "Lo sentimos, el coordinador de rutas no se encuentra registrado" });
+
         // Crear un nuevo conductor con los datos proporcionados
-        const nuevoConductor = new Conductores(req.body);
+        const nuevoConductor = new Conductores({
+            nombre,
+            apellido,
+            cooperativa,
+            rutaAsignada,
+            sectoresRuta,
+            institucion: coordinadorRutas.institucion,
+            telefono, 
+            placaAutomovil,
+            cedula,
+            email,
+        });
 
         // Verificar si se envió un archivo de imagen
         if (req.files && req.files.fotografiaDelConductor) {
@@ -97,7 +116,7 @@ const RegistroDeLosConductores = async (req, res) => {
 
         //No se crea un token de confirmación, ya que, al conductor solo se le necesita enviar un correo para que se diriga a su cuenta
         try {
-            await enviarCorreoConductor(email, randomPassword, rutaAsignada, sectoresRuta); 
+            await enviarCorreoConductor(email, randomPassword, rutaAsignada, sectoresRuta, coordinadorRutas.apellido, coordinadorRutas.nombre); 
             // Guardar el nuevo conductor en la base de datos
             await nuevoConductor.save();
 
@@ -112,7 +131,7 @@ const RegistroDeLosConductores = async (req, res) => {
                     for (const representanteId of estudiante.representantes){
                         const representante = await Representantes.findById(representanteId); 
                         if(representante){
-                            await cambioConductor(representante.email, representante.nombre, representante.apellido, nuevoConductor.rutaAsignada, nuevoConductor.nombre, nuevoConductor.apellido)
+                            await cambioConductor(representante.email, representante.nombre, representante.apellido, nuevoConductor.rutaAsignada, nuevoConductor.nombre, nuevoConductor.apellido, coordinadorRutas.apellido, coordinadorRutas.nombre)
                         }
                     }
                 }
