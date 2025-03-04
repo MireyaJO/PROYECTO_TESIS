@@ -136,12 +136,13 @@ const RegistroDeLosConductores = async (req, res) => {
                     }
                 }
                 nuevoConductor.numeroEstudiantes = cantidadEstudiantes;
+                res.status(200).json({ msg_registro_conductor: "El ID del conductor nuevo se ha actualizado en todos los estudiantes que coinciden con su ruta", nuevoConductor});
+            } else if (cantidadEstudiantes === 0){
+                res.status(200).json({ msg_registro_conductor: "Conductor registrado exitosamente", nuevoConductor});
             }
-
-            res.status(200).json({ msg_registro_conductor: "Conductor registrado exitosamente", nuevoConductor});
         } catch (error) {
             console.error(error);
-            res.status(500).json({ msg_registro_conductor: "Error al registrar el conductor" });
+            res.status(500).json({ msg_registro_conductor: "Error al reemplazar el conductor" });
         }
     }catch(error){
         console.log(error); 
