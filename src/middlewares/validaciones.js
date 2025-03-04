@@ -72,9 +72,9 @@ const validacionesConductor = [
         "email"
     ])
     .exists()
-        .withMessage('Los campos "nombre","apellido","cooperativa","telefono","cedula","placaAutomovil","rutaAsignada", "sectoresRuta", "institucion", "fotografiaDelConductor" y/o "email"  son obligatorios')
+        .withMessage('Los campos "nombre","apellido","cooperativa","telefono","cedula","placaAutomovil","rutaAsignada", "sectoresRuta", "fotografiaDelConductor" y/o "email"  son obligatorios')
     .notEmpty()
-        .withMessage('Los campos "nombre","apellido","cooperativa","telefonor","cedula","placaAutomovil","rutaAsignada", "sectoresRuta", "institucion", "fotografiaDelConductor" y/o "email" no pueden estar vacíos')
+        .withMessage('Los campos "nombre","apellido","cooperativa","telefonor","cedula","placaAutomovil","rutaAsignada", "sectoresRuta", "fotografiaDelConductor" y/o "email" no pueden estar vacíos')
     .customSanitizer(value => value?.trim()),
 
     //Verificación de que todo sea un string
