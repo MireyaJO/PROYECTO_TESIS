@@ -16,7 +16,7 @@ let transportador = nodemailer.createTransport({
 });
 
 //Correos enviados en el registro de conductores 
-const enviarCorreoConductor = (email, password, ruta, sectores, coordinadorApellido, coordinadorNombre) =>{
+const enviarCorreoConductor = (email, password, ruta, sectores, nombreConductor, apellidoConductor, coordinadorApellido, coordinadorNombre) =>{
     //Creación de la estuctura que tendrá el correo 
     let estructuraEmail = {
         from: process.env.EMAIL_USER,
@@ -25,7 +25,7 @@ const enviarCorreoConductor = (email, password, ruta, sectores, coordinadorApell
         html: `
             <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; background-color: #e0f7fa; padding: 20px; border-radius: 10px;">
                 <h2 style="color: #00796b;">Transportistas de la Unidad Educativa Particular "Emaús"</h2>
-                <p>Estimado(a) Conductor,</p>
+                <p>Estimado(a) ${nombreConductor} ${apellidoConductor},</p>
                 <p>Usted ha sido registrado como conductor en nuestra institución. A continuación, encontrará los detalles de su ruta y sus credenciales para acceder a la aplicación:</p>
                 <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
                     <tr>

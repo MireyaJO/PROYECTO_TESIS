@@ -116,7 +116,7 @@ const RegistroDeLosConductores = async (req, res) => {
 
         //No se crea un token de confirmación, ya que, al conductor solo se le necesita enviar un correo para que se diriga a su cuenta
         try {
-            await enviarCorreoConductor(email, randomPassword, rutaAsignada, sectoresRuta, coordinadorRutas.apellido, coordinadorRutas.nombre); 
+            await enviarCorreoConductor(email, randomPassword, rutaAsignada, sectoresRuta, nuevoConductor.nombre, nuevoConductor.apellido, coordinadorRutas.apellido, coordinadorRutas.nombre); 
             // Guardar el nuevo conductor en la base de datos
             await nuevoConductor.save();
 
