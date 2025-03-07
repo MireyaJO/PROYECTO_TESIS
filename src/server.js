@@ -45,7 +45,11 @@ app.use(fileUpload({
 }));
 
 //Compatibilidad entre dominios 
-app.use(cors())
+app.use(cors({
+    origin: ['http://localhost:5173', 'https://proyecto-frontend-tesis.onrender.com'], 
+    methods: 'GET,PUT,PATCH,POST,DELETE',
+    credentials: true
+}));
 
 // Middlewares 
 app.use(express.json())
