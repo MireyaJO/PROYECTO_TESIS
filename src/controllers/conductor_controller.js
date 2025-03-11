@@ -22,7 +22,7 @@ const RegistroDeLosEstudiantes = async (req, res) => {
         paralelo,
         cedula,
         ubicacionDomicilio,
-        recoCompletoOMedio
+        ManianaOTarde
     } = req.body;
 
     // Verificar que no haya campos vacíos
@@ -70,6 +70,7 @@ const RegistroDeLosEstudiantes = async (req, res) => {
             conductor.estudiantesRegistrados = [];
         }
 
+        //Validación de que la cedula no este registrada en otro estudiante
         const cedulaExistente = await Estudiantes.findOne({ cedula });
         if (cedulaExistente) {
             return res.status(400).json({ msg_registro_estudiantes: "Lo sentimos, la cédula ya está registrada" });
@@ -92,7 +93,7 @@ const RegistroDeLosEstudiantes = async (req, res) => {
             ruta: conductor.rutaAsignada,
             ubicacionDomicilio,
             institucion: conductor.institucion,
-            recoCompletoOMedio, 
+            ManianaOTarde, 
             latitud: coordenadas.latitud,
             longitud: coordenadas.longitud,
             conductor: conductor._id

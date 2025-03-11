@@ -269,6 +269,12 @@ const validacionesActualizarConductorAdmin = [
     }
 ]
 const validacionesActualizarPerfilConductor = [
+    // Verificar que no hayan campos vacíos 
+    check(["telefono","placaAutomovil", "email"])
+    .notEmpty()
+        .withMessage('Se necesita campos para actualizar')
+    .customSanitizer(value => value?.trim()),
+
     // Verificar que el numero de telefono sea de 10 digitos
     check("telefono")
     .isLength({ min: 10, max: 10 })
@@ -277,20 +283,20 @@ const validacionesActualizarPerfilConductor = [
         .withMessage('El campo "teléfono" debe contener solo números')
     .customSanitizer(value => value?.trim()),
 
-    // Verificar que el numero de telefono sea de 10 digitos
-    check("telefono")
-    .isLength({ min: 10, max: 10 })
-        .withMessage('El teléfono debe ser de 10 digitos')
-    .isNumeric()
-        .withMessage('El campo "teléfono" debe contener solo números')
+    // Verificar que el número de placa tenga 7 dígitos
+    check("placaAutomovil")
+    .isLength({ min: 8, max: 8 })
+        .withMessage('La placa debe tener exactamente 8 caracteres, incluyendo el guion')
+    .matches(/^[A-Z]{3}-\d{4}$/i)
+        .withMessage('El campo "placa" debe seguir el formato de tres letras, un guion y cuatro números,  Ejemplo: PUH-7869')
     .customSanitizer(value => value?.trim()),
 
-    // Verificar que no hayan campos vacíos 
-    check(["telefono","placaAutomovil", "email"])
-    .notEmpty()
-        .withMessage('Se necesita campos para actualizar')
+    // Verificar que el email se enceuntre bien escrito
+    check("email")
+    .isEmail()
+        .withMessage('El email debe ser un correo válido')
     .customSanitizer(value => value?.trim()),
-
+    
     (req,res,next)=>{
         const errors = validationResult(req);
         if (errors.isEmpty()) {
@@ -299,7 +305,6 @@ const validacionesActualizarPerfilConductor = [
             return res.status(400).send({ errors: errors.array() });
         }
     }
-
 ]
 
 const validacionesActualizarPerfilRepresentante = [

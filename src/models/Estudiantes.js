@@ -43,7 +43,7 @@ const paraElRegistroDeLosEstudiantes= new Schema(
             type: String, 
             required: true, 
         },  
-        recoCompletoOMedio:{
+        ManianaOTarde:{
             type: String, 
             required: true
         }, 
