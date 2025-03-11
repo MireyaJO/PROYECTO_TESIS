@@ -22,7 +22,7 @@ const Login = async (req, res) => {
         };   
 
         // Verificación en la base de datos del conductor
-        const conductor = await Conductores.findOne({ email: email }).select("-password -createdAt -updatedAt -__v");
+        const conductor = await Conductores.findOne({ email: email });
         if (conductor) {
             // Verificar el rol seleccionado
             if (!conductor.roles.includes(role)) {
@@ -34,21 +34,25 @@ const Login = async (req, res) => {
             // Si la contraseña es correcta se crea el token JWT
             if (verificacionContrasenia) {
                 const token = createToken({ id: conductor._id, email: conductor.email, role: role });
-                return res.status(200).json({ token, msg_login_conductor: `Bienvenido ${role} ${conductor.nombre} ${conductor.apellido}`, rol: role, conductor: conductor });
+                // Eliminar la contraseña del objeto antes de enviarlo en la respuesta
+                const { password, ...conductorSinContrasenia } = conductor.toObject();
+                return res.status(200).json({ token, msg_login_conductor: `Bienvenido ${role} ${conductor.nombre} ${conductor.apellido}`, rol: role, conductor: conductorSinContrasenia });
             } else {
                 return res.status(400).json({ msg: "Contraseña incorrecta" });
             }
         }
 
         // Verificación en la base de datos del representante
-        const representante = await Representantes.findOne({ email: email }).select("-password -createdAt -updatedAt -__v");
+        const representante = await Representantes.findOne({ email: email }).select("-createdAt -updatedAt -__v");
         if (representante) {
             // Verificación de la contraseña
             const verificacionContrasenia = await representante.matchPassword(password);
             // Si la contraseña es correcta se crea el token JWT
             if (verificacionContrasenia) {
                 const token = createToken({ id: representante._id, email: representante.email, role: 'representante' });
-                return res.status(200).json({ token, msg_login_representante: `Bienvenido representante ${representante.nombre} ${representante.apellido}`, rol:"representante", representante: representante });
+                // Eliminar la contraseña del objeto antes de enviarlo en la respuesta
+                const { password, ...representanteSinContrasenia } = conductor.toObject();
+                return res.status(200).json({ token, msg_login_representante: `Bienvenido representante ${representante.nombre} ${representante.apellido}`, rol:"representante", representante: representanteSinContrasenia });
             } else {
                 return res.status(400).json({ msg: "Contraseña incorrecta" });
             }
