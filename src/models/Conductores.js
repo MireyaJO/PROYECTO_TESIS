@@ -10,6 +10,11 @@ const paraElRegistroDeLosConductores= new Schema(
             enum: ['conductor', 'admin'],
             default: ['conductor']
         },
+        esReemplazo:{
+            type: Boolean,
+            default: false, 
+            required: true
+        },
         nombre:{
             type: String, 
             required: true, 
@@ -49,13 +54,22 @@ const paraElRegistroDeLosConductores= new Schema(
         },
         rutaAsignada:{
             type: Number, 
-            required: true, 
-            unique: true, 
+            required : function () {
+                return !this.esReemplazo; 
+            }, 
+            unique: function () {
+                return !this.esReemplazo; 
+            }, 
             trim: true
         }, 
         sectoresRuta:{
             type: String, 
-            required: true, 
+            required : function () {
+                return !this.esReemplazo; 
+            }, 
+            unique: function () {
+                return !this.esReemplazo; 
+            }, 
             trim: true
         }, 
         institucion:{
@@ -117,6 +131,10 @@ const paraElRegistroDeLosConductores= new Schema(
             type: String,
             default: null
         }, 
+        estado:{
+            type: Boolean, 
+            default: true
+        },
                                                                                    
     }
 , { timestamps: true}
@@ -189,6 +207,7 @@ paraElRegistroDeLosConductores.statics.ingresarConductorAdministrador = async fu
     if(!existeElConductorAdmin){
         const conductorAdmin = new this({
             roles: ['admin', 'conductor'],
+            esReemplazo: false,
             nombre: 'Mireya',
             apellido: 'García',
             cooperativa: 'FurgoPlanta',
@@ -201,7 +220,8 @@ paraElRegistroDeLosConductores.statics.ingresarConductorAdministrador = async fu
             institucion: 'Unidad Educativa Particular Emaús',
             fotografiaDelConductor: 'https://res.cloudinary.com/dwvqq3ugp/image/upload/v1739850955/imagen_prueba_01_zdvioa.jpg',
             email: process.env.ADMIN_EMAIL, 
-            password: contraseniaQuemada
+            password: contraseniaQuemada, 
+            estado: true
         });
 
         //Encriptar la contraseña anteriormente quemada

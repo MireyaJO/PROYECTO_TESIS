@@ -92,7 +92,7 @@ const cambioConductor = async (email, nombresRepresentante, apellidosRepresentan
 };
 
 //El envío del correo al conductor para la actualización de la ruta y sectores
-const actualizacionDeConductor = (email, ruta, sectores) =>{
+const actualizacionDeConductor = (email, apellidoConductor, nombreConductor, ruta, sectores, coordinadorApellido, coordinadorNombre) =>{
     //Creación de la estuctura que tendrá el correo 
     let estructuraEmail = {
         from: process.env.EMAIL_USER,
@@ -101,9 +101,9 @@ const actualizacionDeConductor = (email, ruta, sectores) =>{
         html: 
         `
             <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; background-color: #e0f7fa; padding: 20px; border-radius: 10px;">
-                <h2 style="color: #00796b;">Transportistas de la Unidad Educativa Particular “Emaús</h2>
-                <p>Estimado(a) Conductor,</p>
-                <p>Usted es conductor de la Unidad Educativa Particular “Emaús”. A continuación, encontrará los detalles actualizados de su ruta y sectores:</p>
+                <h2 style="color: #00796b;">Transportistas de la Unidad Educativa Particular "Emaús"</h2>
+                <p>Estimado(a) ${nombreConductor} ${apellidoConductor},</p>
+                <p>Se ha realizado un cambio en la ruta y los sectores que cubrirá. A continuación, encontrará los detalles actualizados de su ruta y sectores:</p>
                 <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
                     <tr>
                         <td style="padding: 8px; border: 1px solid #ddd;"><strong>Ruta:</strong></td>
@@ -115,8 +115,9 @@ const actualizacionDeConductor = (email, ruta, sectores) =>{
                     </tr>
                 </table>
                 <p style="margin-top: 20px;">Por último, le recordamos que sus credenciales no se han modificado, siguen siendo las mismas.</p>
-                <p>Atentamente,</p>
-                <p><strong>Un dirigente de la Cooperativa de Transporte Escolar y Turismo Ciudad de Quito</strong></p>
+                <p><b>Atentamente,</b></p>
+                <p> ${coordinadorApellido} ${coordinadorNombre}</p>
+                <p><strong><b>Coordinador de rutas</b></strong></p>
             </div>
         `
     };
@@ -131,7 +132,7 @@ const actualizacionDeConductor = (email, ruta, sectores) =>{
 }; 
 
 //El envío de correo al conductor para notificarle su eliminación del sistema 
-const eliminacionDelConductor = (email, nombres, apellidos) =>{
+const eliminacionDelConductor = (email, nombres, apellidos, coordinadorApellido, coordinadorNombre) =>{
     //Creación de la estuctura que tendrá el correo 
     let estructuraEmail = {
         from: process.env.EMAIL_USER,
@@ -141,10 +142,11 @@ const eliminacionDelConductor = (email, nombres, apellidos) =>{
             <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; background-color: #e0f7fa; padding: 20px; border-radius: 10px;">
                 <h2 style="color: #00796b;">Transportistas de la Unidad Educativa Particular “Emaús”</h2>
                 <p>Estimado(a) ${nombres} ${apellidos},</p>
-                <p>Lamentamos informarle que ha sido eliminado del sistema de la Unidad Educativa Particular “Emaús”. A partir de ahora, usted ya no tiene una ruta asignada en nuestra institución.</p>
-                <p>Si tiene alguna pregunta o necesita más información, por favor, póngase en contacto con nosotros.</p>
-                <p>Atentamente,</p>
-                <p><strong>Un dirigente de la Cooperativa de Transporte Escolar y Turismo Ciudad de Quito</strong></p>
+                <p>Lamentamos informarle que ha sido eliminado del sistema de transportistas de la Unidad Educativa Particular “Emaús”. A partir de ahora, usted ya no tiene una ruta asignada en nuestra institución.</p>
+                <p>Si tiene alguna pregunta o necesita más información, por favor, póngase en contacto con el coordinador de las rutas.</p>
+                <p><b>Atentamente,</b></p>
+                <p> ${coordinadorApellido} ${coordinadorNombre}</p>
+                <p><strong><b>Coordinador de rutas</b></strong></p>
             </div>
         `
     };

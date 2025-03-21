@@ -5,6 +5,7 @@ import Estudiantes from '../models/Estudiantes.js'
 import Representantes from '../models/Representantes.js';
 import {enviarCorreoConductor, actualizacionDeConductor, eliminacionDelConductor,  informacionEliminacion, cambioAdmin, cambioConductor, asignacionAdministrador, nuevoAdministrador} from "../config/nodemailer.js"; 
 import crypto from 'crypto';
+import e from 'cors';
 
 // Registros de los conductores
 const RegistroDeLosConductores = async (req, res) => {
@@ -15,6 +16,7 @@ const RegistroDeLosConductores = async (req, res) => {
         cooperativa,
         rutaAsignada, 
         sectoresRuta,
+        generoConductor,
         telefono, 
         placaAutomovil,
         cedula,
@@ -77,6 +79,7 @@ const RegistroDeLosConductores = async (req, res) => {
             cooperativa,
             rutaAsignada,
             sectoresRuta,
+            generoConductor,
             institucion: coordinadorRutas.institucion,
             telefono, 
             placaAutomovil,
@@ -114,36 +117,12 @@ const RegistroDeLosConductores = async (req, res) => {
         // Encriptar la contraseña antes de guardarla
         nuevoConductor.password = await nuevoConductor.encrypPassword(randomPassword);
 
-        //No se crea un token de confirmación, ya que, al conductor solo se le necesita enviar un correo para que se diriga a su cuenta
-        try {
-            await enviarCorreoConductor(email, randomPassword, rutaAsignada, sectoresRuta, nuevoConductor.nombre, nuevoConductor.apellido, coordinadorRutas.apellido, coordinadorRutas.nombre); 
-            // Guardar el nuevo conductor en la base de datos
-            await nuevoConductor.save();
+        // Guardar el nuevo conductor en la base de datos
+        await nuevoConductor.save();
 
-            // Actualizar los estudiantes que tienen la misma ruta asignada
-            const estudiantes = await Estudiantes.find({ruta:nuevoConductor.rutaAsignada});
-            const cantidadEstudiantes = estudiantes.length
-            if(cantidadEstudiantes > 0){
-                for (const estudiante of estudiantes) {
-                    await Estudiantes.findByIdAndUpdate(estudiante._id, { conductor: nuevoConductor._id });
-                    const estudianteRegistrado = {idEstudiante: estudiante._id, nombreEstudiante: estudiante.nombre, apellidoEstudiante: estudiante.apellido, nivelEscolarEstudiante: estudiante.nivelEscolar, paraleloEstudiante: estudiante.paralelo, cedulaEstudiante: estudiante.cedula} 
-                    nuevoConductor.estudiantesRegistrados.push(estudianteRegistrado); 
-                    for (const representanteId of estudiante.representantes){
-                        const representante = await Representantes.findById(representanteId); 
-                        if(representante){
-                            await cambioConductor(representante.email, representante.nombre, representante.apellido, nuevoConductor.rutaAsignada, nuevoConductor.nombre, nuevoConductor.apellido, coordinadorRutas.apellido, coordinadorRutas.nombre)
-                        }
-                    }
-                }
-                nuevoConductor.numeroEstudiantes = cantidadEstudiantes;
-                res.status(200).json({ msg_registro_conductor: "El ID del conductor nuevo se ha actualizado en todos los estudiantes que coinciden con su ruta", nuevoConductor});
-            } else if (cantidadEstudiantes === 0){
-                res.status(200).json({ msg_registro_conductor: "Conductor registrado exitosamente", nuevoConductor});
-            }
-        } catch (error) {
-            console.error(error);
-            res.status(500).json({ msg_registro_conductor: "Error al reemplazar el conductor" });
-        }
+        //No se crea un token de confirmación, ya que, al conductor solo se le necesita enviar un correo para que se diriga a su cuenta
+        await enviarCorreoConductor(email, randomPassword, rutaAsignada, sectoresRuta, nuevoConductor.nombre, nuevoConductor.apellido, coordinadorRutas.apellido, coordinadorRutas.nombre); 
+
     }catch(error){
         console.log(error); 
         res.status(500).json({
@@ -160,32 +139,37 @@ const BuscarConductorRuta = async (req, res) => {
         const {rutaAsignada} = req.params;
 
         // Verificación de la existencia de la ruta
-        const conductores = await Conductores.find({rutaAsignada}).select("-updatedAt -createdAt -__v");
-        if (conductores.length === 0) {
+        const conductor = await Conductores.find({rutaAsignada}).select("-password -updatedAt -createdAt -__v");
+        if (conductor.length === 0) {
             return res.status(400).json({ msg: "Lo sentimos, no se ha encontrado ningún conductor trabajando en la Unidad Educativa Particular EMAÚS con esa ruta" });
         }
 
         // Mensaje de éxito
-        res.status(200).json({ msg_buscar_conductor_ruta: `El conductor de la ruta ${rutaAsignada} se han encontrado exitosamente`, conductores });
+        res.status(200).json({ msg_buscar_conductor_ruta: `El conductor de la ruta ${rutaAsignada} se han encontrado exitosamente`, conductor:conductor });
     } catch (error) {
         console.log(error);
-        res.status(500).json({ msg_buscar_conductor_ruta: "Error al buscar conductores por ruta", error: error.message });
+        res.status(500).json({ 
+            msg_buscar_conductor_ruta: "Error al buscar conductores por ruta", 
+            error: error.message 
+        });
     }
 }
 
 // Listar todos los conductores de la Unidad Educativa Particular EMAÚS
 const ListarConductor = async (req, res) => {
     try{
-        //Obtener todos los conductores
-        const conductores = await Conductores.find().select("-updatedAt -createdAt -__v");
+        //Obtención de los conductores normales
+        const conductores = await Conductores.find({roles: { $in: ["conductor"], $nin: ["admin"] }}).select("-password -updatedAt -createdAt -__v");
+
         //Validación de que existan conductores
-        if (conductores.length === 0) return res.status(400).json({msg:"El administrador no ha registrado a ningún conductor"});
+        if (conductores.length === 0) return res.status(400).json({msg_listar_conductores:"El administrador no ha registrado a ningún conductor"});
+        
         //Mensaje de exito
-        res.status(200).json({ msg_listar_conductores: "Los conductores se han encontrado exitosamente", conductores});
+        res.status(200).json({ msg_listar_conductores: "Los conductores se han encontrado exitosamente", listar_conductores: conductores});
     }catch(error){
         console.log(error); 
         res.status(500).json({
-            msg: "Error al listar los conductores",
+            msg_listar_conductores: "Error al listar los conductores",
             error: error.message
         });
     }    
@@ -199,35 +183,38 @@ const ActualizarRutasYSectoresId = async (req, res) => {
     //Obtener la ruta y los sectores de la solicitud
     const {rutaAsignada, sectoresRuta} = req.body;
 
-    try{
-        // Verificación de los campos vacíos
-        if (Object.values(req.body).includes("")) return res.status(400).json({ msg: "Lo sentimos, debes llenar todos los campos" });
+    //Id del conductor logeado
+    const {id_coordinador} = req.user;
 
+    try{
         // Verificación de la existencia del conductor
-        const conductor = await Conductores.findById(id);
-        if (!conductor) return res.status(400).json({ msg: "Lo sentimos, el conductor no se encuentra trabajando en la Unidad Educativa Particular EMAÚS" });
+        const conductor = await Conductores.findById({_id: id});
+        if (!conductor) return res.status(400).json({ msg_actualizacion_conductor: "Lo sentimos, el conductor no se ha encontrado" });
 
         // Para conocer el nombre del conductor que posee ese id
         const {nombre, apellido} = conductor;
 
         // Actualización de los datos
         await Conductores.findOneAndUpdate(
-            { _id: id },
-            { rutaAsignada, sectoresRuta},
+            id,
+            { 
+                rutaAsignada, 
+                sectoresRuta
+            },
             // Esta opción devuelve el documento actualizado
             { new: true } 
         );
 
         //Envio del correo al conductor 
-        await actualizacionDeConductor(conductor.email, rutaAsignada, sectoresRuta);
+        await actualizacionDeConductor(conductor.email, conductor.apellido, conductor.nombre, rutaAsignada, sectoresRuta, id_coordinador.apellido, id_coordinador.nombre);
 
         res.status(200).json({
-            msg: `La ruta y sectores objetivo del conductor ${nombre} ${apellido} han sido actualizados exitosamente`
+            msg_actualizacion_conductor: `La ruta y sectores que cubrirá el conductor ${nombre} ${apellido} han sido actualizados exitosamente`
         });
     }catch(error){
         console.log(error); 
         res.status(500).json({
-            msg: "Error al actualizar las rutas y sectores de los conductores",
+            msg_actualizacion_conductor: "Error al actualizar las rutas y sectores de los conductores",
             error: error.message
         });
     }
@@ -237,28 +224,15 @@ const ActualizarRutasYSectoresId = async (req, res) => {
 const EliminarConductor = async (req, res) => {
     // Obtener el ID de los parámetros de la URL
     const {id} = req.params;
+
+    //Id del conductor logeado
+    const {id_coordinador} = req.user;
    try{
         //Verificación de la existencia del conductor
         const conductor = await Conductores.findById({_id: id});
         if(!conductor) return res.status(400).json({msg:"Lo sentimos, el conductor no se encuentra trabajando en la Unidad Educativa Particular EMAÚS"})
         if (conductor.numeroEstudiantes > 0) {
-            // Recorrer el array de los estudiantes que tienen el id de conductor que se desea eliminar
-            for (const estudiantes of conductor.estudiantesRegistrados) {
-                const estudiante = await Estudiantes.findById(estudiantes.idEstudiante);
-                if (estudiante) {
-                    //Se actualiza el campo conductor del estudiante a "null"
-                    estudiante.conductor = null;
-                    await estudiante.save();
-                    //Recorrer el array de los representates de cada estudiante 
-                    for (const representanteId of estudiante.representantes){
-                        const representante = await Representantes.findById(representanteId); 
-                        if(representante){
-                            //Envió del correo al representante 
-                            await informacionEliminacion(representante.email, representante.nombre, representante.apellido, conductor.rutaAsignada, conductor.nombre, conductor.apellido);
-                        }
-                    }
-                }
-            }
+            res.status(400).json({msg_eliminacion_conductor:"Lo sentimos, el conductor tiene estudiantes asignados, por favor realice el reemplazo del conductor antes de eliminarlo"});
         } 
         
         //Eliminar la imagen en Cloudinary 
@@ -267,24 +241,173 @@ const EliminarConductor = async (req, res) => {
             await cloudinary.v2.uploader.destroy(publicId);
         }catch{
             console.error("Error al eliminar la imagen en Cloudinary");
-            return res.status(500).json({msg:"Error al eliminar la imagen"}); 
+            return res.status(500).json({msg_eliminacion_conductor:"Error al eliminar la imagen"}); 
         }
 
         //Eliminación del conductor en la base de datos
         await Conductores.findOneAndDelete({_id: id});
 
         //Envio del correo al conductor
-        await eliminacionDelConductor(conductor.email, conductor.nombre, conductor.apellido);
+        await eliminacionDelConductor(conductor.email, conductor.nombre, conductor.apellido, id_coordinador.apellido, id_coordinador.nombre);
         
         //Mensaje de exito
-        res.status(200).json({msg:`El conductor ${conductor.nombre} ${conductor.apellido} ha sido eliminado exitosamente`}); 
+        res.status(200).json({msg_eliminacion_conductor:`El conductor ${conductor.nombre} ${conductor.apellido} ha sido eliminado exitosamente`}); 
     }catch(error){
         console.log(error); 
         res.status(500).json({
-            msg: "Error al eliminar el conductor",
+            msg_eliminacion_conductor: "Error al eliminar el conductor",
             error: error.message
         });
    }
+};
+
+const ReemplazoTemporal = async (req, res) => {
+    // Obtener los ids del conductor antiguo y nuevo de los parámetros de la URL
+    const {idAntiguo, idReemplazo} = req.params;
+
+    //Id del coordinador de rutas
+    const {idCoordinador} = req.user;
+
+    try{
+        //Verificar si los conductores existen 
+        const conductorAntiguo = await Conductores.findById({_id: idAntiguo});
+        const conductorReemplazo = await Conductores.findById({_id: idReemplazo});
+        //El conductor antiguo no existe 
+        if(!conductorAntiguo) return res.status(400).json({msg_reemplazo:`El conductor ${conductorAntiguo.nombre} ${conductorAntiguo.apellido} no se encuentra registrado`});
+
+        //El conductor de reemplazo no existe
+        if(!conductorReemplazo) return res.status(400).json({msg_reemplazo:`El conductor ${conductorReemplazo.nombre} ${conductorReemplazo.apellido} no se encuentra registrado`});
+
+        //El conductor de reemplazo ya tiene estudiantes asignados
+        if(conductorReemplazo.numeroEstudiantes > 0) return res.status(400).json({msg_reemplazo:`El conductor ${conductorReemplazo.nombre} ${conductorReemplazo.apellido} ya tiene estudiantes asignados no puede ser reemplazo`});
+
+        //El conductor antiguo no tiene estudiantes asignados
+        if(conductorAntiguo.numeroEstudiantes === 0) return res.status(400).json({msg_reemplazo:`El conductor ${conductorAntiguo.nombre} ${conductorAntiguo.apellido} no tiene estudiantes asignados por lo que no se puede realizar el reemplazo`});
+
+        //Realizar el reemplazo de los estudiantes
+        const estudiantesConductorAntiguo = await Estudiantes.find({conductor: idAntiguo});
+        for(const estudianteId of estudiantesConductorAntiguo){
+            //Actualizar el conductor de los estudiantes
+            await Estudiantes.findByIdAndUpdate(estudianteId._id, { conductor: conductorReemplazo._id });
+            //Se guarda la actualización en la base de datos de estudiantes
+            await estudiantesConductorAntiguo.save();
+
+            //Objeto con la información de cada estudiante que se encvuentra vinculado al conductor antiguo
+            const estudianteRegistrado = {idEstudiante: estudianteId._id, nombreEstudiante: estudianteId.nombre, apellidoEstudiante: estudianteId.apellido, nivelEscolarEstudiante: estudianteId.nivelEscolar, 
+                paraleloEstudiante: estudianteId.paralelo, cedulaEstudiante: estudianteId.cedula} 
+            //Actualizar el campo "estudiantesRegistrados" del conductor de reemplazo
+            idReemplazo.estudiantesRegistrados.push(estudianteRegistrado); 
+
+            //Obtener los representantes de los estudiantes
+            for(const representanteId of estudianteId.representantes){
+                const representante = await Representantes.findById(representanteId); 
+                if(representante){
+                    await cambioConductor(representante.email, representante.nombre, representante.apellido, conductorReemplazo.rutaAsignada, conductorReemplazo.nombre, conductorReemplazo.apellido, idCoordinador.apellido, idCoordinador.nombre);            
+                }
+            }
+        }
+
+        //Actualizar información del conductor reemplazo
+        const cantidadEstudiantes = estudiantesConductorAntiguo.length;
+        //Actualizar el número de estudiantes del conductor de reemplazo
+        conductorReemplazo.numeroEstudiantes = cantidadEstudiantes;
+        //Actualizar la ruta y sectores del conductor de reemplazo
+        conductorReemplazo.rutaAsignada = conductorAntiguo.rutaAsignada;
+        conductorReemplazo.sectoresRuta = conductorAntiguo.sectoresRuta;
+        //Desactivar al conductor antiguo 
+        conductorAntiguo.estado = false;
+        //Guardar los cambios en la base de datos de conductores
+        await conductorReemplazo.save();
+        await conductorAntiguo.save();
+
+        res.status(200).json({
+            msg_reemplazo: `El reemplazo temporal se ha realizado exitosamente. Los estudiantes han sido transferidos al conductor ${conductorReemplazo.nombre} ${conductorReemplazo.apellido}, y el conductor original ha sido marcado como inactivo.`,
+        });
+
+    } catch(error){
+        console.log(error);
+        res.status(500).json({
+            msg_reemplazo:"Error al realizar el reemplazo temporal",
+            error: error.message
+        });
+    }
+};
+
+const ReemplazoPermanente = async (req, res) => {
+    // Obtener los ids del conductor antiguo y nuevo de los parámetros de la URL
+    const {idAntiguo, idReemplazo} = req.params;
+
+    try{
+        // Verificación de la existencia de los conductores 
+        const conductorAntiguo = await Conductores.findById({_id: idAntiguo, estado: true});
+        const conductorReemplazo = await Conductores.findById({_id: idReemplazo, estado: true});
+
+        //El conductor antiguo existe
+        if(!conductorAntiguo) return res.status(400).json({msg_reemplazo:`El conductor ${conductorAntiguo.nombre} ${conductorAntiguo.apellido} no se encuentra registrado o esta inactivo`});
+
+        //El conductor de reemplazo existe
+        if(!conductorReemplazo) return res.status(400).json({msg_reemplazo:`El conductor ${conductorReemplazo.nombre} ${conductorReemplazo.apellido} no se encuentra registrado o esta inactivo`});
+
+        //El conductor de reemplazo ya tiene estudiantes asignados
+        if(conductorReemplazo.numeroEstudiantes > 0) return res.status(400).json({msg_reemplazo:`El conductor ${conductorReemplazo.nombre} ${conductorReemplazo.apellido} ya tiene estudiantes asignados no puede ser reemplazo`});
+
+        //El conductor antiguo no tiene estudiantes asignados
+        if(conductorAntiguo.numeroEstudiantes === 0) return res.status(400).json({msg_reemplazo:`El conductor ${conductorAntiguo.nombre} ${conductorAntiguo.apellido} no tiene estudiantes asignados por lo que no se puede realizar el reemplazo`});
+
+        //Realizar el reemplazo de los estudiantes
+        const estudiantesConductorAntiguo = await Estudiantes.find({conductor: idAntiguo});
+        for(const estudianteId of estudiantesConductorAntiguo){
+            //Actualizar el conductor de los estudiantes
+            await Estudiantes.findByIdAndUpdate(estudianteId._id, { conductor: conductorReemplazo._id });
+
+            //Se guarda la actualización en la base de datos de estudiantes
+            await estudiantesConductorAntiguo.save();
+
+            //Objeto que contiene la información de cada estudiante que se encuentra vinculado al conductor antiguo
+            const estudianteRegistrado = {idEstudiante: estudianteId._id, nombreEstudiante: estudianteId.nombre, apellidoEstudiante: estudianteId.apellido, nivelEscolarEstudiante: estudianteId.nivelEscolar, 
+                paraleloEstudiante: estudianteId.paralelo, cedulaEstudiante: estudianteId.cedula}
+            //Actualizar el campo "estudiantesRegistrados" del conductor de reemplazo
+            idReemplazo.estudiantesRegistrados.push(estudianteRegistrado);
+
+            //Obtener los representantes de los estudiantes 
+            for(const representanteId of estudianteId.representantes){
+                const representante = await Representantes.findById(representanteId);
+                if(representante){
+                    await cambioConductor(representante.email, representante.nombre, representante.apellido, conductorReemplazo.rutaAsignada, conductorReemplazo.nombre, conductorReemplazo.apellido, idCoordinador.apellido, idCoordinador.nombre);
+                }
+            }
+        }
+
+        //Actualizar información del conductor de reemplazo
+        const cantidadEstudiantes = estudiantesConductorAntiguo.length;
+        //Actualizar el número de estudiantes del conductor de reemplazo
+        conductorReemplazo.numeroEstudiantes = cantidadEstudiantes;
+        //Actualizar la ruta y sectores del conductor de reemplazo
+        conductorReemplazo.rutaAsignada = conductorAntiguo.rutaAsignada;
+        conductorReemplazo.sectoresRuta = conductorAntiguo.sectoresRuta;
+        //Eliminación de la imagen del conductor antiguo en Cloudinary
+        const publicId = `conductores/${conductorAntiguo.nombre}_${conductorAntiguo.apellido}`;
+        try{
+            await cloudinary.v2.uploader.destroy(publicId);
+        }catch{
+            console.error("Error al eliminar la imagen en Cloudinary");
+            return res.status(500).json({msg_eliminacion_conductor:"Error al eliminar la imagen"}); 
+        } 
+        //Eliminación defenitiva del conductor antiguo
+        await Conductores.findOneAndDelete({_id: idAntiguo});
+        //Guardar los cambios en la base de datos de conductores
+        await conductorReemplazo.save();
+
+        res.status(200).json({
+            msg_reemplazo: `El reemplazo permanente se ha realizado exitosamente. Los estudiantes han sido transferidos al conductor ${conductorReemplazo.nombre} ${conductorReemplazo.apellido}, y el conductor original ha sido eliminado del sistema.`,
+        });
+    } catch(error){
+        console.log(error);
+        res.status(500).json({
+            msg_reemplazo:"Error al realizar el reemplazo permanente",
+            error: error.message
+        });
+    }
 };
 
 const VisualizarPerfil = async (req, res)=>{
@@ -672,5 +795,7 @@ export {
     ActualizarInformacionAdmin, 
     AsignarPrivilegiosDeAdmin, 
     RegistrarNuevoAdmin, 
-    ActualizarPassword
+    ActualizarPassword, 
+    ReemplazoTemporal, 
+    ReemplazoPermanente
 };

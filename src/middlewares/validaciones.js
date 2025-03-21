@@ -59,7 +59,9 @@ const validacionesAdmin = [
         if (errors.isEmpty()) {
             return next();
         } else {
-            return res.status(400).send({ errors: errors.array() });
+            //Solo se muestra el primer error no el array completo
+            const Error = errors.array()[0]; 
+            return res.status(400).send({ error: Error});
         }
     }
 
@@ -69,12 +71,12 @@ const validacionesAdmin = [
 const validacionesConductor = [
     // Verificar que se encuentren los campos obligatorios y no estén vacíos
     check(["nombre","apellido", "cooperativa", "telefono","cedula","placaAutomovil","rutaAsignada", "sectoresRuta", 
-        "email"
+        "email", "generoConductor"
     ])
     .exists()
-        .withMessage('Los campos "nombre","apellido","cooperativa","telefono","cedula","placaAutomovil","rutaAsignada", "sectoresRuta", "fotografiaDelConductor" y/o "email"  son obligatorios')
+        .withMessage('Los campos "nombre","apellido","cooperativa","telefono","cedula","placaAutomovil","rutaAsignada", "sectoresRuta", "fotografiaDelConductor", "generoConductor" y/o "email"  son obligatorios')
     .notEmpty()
-        .withMessage('Los campos "nombre","apellido","cooperativa","telefonor","cedula","placaAutomovil","rutaAsignada", "sectoresRuta", "fotografiaDelConductor" y/o "email" no pueden estar vacíos')
+        .withMessage('Los campos "nombre","apellido","cooperativa","telefonor","cedula","placaAutomovil","rutaAsignada", "sectoresRuta", "fotografiaDelConductor", "generoConductor" y/o "email" no pueden estar vacíos')
     .customSanitizer(value => value?.trim()),
 
     //Verificación de que todo sea un string
@@ -132,7 +134,9 @@ const validacionesConductor = [
         if (errors.isEmpty()) {
             return next();
         } else {
-            return res.status(400).send({ errors: errors.array() });
+            //Solo se muestra el primer error no el array completo
+            const Error = errors.array()[0]; 
+            return res.status(400).send({ error: Error});
         }
      }
 ]
@@ -251,6 +255,12 @@ const validacionesActualizarPerfilAdmin = [
 ]
 
 const validacionesActualizarConductorAdmin = [
+    // Verificar que se encuentren los campos obligatorios y no estén vacíos
+    check(["rutaAsignada","sectoresRuta"])
+    .notEmpty()
+        .withMessage('Los campos "rutaAsignada" y/o "sectoresRuta" no pueden estar vacíos')
+    .customSanitizer(value => value?.trim()),
+
     // Verificar que la ruta sea un número y que solo existan 12 ruta
     check("rutaAsignada")
     .isNumeric()
@@ -264,7 +274,9 @@ const validacionesActualizarConductorAdmin = [
         if (errors.isEmpty()) {
             return next();
         } else {
-            return res.status(400).send({ errors: errors.array() });
+            //Solo se muestra el primer error no el array completo
+            const Error = errors.array()[0]; 
+            return res.status(400).send({ error: Error});
         }
     }
 ]
