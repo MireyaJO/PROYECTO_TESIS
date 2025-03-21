@@ -1,6 +1,6 @@
 import {Router} from 'express';
-import {RegistroDeLosConductores, ActualizarRutasYSectoresId, BuscarConductorRuta,  ListarConductor, EliminarConductor, VisualizarPerfil,
-    ActualizarInformacionAdmin, AsignarPrivilegiosDeAdmin, RegistrarNuevoAdmin, ActualizarPassword
+import {RegistroDeLosConductores, ActualizarRutasYSectoresId, BuscarConductorRuta,  ListarConductor, VisualizarPerfil,
+    ActualizarInformacionAdmin, AsignarPrivilegiosDeAdmin, RegistrarNuevoAdmin, ActualizarPassword, ReemplazoTemporal, ReemplazoPermanente
 } from '../controllers/admin_controller.js'
 import {verificacionAdminRol, verificacionToken} from '../middlewares/autho.js'
 import {validacionesConductor, validacionesActualizarConductorAdmin, validacionesActualizarPerfilAdmin, validacionesAdmin, validarContraseniaNueva} from '../middlewares/validaciones.js'
@@ -16,6 +16,7 @@ router.patch('/actualizar/conductor/:id', verificacionToken, verificacionAdminRo
 router.patch('/actualizar/informacion/admin', verificacionToken, verificacionAdminRol, validacionesActualizarPerfilAdmin, ActualizarInformacionAdmin);
 router.patch('/asignar/privilegios/admin/:idAsignacion', verificacionToken, verificacionAdminRol, AsignarPrivilegiosDeAdmin);
 router.patch('/actualizar/contrasenia/admin', verificacionToken, verificacionAdminRol, validarContraseniaNueva, ActualizarPassword); 
-router.delete('/eliminar/conductor/:id', verificacionToken, verificacionAdminRol, EliminarConductor);
+router.patch('/reemplazo/temporal/:idAntiguo/:idReemplazor', verificacionToken, verificacionAdminRol, ReemplazoTemporal);
+router.patch('/reemplazo/permanente/:idAntiguo/:idReemplazo', verificacionToken, verificacionAdminRol, ReemplazoPermanente);
 
 export default router

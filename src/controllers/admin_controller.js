@@ -220,47 +220,6 @@ const ActualizarRutasYSectoresId = async (req, res) => {
     }
 }
 
-//Eliminación de un conductor
-const EliminarConductor = async (req, res) => {
-    // Obtener el ID de los parámetros de la URL
-    const {id} = req.params;
-
-    //Id del conductor logeado
-    const {id_coordinador} = req.user;
-   try{
-        //Verificación de la existencia del conductor
-        const conductor = await Conductores.findById({_id: id});
-        if(!conductor) return res.status(400).json({msg:"Lo sentimos, el conductor no se encuentra trabajando en la Unidad Educativa Particular EMAÚS"})
-        if (conductor.numeroEstudiantes > 0) {
-            res.status(400).json({msg_eliminacion_conductor:"Lo sentimos, el conductor tiene estudiantes asignados, por favor realice el reemplazo del conductor antes de eliminarlo"});
-        } 
-        
-        //Eliminar la imagen en Cloudinary 
-        const publicId = `conductores/${conductor.nombre}_${conductor.apellido}`;
-        try{
-            await cloudinary.v2.uploader.destroy(publicId);
-        }catch{
-            console.error("Error al eliminar la imagen en Cloudinary");
-            return res.status(500).json({msg_eliminacion_conductor:"Error al eliminar la imagen"}); 
-        }
-
-        //Eliminación del conductor en la base de datos
-        await Conductores.findOneAndDelete({_id: id});
-
-        //Envio del correo al conductor
-        await eliminacionDelConductor(conductor.email, conductor.nombre, conductor.apellido, id_coordinador.apellido, id_coordinador.nombre);
-        
-        //Mensaje de exito
-        res.status(200).json({msg_eliminacion_conductor:`El conductor ${conductor.nombre} ${conductor.apellido} ha sido eliminado exitosamente`}); 
-    }catch(error){
-        console.log(error); 
-        res.status(500).json({
-            msg_eliminacion_conductor: "Error al eliminar el conductor",
-            error: error.message
-        });
-   }
-};
-
 const ReemplazoTemporal = async (req, res) => {
     // Obtener los ids del conductor antiguo y nuevo de los parámetros de la URL
     const {idAntiguo, idReemplazo} = req.params;
@@ -302,7 +261,7 @@ const ReemplazoTemporal = async (req, res) => {
             for(const representanteId of estudianteId.representantes){
                 const representante = await Representantes.findById(representanteId); 
                 if(representante){
-                    await cambioConductor(representante.email, representante.nombre, representante.apellido, conductorReemplazo.rutaAsignada, conductorReemplazo.nombre, conductorReemplazo.apellido, idCoordinador.apellido, idCoordinador.nombre);            
+                    await cambioConductor(representante.email, representante.nombre, representante.apellido, conductorReemplazo.rutaAsignada, conductorReemplazo.nombre, conductorReemplazo.apellido, idCoordinador.apellido, idCoordinador.nombre, "Temporal");            
                 }
             }
         }
@@ -336,6 +295,9 @@ const ReemplazoTemporal = async (req, res) => {
 const ReemplazoPermanente = async (req, res) => {
     // Obtener los ids del conductor antiguo y nuevo de los parámetros de la URL
     const {idAntiguo, idReemplazo} = req.params;
+
+    //Id del usuario logeado 
+    const {idCoordinador} = req.user;
 
     try{
         // Verificación de la existencia de los conductores 
@@ -373,7 +335,7 @@ const ReemplazoPermanente = async (req, res) => {
             for(const representanteId of estudianteId.representantes){
                 const representante = await Representantes.findById(representanteId);
                 if(representante){
-                    await cambioConductor(representante.email, representante.nombre, representante.apellido, conductorReemplazo.rutaAsignada, conductorReemplazo.nombre, conductorReemplazo.apellido, idCoordinador.apellido, idCoordinador.nombre);
+                    await cambioConductor(representante.email, representante.nombre, representante.apellido, conductorReemplazo.rutaAsignada, conductorReemplazo.nombre, conductorReemplazo.apellido, idCoordinador.apellido, idCoordinador.nombre, "Permanente");
                 }
             }
         }
@@ -397,6 +359,9 @@ const ReemplazoPermanente = async (req, res) => {
         await Conductores.findOneAndDelete({_id: idAntiguo});
         //Guardar los cambios en la base de datos de conductores
         await conductorReemplazo.save();
+
+        //Envio del correo al conductor
+        await eliminacionDelConductor(conductorAntiguo.email, conductorAntiguo.nombre, conductorAntiguo.apellido, idCoordinador.apellido, idCoordinador.nombre);
 
         res.status(200).json({
             msg_reemplazo: `El reemplazo permanente se ha realizado exitosamente. Los estudiantes han sido transferidos al conductor ${conductorReemplazo.nombre} ${conductorReemplazo.apellido}, y el conductor original ha sido eliminado del sistema.`,
@@ -790,7 +755,6 @@ export {
     BuscarConductorRuta,
     ListarConductor,
     ActualizarRutasYSectoresId,
-    EliminarConductor, 
     VisualizarPerfil, 
     ActualizarInformacionAdmin, 
     AsignarPrivilegiosDeAdmin, 

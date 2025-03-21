@@ -63,8 +63,8 @@ const enviarCorreoConductor = (email, password, ruta, sectores, nombreConductor,
     });
 }; 
 
-const cambioConductor = async (email, nombresRepresentante, apellidosRepresentante, ruta, nombresNuevoConductor, apellidosNuevoConductor,  coordinadorApellido, coordinadorNombre) => {
-    //Creación de la estuctura que tendrá el correo 
+const cambioConductor = async (email, nombresRepresentante, apellidosRepresentante, ruta, nombresNuevoConductor, apellidosNuevoConductor, coordinadorApellido, coordinadorNombre, tipoDeReemplazo) => {
+    // Creación de la estructura que tendrá el correo
     let estructuraEmail = {
         from: process.env.EMAIL_USER,
         to: email,  
@@ -74,16 +74,17 @@ const cambioConductor = async (email, nombresRepresentante, apellidosRepresentan
                 <h2 style="color: #00796b;">Transportistas de la Unidad Educativa Particular “Emaús”</h2>
                 <p>Estimado(a) ${nombresRepresentante} ${apellidosRepresentante},</p>
                 <p>Le informamos que el nuevo conductor de la ruta ${ruta} de sus representados es: ${nombresNuevoConductor} ${apellidosNuevoConductor}.</p>
+                <p>Este cambio será de tipo: <strong>${tipoDeReemplazo}</strong>.</p>
                 <p>Por favor, póngase en contacto con el nuevo conductor para coordinar los detalles del transporte.</p>
                 <p><b>Atentamente,</b></p>
-                <p> ${coordinadorApellido} ${coordinadorNombre}</p>
+                <p>${coordinadorApellido} ${coordinadorNombre}</p>
                 <p><strong><b>Coordinador de rutas</b></strong></p>
             </div>
         `
     };
-    //Creación del transportador universal con el email y el password del conductor ingresado por el administrador
+    // Creación del transportador universal con el email y el password del conductor ingresado por el administrador
     transportador.sendMail(estructuraEmail, (error, info) => {
-        if(error){
+        if (error) {
             console.error(error);
         } else {
             console.log('Correo enviado: ' + info.response);
