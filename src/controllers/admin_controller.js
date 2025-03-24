@@ -139,9 +139,9 @@ const BuscarConductorRuta = async (req, res) => {
         const {rutaAsignada} = req.params;
 
         // Verificación de la existencia de la ruta
-        const conductor = await Conductores.find({rutaAsignada}).select("-password -updatedAt -createdAt -__v");
-        if (conductor.length === 0) {
-            return res.status(400).json({ msg: "Lo sentimos, no se ha encontrado ningún conductor trabajando en la Unidad Educativa Particular EMAÚS con esa ruta" });
+        const conductor = await Conductores.find({rutaAsignada: rutaAsignada, estado: true}).select("-password -updatedAt -createdAt -__v");
+        if (!conductor) {
+            return res.status(400).json({ msg: "Lo sentimos, no se ha encontrado ningún conductor con esa ruta o se encuentra inactivo" });
         }
 
         // Mensaje de éxito
@@ -159,7 +159,7 @@ const BuscarConductorRuta = async (req, res) => {
 const ListarConductor = async (req, res) => {
     try{
         //Obtención de los conductores normales
-        const conductores = await Conductores.find({roles: { $in: ["conductor"], $nin: ["admin"] }}).select("-password -updatedAt -createdAt -__v");
+        const conductores = await Conductores.find({roles: { $in: ["conductor"], $nin: ["admin"] }, estado: true}).select("-password -updatedAt -createdAt -__v");
 
         //Validación de que existan conductores
         if (conductores.length === 0) return res.status(400).json({msg_listar_conductores:"El administrador no ha registrado a ningún conductor"});
@@ -188,7 +188,7 @@ const ActualizarRutasYSectoresId = async (req, res) => {
 
     try{
         // Verificación de la existencia del conductor
-        const conductor = await Conductores.findById({_id: id});
+        const conductor = await Conductores.findById({_id: id, estado: true, esReemplazo: false});
         if (!conductor) return res.status(400).json({ msg_actualizacion_conductor: "Lo sentimos, el conductor no se ha encontrado" });
 
         // Para conocer el nombre del conductor que posee ese id
@@ -229,8 +229,8 @@ const ReemplazoTemporal = async (req, res) => {
 
     try{
         //Verificar si los conductores existen 
-        const conductorAntiguo = await Conductores.findById({_id: idAntiguo});
-        const conductorReemplazo = await Conductores.findById({_id: idReemplazo});
+        const conductorAntiguo = await Conductores.findById({_id: idAntiguo, estado: true});
+        const conductorReemplazo = await Conductores.findById({_id: idReemplazo, estado: true});
         //El conductor antiguo no existe 
         if(!conductorAntiguo) return res.status(400).json({msg_reemplazo:`El conductor ${conductorAntiguo.nombre} ${conductorAntiguo.apellido} no se encuentra registrado`});
 
@@ -278,6 +278,10 @@ const ReemplazoTemporal = async (req, res) => {
         //Guardar los cambios en la base de datos de conductores
         await conductorReemplazo.save();
         await conductorAntiguo.save();
+
+        //Envio del correo al conductor inactivo
+
+        //Enviar correo al conductor de reemplazo
 
         res.status(200).json({
             msg_reemplazo: `El reemplazo temporal se ha realizado exitosamente. Los estudiantes han sido transferidos al conductor ${conductorReemplazo.nombre} ${conductorReemplazo.apellido}, y el conductor original ha sido marcado como inactivo.`,
@@ -347,6 +351,8 @@ const ReemplazoPermanente = async (req, res) => {
         //Actualizar la ruta y sectores del conductor de reemplazo
         conductorReemplazo.rutaAsignada = conductorAntiguo.rutaAsignada;
         conductorReemplazo.sectoresRuta = conductorAntiguo.sectoresRuta;
+        //Se convierte en un conductor original 
+        conductorReemplazo.esReemplazo = false;
         //Eliminación de la imagen del conductor antiguo en Cloudinary
         const publicId = `conductores/${conductorAntiguo.nombre}_${conductorAntiguo.apellido}`;
         try{
@@ -360,8 +366,11 @@ const ReemplazoPermanente = async (req, res) => {
         //Guardar los cambios en la base de datos de conductores
         await conductorReemplazo.save();
 
-        //Envio del correo al conductor
+        //Envio del correo al conductor eliminado 
         await eliminacionDelConductor(conductorAntiguo.email, conductorAntiguo.nombre, conductorAntiguo.apellido, idCoordinador.apellido, idCoordinador.nombre);
+
+        //Envio del correo al conductor de reemplazo
+
 
         res.status(200).json({
             msg_reemplazo: `El reemplazo permanente se ha realizado exitosamente. Los estudiantes han sido transferidos al conductor ${conductorReemplazo.nombre} ${conductorReemplazo.apellido}, y el conductor original ha sido eliminado del sistema.`,
