@@ -1,6 +1,6 @@
 import {Router} from 'express';
 import {RegistroDeLosConductores, ActualizarRutasYSectoresId, BuscarConductorRuta,  ListarConductor, VisualizarPerfil,
-    ActualizarInformacionAdmin, AsignarPrivilegiosDeAdmin, RegistrarNuevoAdmin, ActualizarPassword, ReemplazoTemporal, ReemplazoPermanente
+    ActualizarInformacionAdmin, AsignarPrivilegiosDeAdmin, RegistrarNuevoAdmin, ActualizarPassword, ReemplazoTemporal, ReemplazoPermanente, ActivarConductorOriginal
 } from '../controllers/admin_controller.js'
 import {verificacionAdminRol, verificacionToken} from '../middlewares/autho.js'
 import {validacionesConductor, validacionesActualizarConductorAdmin, validacionesActualizarPerfilAdmin, validacionesAdmin, validarContraseniaNueva} from '../middlewares/validaciones.js'
@@ -18,5 +18,5 @@ router.patch('/asignar/privilegios/admin/:idAsignacion', verificacionToken, veri
 router.patch('/actualizar/contrasenia/admin', verificacionToken, verificacionAdminRol, validarContraseniaNueva, ActualizarPassword); 
 router.patch('/reemplazo/temporal/:idAntiguo/:idReemplazor', verificacionToken, verificacionAdminRol, ReemplazoTemporal);
 router.patch('/reemplazo/permanente/:idAntiguo/:idReemplazo', verificacionToken, verificacionAdminRol, ReemplazoPermanente);
-
+router.patch('/activar/conductor/original/:idConductor', verificacionToken, verificacionAdminRol, ActivarConductorOriginal);
 export default router

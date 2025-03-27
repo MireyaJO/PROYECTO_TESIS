@@ -11,13 +11,14 @@ const paraElRegistroDeLosConductores= new Schema(
             default: ['conductor']
         },
         esReemplazo:{
-            type: Boolean,
-            default: false, 
+            type: String,
+            enum: ['Sí', 'No'],
+            default: 'No', 
             required: true
         },
         nombre:{
             type: String, 
-            required: true, 
+            required: true,  
             trim: true
         }, 
         apellido:{

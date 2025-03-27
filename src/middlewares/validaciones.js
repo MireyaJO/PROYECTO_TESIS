@@ -1,73 +1,6 @@
 import { check, validationResult } from 'express-validator'
-
-//Validaciones para el administrador 
-const validacionesAdmin = [
-    // Verificar que se encuentren los campos obligatorios y no estén vacíos
-    check(["nombre","apellido","telefono","cedula","placaAutomovil", 
-        "email"
-    ])
-    .exists()
-        .withMessage('Los campos "nombre","apellido","telefono","cedula","placaAutomovil", "fotografiaDelConductor" y/o "email"  son obligatorios')
-    .notEmpty()
-        .withMessage('Los campos "nombre","apellido","telefonor","cedula","placaAutomovil", "fotografiaDelConductor" y/o "email" no pueden estar vacíos')
-    .customSanitizer(value => value?.trim()),
-
-    //Verificación de que todo sea un string
-    check(["nombre", "apellido"])
-    .matches(/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/)
-        .withMessage('El campo debe ser un texto y puede contener espacios')
-    .customSanitizer(value => value?.trim()),
-
-    // Verificar que el numero de telefono sea de 10 digitos
-    check("telefono")
-    .isLength({ min: 10, max: 10 })
-        .withMessage('El teléfono debe ser de 10 digitos')
-    .matches(/^\d{10}$/)
-        .withMessage('El campo "teléfono" debe contener solo números')
-    .customSanitizer(value => value?.trim()),
-
-    // Verificar que el número de cédula tenga 10 dígitos
-    check("cedula")
-    .isLength({ min: 10, max: 10 })
-        .withMessage('La cedula debe ser de 10 digitos')
-    .isNumeric()
-        .withMessage('El campo "teléfono" debe contener solo números')
-    .customSanitizer(value => value?.trim()), 
-    
-    // Verificar que el número de placa tenga 7 dígitos
-    check("placaAutomovil")
-    .isLength({ min: 7, max: 7 })
-        .withMessage('La placa debe ser de 7 digitos')
-    .matches(/^[A-Z]{3}-\d{4}$/i)
-        .withMessage('El campo "placa" debe seguir el formato de tres letras, un guion y cuatro números,  Ejemplo: PUH-7869')
-    .customSanitizer(value => value?.trim()),
-
-    // Verificar que el email se enceuntre bien escrito
-    check("email")
-    .isEmail()
-        .withMessage('El email debe ser un correo válido')
-    .customSanitizer(value => value?.trim()),
-    
-    // Verificar que el género sea uno de los valores permitidos
-    check("generoConductor")
-    .isIn(["Femenino", "Masculino", "Prefiero no decirlo"])
-        .withMessage('El género debe ser "Femenino", "Masculino" o "Prefiero no decirlo"')
-    .customSanitizer(value => value?.trim()),
-    
-    (req,res,next)=>{
-        const errors = validationResult(req);
-        if (errors.isEmpty()) {
-            return next();
-        } else {
-            //Solo se muestra el primer error no el array completo
-            const Error = errors.array()[0]; 
-            return res.status(400).send({ error: Error});
-        }
-    }
-
-]
-
-//Validaciones para el conductor 
+//Validaciones para las rutas del administrador
+//Validaciones para el registro del conductor 
 const validacionesConductor = [
     // Verificar que se encuentren los campos obligatorios y no estén vacíos
     check(["nombre","apellido", "cooperativa", "telefono","cedula","placaAutomovil","rutaAsignada", "sectoresRuta", 
@@ -139,6 +72,73 @@ const validacionesConductor = [
             return res.status(400).send({ error: Error});
         }
      }
+]
+
+//Validaciones para el administrador 
+const validacionesAdmin = [
+    // Verificar que se encuentren los campos obligatorios y no estén vacíos
+    check(["nombre","apellido","telefono","cedula","placaAutomovil", 
+        "email"
+    ])
+    .exists()
+        .withMessage('Los campos "nombre","apellido","telefono","cedula","placaAutomovil", "fotografiaDelConductor" y/o "email"  son obligatorios')
+    .notEmpty()
+        .withMessage('Los campos "nombre","apellido","telefonor","cedula","placaAutomovil", "fotografiaDelConductor" y/o "email" no pueden estar vacíos')
+    .customSanitizer(value => value?.trim()),
+
+    //Verificación de que todo sea un string
+    check(["nombre", "apellido"])
+    .matches(/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/)
+        .withMessage('El campo debe ser un texto y puede contener espacios')
+    .customSanitizer(value => value?.trim()),
+
+    // Verificar que el numero de telefono sea de 10 digitos
+    check("telefono")
+    .isLength({ min: 10, max: 10 })
+        .withMessage('El teléfono debe ser de 10 digitos')
+    .matches(/^\d{10}$/)
+        .withMessage('El campo "teléfono" debe contener solo números')
+    .customSanitizer(value => value?.trim()),
+
+    // Verificar que el número de cédula tenga 10 dígitos
+    check("cedula")
+    .isLength({ min: 10, max: 10 })
+        .withMessage('La cedula debe ser de 10 digitos')
+    .isNumeric()
+        .withMessage('El campo "teléfono" debe contener solo números')
+    .customSanitizer(value => value?.trim()), 
+    
+    // Verificar que el número de placa tenga 7 dígitos
+    check("placaAutomovil")
+    .isLength({ min: 7, max: 7 })
+        .withMessage('La placa debe ser de 7 digitos')
+    .matches(/^[A-Z]{3}-\d{4}$/i)
+        .withMessage('El campo "placa" debe seguir el formato de tres letras, un guion y cuatro números,  Ejemplo: PUH-7869')
+    .customSanitizer(value => value?.trim()),
+
+    // Verificar que el email se enceuntre bien escrito
+    check("email")
+    .isEmail()
+        .withMessage('El email debe ser un correo válido')
+    .customSanitizer(value => value?.trim()),
+    
+    // Verificar que el género sea uno de los valores permitidos
+    check("generoConductor")
+    .isIn(["Femenino", "Masculino", "Prefiero no decirlo"])
+        .withMessage('El género debe ser "Femenino", "Masculino" o "Prefiero no decirlo"')
+    .customSanitizer(value => value?.trim()),
+    
+    (req,res,next)=>{
+        const errors = validationResult(req);
+        if (errors.isEmpty()) {
+            return next();
+        } else {
+            //Solo se muestra el primer error no el array completo
+            const Error = errors.array()[0]; 
+            return res.status(400).send({ error: Error});
+        }
+    }
+
 ]
 
 const validacionesRepresentantes = [
