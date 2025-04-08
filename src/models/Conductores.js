@@ -213,6 +213,7 @@ paraElRegistroDeLosConductores.statics.ingresarConductorAdministrador = async fu
             cooperativa: 'FurgoPlanta',
             telefono: '0984562234',
             generoConductor: 'Femenino',
+            esReemplazo: 'No',
             cedula: 1724256899,   
             placaAutomovil: 'PUH-3967',
             rutaAsignada: 1,

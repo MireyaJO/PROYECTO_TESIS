@@ -83,13 +83,13 @@ const validacionesConductor = [
 //Validaciones para el administrador 
 const validacionesAdmin = [
     // Verificar que se encuentren los campos obligatorios y no estén vacíos
-    check(["nombre","apellido","telefono","cedula","placaAutomovil", 
-        "email"
+    check(["nombre","apellido","telefono","cedula","placaAutomovil","email", "generoConductor", "fotografiaDelConductor", 
+        "trabajaraOno", "asignacionOno", "eliminacionAdminSaliente"
     ])
     .exists()
-        .withMessage('Los campos "nombre","apellido","telefono","cedula","placaAutomovil", "fotografiaDelConductor" y/o "email"  son obligatorios')
+        .withMessage('Los campos "nombre","apellido","telefono","cedula","placaAutomovil", "fotografiaDelConductor", "generoConductor", "trabajaraOno", "asignacionOno", "eliminacionAdminSaliente" y/o "email"  son obligatorios')
     .notEmpty()
-        .withMessage('Los campos "nombre","apellido","telefonor","cedula","placaAutomovil", "fotografiaDelConductor" y/o "email" no pueden estar vacíos')
+        .withMessage('Los campos "nombre","apellido","telefonor","cedula","placaAutomovil", "fotografiaDelConductor", "generoConductor", "trabajaraOno", "asignacionOno", "eliminacionAdminSaliente" y/o "email" no pueden estar vacíos')
     .customSanitizer(value => value?.trim()),
 
     //Verificación de que todo sea un string
@@ -134,8 +134,22 @@ const validacionesAdmin = [
         .withMessage('El género debe ser "Femenino", "Masculino" o "Prefiero no decirlo"')
     .customSanitizer(value => value?.trim()),
 
-    // Verificar que la 
+    // Verificar que los campos de eliminación, asignación y trabajo solo acepten "Sí" o "No"
+    check("eliminacionAdminSaliente")
+    .isIn(["Sí", "No"])
+        .withMessage('Solo se admiten los valores "Sí" o "No" para afirmar si el conductor admin actual será eliminado') 
+    .customSanitizer(value => value?.trim()),
     
+    check("asignacionOno")
+    .isIn(["Sí", "No"])
+        .withMessage('Solo se admiten los valores "Sí" o "No" para afirmar si los estudiantes del conductor admin actual serán asignados al nuevo conductor admin')
+    .customSanitizer(value => value?.trim()),
+
+    check("trabajaraOno")
+    .isIn(["Sí", "No"])
+        .withMessage('Solo se admiten los valores "Sí" o "No" para afirmar si el nuevo conductor admin tendrá privilegios de conductor')
+    .customSanitizer(value => value?.trim()),
+
     (req,res,next)=>{
         const errors = validationResult(req);
         if (errors.isEmpty()) {

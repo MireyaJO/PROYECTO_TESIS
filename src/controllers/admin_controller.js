@@ -7,6 +7,26 @@ import {enviarCorreoConductor, actualizacionDeConductor, eliminacionDelConductor
 import crypto from 'crypto';
 import e from 'cors';
 
+//Función para subir la imagen a Cloudinary y guardar la URL en la base de datos
+const SubirImagen = async (file, nombre, apellido) =>{
+    try {
+        // Subir la imagen a Cloudinary con el nombre del conductor como public_id
+        const result = await cloudinary.v2.uploader.upload(file.tempFilePath, {
+            public_id: `${nombre}_${apellido}`.replace(/\s+/g, '_'),
+            folder: "conductores"
+        });
+
+        // Eliminar el archivo local después de subirlo
+        await fs.unlink(file.tempFilePath);
+
+        // Devolver la URL de la imagen
+        return result.secure_url;
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ msg_registro_conductor: "Error al subir la imagen" });
+    }
+}
+
 // Registros de los conductores
 const  RegistroDeLosConductores = async (req, res) => {
     // Extraer los campos del cuerpo de la solicitud
@@ -102,19 +122,9 @@ const  RegistroDeLosConductores = async (req, res) => {
         // Verificar si se envió un archivo de imagen
         if (req.files && req.files.fotografiaDelConductor) {
             const file = req.files.fotografiaDelConductor;
-
             try {
-                // Subir la imagen a Cloudinary con el nombre del conductor como public_id
-                const result = await cloudinary.v2.uploader.upload(file.tempFilePath, {
-                    public_id: `${nombre}_${apellido}`.replace(/\s+/g, '_'),
-                    folder: "conductores"
-                });
-
                 // Guardar la URL de la imagen en la base de datos
-                nuevoConductor.fotografiaDelConductor = result.secure_url;
-
-                // Eliminar el archivo local después de subirlo
-                await fs.unlink(file.tempFilePath);
+                nuevoConductor.fotografiaDelConductor = await SubirImagen(file, nombre, apellido);
             } catch (error) {
                 console.error(error);
                 return res.status(500).json({ msg_registro_conductor: "Error al subir la imagen" });
@@ -209,7 +219,7 @@ const RegistrarNuevoAdmin = async (req,res) =>{
         
         // Primera excepciones 
         if (conductorAdmin.roles.includes("conductor") && eliminacionAdminSaliente === 'Sí' && asignacionOno === 'Sí' && trabajaraOno === 'No'){
-            return res.status(400).json({ msg_registro_conductor: "Lo sentimos, no puedes eliminar al conductor administrador saliente, ya que, el nuevo administrador no trabajará como conductor y los estudiantes quedarán a la deriva" });
+            return res.status(400).json({ msg_registro_conductor: "Lo sentimos, si el conductor admin aactual será eliminado y se desea la asignación de sus estudiantes, quedan a la deriva, ya que, el nuevo admin" });
         }; 
 
         // Segunda excepciónes
@@ -246,19 +256,9 @@ const RegistrarNuevoAdmin = async (req,res) =>{
         // Verificar si se envió un archivo de imagen
         if (req.files && req.files.fotografiaDelConductor) {    
             const file = req.files.fotografiaDelConductor;
-
             try {
-                // Subir la imagen a Cloudinary con el nombre del conductor como public_id
-                const result = await cloudinary.v2.uploader.upload(file.tempFilePath, {
-                    public_id: `${nombre}_${apellido}`.replace(/\s+/g, '_'),
-                    folder: "conductores"
-                });
-
                 // Guardar la URL de la imagen en la base de datos
-                nuevoConductor.fotografiaDelConductor = result.secure_url;
-
-                // Eliminar el archivo local después de subirlo
-                await fs.unlink(file.tempFilePath);
+                nuevoConductor.fotografiaDelConductor = await SubirImagen(file, nombre, apellido);
             } catch (error) {
                 console.error(error);
                 return res.status(500).json({ msg_registro_conductor: "Error al subir la imagen" });
@@ -404,13 +404,13 @@ const BuscarConductorRuta = async (req, res) => {
             error: error.message 
         });
     }
-}
+}; 
 
 // Listar todos los conductores de la Unidad Educativa Particular EMAÚS
 const ListarConductor = async (req, res) => {
     try{
         //Obtención de los conductores normales
-        const conductores = await Conductores.find({roles: { $in: ["conductor"], $nin: ["admin"] }, estado: true}).select("-password -updatedAt -createdAt -__v");
+        const conductores = await Conductores.find({estado: true}).select("-password -updatedAt -createdAt -__v");
 
         //Validación de que existan conductores
         if (conductores.length === 0) return res.status(400).json({msg_listar_conductores:"El administrador no ha registrado a ningún conductor"});
@@ -424,7 +424,7 @@ const ListarConductor = async (req, res) => {
             error: error.message
         });
     }    
-}
+}; 
 
 //Actualizacion de las rutas y sectores de los conductores por su id
 const ActualizarRutasYSectoresId = async (req, res) => {
