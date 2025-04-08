@@ -8,7 +8,7 @@ import crypto from 'crypto';
 import e from 'cors';
 
 // Registros de los conductores
-const RegistroDeLosConductores = async (req, res) => {
+const  RegistroDeLosConductores = async (req, res) => {
     // Extraer los campos del cuerpo de la solicitud
     const {
         nombre,
@@ -21,6 +21,7 @@ const RegistroDeLosConductores = async (req, res) => {
         placaAutomovil,
         cedula,
         email,
+        esReemplazo
     } = req.body;
 
     //Id del admin logeado 
@@ -68,6 +69,16 @@ const RegistroDeLosConductores = async (req, res) => {
             return res.status(400).json({ msg_registro_conductor: "Lo sentimos, la placa ya se encuentra registrada" })
         };
 
+        // ¿Qué sucede si el conductor no es un reemplazo y no se coloca la ruta y los sectores?
+        if (esReemplazo == 'No'){
+            if(!rutaAsignada){
+                return res.status(400).json({ msg_registro_conductor: "Lo sentimos, debes colocar la ruta asignada, ya que, no es un conductor reemplazo" });
+            };
+            if(!sectoresRuta){
+                return res.status(400).json({ msg_registro_conductor: "Lo sentimos, debes colocar los sectores de la ruta asignada, ya que, no es un conductor reemplazo" });
+            };
+        };
+
         //Datos del coordinador de rutas
         const coordinadorRutas = await Conductores.findById(id);
         if (!coordinadorRutas) return res.status(404).json({ msg_registro_conductor: "Lo sentimos, el coordinador de rutas no se encuentra registrado" });
@@ -84,7 +95,8 @@ const RegistroDeLosConductores = async (req, res) => {
             telefono, 
             placaAutomovil,
             cedula,
-            email
+            email, 
+            esReemplazo
         });
 
         // Verificar si se envió un archivo de imagen
@@ -142,7 +154,12 @@ const RegistrarNuevoAdmin = async (req,res) =>{
         placaAutomovil,
         generoConductor, 
         cedula,
-        email,
+        email, 
+        trabajaraOno,
+        asignacionOno,
+        eliminacionAdminSaliente, 
+        rutaAsignada, 
+        sectoresRuta
     } = req.body;
     try{
         // Comprobar si el email ya está registrado
@@ -165,12 +182,6 @@ const RegistrarNuevoAdmin = async (req,res) =>{
             return res.status(400).json({ msg_registro_conductor: "Lo sentimos, la cédula ya se encuentra registrada en los representantes" });
         };
 
-        // Comprobar si la ruta ya está asignada
-        const verificarRutaBDD = await Conductores.findOne({rutaAsignada});
-        if (verificarRutaBDD) {
-            return res.status(400).json({ msg_registro_conductor: "Lo sentimos, la ruta ya se encuentra asignada" })
-        } 
-
         // Comprobar si el telefono ya está registrado
         const verificarTelefonoBDD = await Conductores.findOne({telefono});
         const verificarTelefonoRepresentanteBDD = await Representantes.findOne({telefono});
@@ -187,8 +198,35 @@ const RegistrarNuevoAdmin = async (req,res) =>{
             return res.status(400).json({ msg_registro_conductor: "Lo sentimos, la placa ya se encuentra registrada" })
         };
 
+        // Conductor logeado
         const conductorAdmin = await Conductores.findById(req.user.id);
         if (!conductorAdmin) return res.status(404).json({ msg_registro_conductor: "Lo sentimos, el conductor no se encuentra registrado" });
+
+        // Si el usuario logeado tiene solo rol "admin" la "asignacionOno" es "No", porque no se tiene niños custodiados
+        if (conductorAdmin.roles.includes("admin") && conductorAdmin.roles.length === 1 || conductorAdmin.numeroEstudiantes === 0){
+            asignacionOno = 'No';
+        }; 
+        
+        // Primera excepciones 
+        if (conductorAdmin.roles.includes("conductor") && eliminacionAdminSaliente === 'Sí' && asignacionOno === 'Sí' && trabajaraOno === 'No'){
+            return res.status(400).json({ msg_registro_conductor: "Lo sentimos, no puedes eliminar al conductor administrador saliente, ya que, el nuevo administrador no trabajará como conductor y los estudiantes quedarán a la deriva" });
+        }; 
+
+        // Segunda excepciónes
+        if (conductorAdmin.roles.includes("conductor") && eliminacionAdminSaliente === 'Sí' && asignacionOno === 'No' && trabajaraOno === 'No'){
+            return res.status(400).json({ msg_registro_conductor: "Lo sentimos, no puedes eliminar al conductor administrador saliente, ya que, el nuevo administrador no trabajará como conductor y los estudiantes quedarán a la deriva" });
+
+        };
+        
+        // Tercera excepciones
+        if (conductorAdmin.roles.includes("conductor") && eliminacionAdminSaliente === 'Sí' && asignacionOno === 'No' && trabajaraOno === 'Sí'){
+            return res.status(400).json({ msg_registro_conductor: "Lo sentimos, no puedes eliminar al conductor administrador saliente, ya que, el nuevo administrador no trabajará como conductor y los estudiantes quedarán a la deriva" });
+        }; 
+
+        // Cuarta excepciones
+        if (conductorAdmin.roles.includes("conductor") && eliminacionAdminSaliente === 'No' && asignacionOno === 'Sí' && trabajaraOno === 'No'){
+            return res.status(400).json({ msg_registro_conductor: "Lo sentimos, no puedes eliminar al conductor administrador saliente, ya que, el nuevo administrador no trabajará como conductor y los estudiantes quedarán a la deriva" });
+        };
 
         // Crear un nuevo conductor con los datos proporcionados
         const nuevoConductor = new Conductores({
@@ -196,13 +234,13 @@ const RegistrarNuevoAdmin = async (req,res) =>{
             apellido,
             telefono, 
             generoConductor,
-            rutaAsignada: conductorAdmin.rutaAsignada,
-            sectoresRuta: conductorAdmin.sectoresRuta,
             institucion: conductorAdmin.institucion,
+            esReemplazo: 'No',
+            estado: true,
             placaAutomovil,
             cedula,
             email,
-            roles: ["conductor", "admin"]
+            roles: trabajaraOno === 'Sí' ? ["conductor", "admin"] : ["admin"],
         });
 
         // Verificar si se envió un archivo de imagen
@@ -229,35 +267,20 @@ const RegistrarNuevoAdmin = async (req,res) =>{
             return res.status(400).json({ msg_registro_conductor: "Lo sentimos, debes subir una imagen" });
         }
 
-
         // Generar una contraseña aleatoria
         const randomPassword = crypto.randomBytes(8).toString('hex');
 
         // Encriptar la contraseña antes de guardarla
         nuevoConductor.password = await nuevoConductor.encrypPassword(randomPassword);
 
-        //No se crea un token de confirmación, ya que, al conductor solo se le necesita enviar un correo para que se diriga a su cuenta
-        try {
-            // Conductor logeado 
-            const conductorAdmin = await Conductores.findById(req.user.id);
-            //Aviso al nuevo coordinador de rutas
-            await nuevoAdministrador(nuevoConductor.email, nuevoConductor.nombre, nuevoConductor.apellido, 
-                randomPassword, nuevoConductor.rutaAsignada, nuevoConductor.sectoresRuta, conductorAdmin.nombre, conductorAdmin.apellido);
-            // Guardar el nuevo conductor en la base de datos
-            await nuevoConductor.save();
-
-            //Quitar los privilegios de administrador al conductor que realizó la acción
-            const index = conductorAdmin.roles.indexOf("admin");
-            //Eliminar el rol de administrador
-            if (index > -1) {
-                conductorAdmin.roles.splice(index, 1);
-            }
-            //Guardar los cambios en la base de datos del conductor administrador saliente
-            await conductorAdmin.save();
+        if (asignacionOno === 'Sí'){
+            //Asignación de campos ruta y sectores del conductor admin saliente 
+            nuevoConductor.rutaAsignada = conductorAdmin.rutaAsignada;
+            nuevoConductor.sectoresRuta = conductorAdmin.sectoresRuta;
 
             // Actualizar los estudiantes que tienen la misma ruta asignada
             const estudiantes = await Estudiantes.find({ruta:nuevoConductor.rutaAsignada});
-            const cantidadEstudiantes = estudiantes.length
+            const cantidadEstudiantes = estudiantes.length; 
             if(cantidadEstudiantes > 0){
                 for (const estudiante of estudiantes) {
                     await Estudiantes.findByIdAndUpdate(estudiante._id, { conductor: nuevoConductor._id });
@@ -266,27 +289,91 @@ const RegistrarNuevoAdmin = async (req,res) =>{
                     for (const representanteId of estudiante.representantes){
                         const representante = await Representantes.findById(representanteId); 
                         if(representante){
-                            await cambioConductor(representante.email, representante.nombre, representante.apellido, nuevoConductor.rutaAsignada, nuevoConductor.nombre, nuevoConductor.apellido)
+                            await cambioConductor(representante.email, representante.nombre, representante.apellido, nuevoConductor.rutaAsignada, nuevoConductor.nombre, nuevoConductor.apellido, nuevoConductor.apellido, nuevoConductor.nombre, "Permanente");
                         }
                     }
                 }  
                 nuevoConductor.numeroEstudiantes = cantidadEstudiantes;
             }
 
-            //Información a los conductores que se ha registrado un nuevo administrador
-            const conductores = await Conductores.find({roles: 'conductor'});
-            for(const conductor of conductores){
-                await cambioAdmin(nuevoConductor.nombre, nuevoConductor.apellido, conductor.email, conductor.nombre, conductor.apellido); 
+            //Actualización de los campos del conductor admin saliente
+            conductorAdmin.rutaAsignada = null;
+            conductorAdmin.sectoresRuta = null;
+            conductorAdmin.numeroEstudiantes = 0;
+            conductorAdmin.estudiantesRegistrados = [];
+        } else if (asignacionOno === 'No'){
+            //Validación para que no se duplique la ruta de los conductores
+            const buscarConductorRuta = await Conductores.findOne({rutaAsignada: rutaAsignada, estado: true});
+            if (buscarConductorRuta) return res.status(400).json({msg_registro_conductor:"Lo sentimos, la ruta ya se encuentra asignada a otro conductor"});
+            //Asignación de nuevos campos ruta y sectores del nuevo conductor admin 
+            nuevoConductor.rutaAsignada = rutaAsignada;
+            nuevoConductor.sectoresRuta = sectoresRuta;
+        }; 
+
+        //Información del admin saliente para el envío del correo al conductor nuevo 
+        const datosConductorAdmin = {
+            nombre: conductorAdmin.nombre, 
+            apellido: conductorAdmin.apellido
+        }; 
+
+        if(eliminacionAdminSaliente === 'Sí'){
+            //Eliminar la imagen en Cloudinary 
+            const publicId = `conductores/${conductorAdmin.nombre}_${conductorAdmin.apellido}`;
+            try{
+                await cloudinary.v2.uploader.destroy(publicId);
+            }catch{
+                console.error("Error al eliminar la imagen en Cloudinary");
+                return res.status(500).json({msg_eliminacion_conductor:"Error al eliminar la imagen"}); 
             }
 
-            res.status(200).json({ 
-                msg_registro_conductor: "Conductor registrado exitosamente", 
-                nuevoAdmin: nuevoConductor
-            });
-        } catch (error) {
-            console.error(error);
-            res.status(500).json({ msg_registro_conductor: "Error al reemplazar al conductor administrador" });
+            //Eliminación defenitiva del conductor saliente 
+            await Conductores.findOneAndDelete({_id: conductorAdmin._id});
+        } else if (eliminacionAdminSaliente === 'No' && conductorAdmin.roles.length === 2){
+            //Quitar los privilegios de administrador al conductor que realizó la acción
+            const index = conductorAdmin.roles.indexOf("admin");
+            //Eliminar el rol de administrador
+            if (index > -1) {
+                conductorAdmin.roles.splice(index, 1);
+            };
+
+            //Si el conductor queda con el campo "roles" con una longitud de 0 se añadirá unicamente el rol "conductor"
+            if (conductorAdmin.roles.length === 0){
+                conductorAdmin.roles.push("conductor"); 
+            };
+        } else if (eliminacionAdminSaliente === 'No' && conductorAdmin.roles.includes("admin") && conductorAdmin.roles.length === 1){
+            //Quitar los privilegios de administrador al conductor que realizó la acción
+            const index = conductorAdmin.roles.indexOf("admin");
+            //Eliminar el rol de administrador
+            if (index > -1) {
+                conductorAdmin.roles.splice(index, 1);
+            };
+
+            //Añadir el rol de conductor al admin saliente
+            conductorAdmin.roles.push("conductor");
+        };
+
+        // Guardar el nuevo conductor en la base de datos
+        await nuevoConductor.save();
+
+        //Guardar los cambios en la base de datos del conductor admin saliente solo cuando sea necesario 
+        if ((asignacionOno === 'Sí' || asignacionOno === 'No') && eliminacionAdminSaliente === 'No'){
+            await conductorAdmin.save();
         }
+
+        //Información a los conductores que se ha registrado un nuevo administrador
+        const conductores = await Conductores.find({roles: 'conductor'});
+        for(const conductor of conductores){
+            await cambioAdmin(nuevoConductor.nombre, nuevoConductor.apellido, conductor.email, conductor.nombre, conductor.apellido, 
+                nuevoConductor.apellido, nuevoConductor.nombre); 
+        };
+
+        //Aviso al nuevo coordinador de rutas
+        await nuevoAdministrador(nuevoConductor.email, nuevoConductor.nombre, nuevoConductor.apellido, 
+            randomPassword, nuevoConductor.rutaAsignada, nuevoConductor.sectoresRuta, datosConductorAdmin.apellido, datosConductorAdmin.nombre);
+        res.status(200).json({ 
+            msg_registro_conductor: "Conductor registrado exitosamente", 
+            nuevoAdmin: nuevoConductor
+        });
     }catch(error){
         console.log(error); 
         res.status(500).json({

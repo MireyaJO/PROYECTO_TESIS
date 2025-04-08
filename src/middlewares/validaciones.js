@@ -3,13 +3,13 @@ import { check, validationResult } from 'express-validator'
 //Validaciones para el registro del conductor 
 const validacionesConductor = [
     // Verificar que se encuentren los campos obligatorios y no estén vacíos
-    check(["nombre","apellido", "cooperativa", "telefono","cedula","placaAutomovil","rutaAsignada", "sectoresRuta", 
-        "email", "generoConductor"
+    check(["nombre","apellido", "cooperativa", "telefono","cedula","placaAutomovil", 
+        "email", "generoConductor", "esReemplazo"
     ])
     .exists()
-        .withMessage('Los campos "nombre","apellido","cooperativa","telefono","cedula","placaAutomovil","rutaAsignada", "sectoresRuta", "fotografiaDelConductor", "generoConductor" y/o "email"  son obligatorios')
+        .withMessage('Los campos "nombre","apellido","cooperativa","telefono","cedula","placaAutomovil", "fotografiaDelConductor", "generoConductor", "esReemplazo" y/o "email"  son obligatorios')
     .notEmpty()
-        .withMessage('Los campos "nombre","apellido","cooperativa","telefonor","cedula","placaAutomovil","rutaAsignada", "sectoresRuta", "fotografiaDelConductor", "generoConductor" y/o "email" no pueden estar vacíos')
+        .withMessage('Los campos "nombre","apellido","cooperativa","telefono","cedula","placaAutomovil", "fotografiaDelConductor", "generoConductor", "esReemplazo" y/o "email" no pueden estar vacíos')
     .customSanitizer(value => value?.trim()),
 
     //Verificación de que todo sea un string
@@ -60,6 +60,12 @@ const validacionesConductor = [
     check("generoConductor")
     .isIn(["Femenino", "Masculino", "Prefiero no decirlo"])
         .withMessage('El género debe ser "Femenino", "Masculino" o "Prefiero no decirlo"')
+    .customSanitizer(value => value?.trim()),
+
+    //Verificar el valor del campo "esReemplazo"
+    check("esReemplazo")
+    .isIn(["Sí", "No"])
+        .withMessage('Solo se admiten los valores "Sí" o "No" para afirmar si es un reemplazo')
     .customSanitizer(value => value?.trim()),
     
     (req,res,next)=>{
@@ -127,6 +133,8 @@ const validacionesAdmin = [
     .isIn(["Femenino", "Masculino", "Prefiero no decirlo"])
         .withMessage('El género debe ser "Femenino", "Masculino" o "Prefiero no decirlo"')
     .customSanitizer(value => value?.trim()),
+
+    // Verificar que la 
     
     (req,res,next)=>{
         const errors = validationResult(req);

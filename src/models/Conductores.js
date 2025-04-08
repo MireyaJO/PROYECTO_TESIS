@@ -13,7 +13,6 @@ const paraElRegistroDeLosConductores= new Schema(
         esReemplazo:{
             type: String,
             enum: ['Sí', 'No'],
-            default: 'No', 
             required: true
         },
         nombre:{
@@ -56,20 +55,20 @@ const paraElRegistroDeLosConductores= new Schema(
         rutaAsignada:{
             type: Number, 
             required : function () {
-                return !this.esReemplazo; 
+                return this.esReemplazo === 'No'; 
             }, 
             unique: function () {
-                return !this.esReemplazo; 
+                return this.esReemplazo === 'No'; 
             }, 
             trim: true
         }, 
         sectoresRuta:{
             type: String, 
             required : function () {
-                return !this.esReemplazo; 
+                return this.esReemplazo === 'No';  
             }, 
             unique: function () {
-                return !this.esReemplazo; 
+                return this.esReemplazo === 'No'; 
             }, 
             trim: true
         }, 

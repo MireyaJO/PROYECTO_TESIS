@@ -15,7 +15,7 @@ let transportador = nodemailer.createTransport({
     }   
 });
 
-//Correos enviados en el registro de conductores 
+//Correos enviados en el registro de conductores sin privilegios de admin 
 const enviarCorreoConductor = (email, password, ruta, sectores, nombreConductor, apellidoConductor, coordinadorApellido, coordinadorNombre) =>{
     //Creación de la estuctura que tendrá el correo 
     let estructuraEmail = {
@@ -63,6 +63,54 @@ const enviarCorreoConductor = (email, password, ruta, sectores, nombreConductor,
     });
 }; 
 
+//Correos enviados en el registro de conductores con privilegios de admin 
+const nuevoAdministrador = async (email, nombreConductor, apellidoConductor, passwordConductor, rutaConductor, sectoresConductor, apellidoAntiguoAdmin, nombreAntiguoAdmin) => {
+    //Creación de la estuctura que tendrá el correo 
+    let estructuraEmail = {
+        from: process.env.EMAIL_USER,
+        to: email,  
+        subject: "Credenciales de acceso a la aplicación para el nuevo Coordinador de rutas de la Unidad Educativa Particular Emaús",
+        html: `
+            <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; background-color: #e0f7fa; padding: 20px; border-radius: 10px;">
+                <h2 style="color: #00796b;">Transportistas de la Unidad Educativa Particular “Emaús</h2>
+                <p>Estimado(a) ${nombreConductor} ${apellidoConductor},</p>
+                <p>Usted ha sido registrado como conductor administrador de los transportistas de la Unidad Educativa Particular “Emaús. A continuación, encontrará los detalles de su ruta y sus credenciales para acceder a la aplicación:</p>
+                <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
+                    <tr>
+                        <td style="padding: 8px; border: 1px solid #ddd;"><strong>Ruta:</strong></td>
+                        <td style="padding: 8px; border: 1px solid #ddd;">${rutaConductor}</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 8px; border: 1px solid #ddd;"><strong>Sectores:</strong></td>
+                        <td style="padding: 8px; border: 1px solid #ddd;">${sectoresConductor}</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 8px; border: 1px solid #ddd;"><strong>Email:</strong></td>
+                        <td style="padding: 8px; border: 1px solid #ddd;">${email}</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 8px; border: 1px solid #ddd;"><strong>Contraseña:</strong></td>
+                        <td style="padding: 8px; border: 1px solid #ddd;">${passwordConductor}</td>
+                    </tr>
+                </table>
+                <p style="margin-top: 20px;">Por favor, asegúrese de cambiar su contraseña después de iniciar sesión por primera vez.</p>
+                <p>Atentamente,</p>
+                <p>${nombreAntiguoAdmin} ${apellidoAntiguoAdmin}</p>
+                <p><strong>Ex coordinador de Rutas</strong></p>
+            </div>
+        `
+    }; 
+
+    //Creación del transportador universal con el email y el password del conductor ingresado por el administrador
+    transportador.sendMail(estructuraEmail, (error, info) => {
+        if(error){
+            console.error(error);
+        } else {
+            console.log('Correo enviado: ' + info.response);
+        }
+    });
+}
+
 const cambioConductor = async (email, nombresRepresentante, apellidosRepresentante, ruta, nombresNuevoConductor, apellidosNuevoConductor, coordinadorApellido, coordinadorNombre, tipoDeReemplazo) => {
     // Creación de la estructura que tendrá el correo
     let estructuraEmail = {
@@ -71,15 +119,15 @@ const cambioConductor = async (email, nombresRepresentante, apellidosRepresentan
         subject: "Cambio del conductor del sistema de transporte escolar de la Unidad Educativa Particular Emaús",
         html: `
             <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; background-color: #e0f7fa; padding: 20px; border-radius: 10px;">
-                <h2 style="color: #00796b;">Transportistas de la Unidad Educativa Particular “Emaús”</h2>
+                <h2 style="color: #00796b;">Unidad Educativa Particular “Emaús”</h2>
                 <p>Estimado(a) ${nombresRepresentante} ${apellidosRepresentante},</p>
-                <p>Le informamos que el nuevo conductor de la ruta ${ruta} de sus representados es: ${nombresNuevoConductor} ${apellidosNuevoConductor}.</p>
+                <p>Se le informa que el nuevo conductor de la ruta ${ruta} de sus representados es: ${nombresNuevoConductor} ${apellidosNuevoConductor}.</p>
                 <p>Este cambio será de tipo: <strong>${tipoDeReemplazo}</strong>.</p>
-                <p>Por favor, póngase en contacto con el nuevo conductor para coordinar los detalles del transporte.</p>
+                <p>Por favor, no dude en ponerse en contacto con el nuevo conductor para coordinar los detalles del transporte.</p>
                 <p><b>Atentamente,</b></p>
-                <p>${coordinadorApellido} ${coordinadorNombre}</p>
-                <p><strong><b>Coordinador de rutas</b></strong></p>
-            </div>
+                <p>${coordinadorNombre} ${coordinadorApellido}</p>
+                <p><strong>Coordinador de Rutas</strong></p>
+            </div>  
         `
     };
     // Creación del transportador universal con el email y el password del conductor ingresado por el administrador
@@ -91,6 +139,62 @@ const cambioConductor = async (email, nombresRepresentante, apellidosRepresentan
         }
     });
 };
+
+const cambioAdmin = async (nombreConductorNuevo, apellidoConductorNuevo, email, nombreConductor, apellidoConductor, coordinadorApellido, coordinadorNombre  )=>{
+    //Creación de la estuctura que tendrá el correo 
+    let estructuraEmail = {
+        from: process.env.EMAIL_USER,
+        to: email,  
+        subject: "Nuevo Coordinador de Rutas en la Unidad Educativa Particular Emaús",
+        html: `
+            <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; background-color: #e0f7fa; padding: 20px; border-radius: 10px;">
+                <h2 style="color: #00796b;"> Transportistas de la Unidad Educativa Particular “Emaús”</h2>
+                <p>Estimado(a) ${nombreConductor} ${apellidoConductor}</p>
+                <p>Se informa que existe un nuevo coordinador de rutas en nuestra institución. El nuevo coordinador es: ${nombreConductorNuevo} ${apellidoConductorNuevo}.</p>
+                <p>Por favor, póngase en contacto con el nuevo coordinador para cualquier consulta o coordinación relacionada con su ruta.</p>
+                 <p><b>Atentamente,</b></p>
+                <p>${coordinadorApellido} ${coordinadorNombre}</p>
+                <p><strong><b>Coordinador de rutas</b></strong></p>
+            </div>
+        `   
+    };
+    //Creación del transportador universal con el email y el password del conductor ingresado por el administrador
+    transportador.sendMail(estructuraEmail, (error, info) => {
+        if(error){
+            console.error(error);
+        } else {
+            console.log('Correo enviado: ' + info.response);
+        }
+    });
+}
+
+const eliminacionDelConductor = (email, nombresEliminado, apellidosEliminado, coordinadorApellido, coordinadorNombre) =>{
+    //Creación de la estuctura que tendrá el correo 
+    let estructuraEmail = {
+        from: process.env.EMAIL_USER,
+        to: email,  
+        subject: "Eliminación del conductor del Unidad Educativa Particular Emaús",
+        html: `
+            <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; background-color: #e0f7fa; padding: 20px; border-radius: 10px;">
+                <h2 style="color: #00796b;">Transportistas de la Unidad Educativa Particular “Emaús”</h2>
+                <p>Estimado(a) ${nombresEliminado} ${apellidosEliminado},</p>
+                <p>Lamentamos informarle que ha sido eliminado del sistema de transportistas de la Unidad Educativa Particular “Emaús”. A partir de ahora, usted ya no tiene una ruta asignada en nuestra institución.</p>
+                <p>Si tiene alguna pregunta o necesita más información, por favor, póngase en contacto con el coordinador de las rutas.</p>
+                <p><b>Atentamente,</b></p>
+                <p> ${coordinadorApellido} ${coordinadorNombre}</p>
+                <p><strong><b>Coordinador de rutas</b></strong></p>
+            </div>
+        `
+    };
+    //Creación del transportador universal con el email y el password del conductor ingresado por el administrador
+    transportador.sendMail(estructuraEmail, (error, info) => {
+        if(error){
+            console.error(error);
+        } else {
+            console.log('Correo enviado: ' + info.response);
+        }
+    });
+}; 
 
 //El envío del correo al conductor para la actualización de la ruta y sectores
 const actualizacionDeConductor = (email, apellidoConductor, nombreConductor, ruta, sectores, coordinadorApellido, coordinadorNombre) =>{
@@ -116,35 +220,6 @@ const actualizacionDeConductor = (email, apellidoConductor, nombreConductor, rut
                     </tr>
                 </table>
                 <p style="margin-top: 20px;">Por último, le recordamos que sus credenciales no se han modificado, siguen siendo las mismas.</p>
-                <p><b>Atentamente,</b></p>
-                <p> ${coordinadorApellido} ${coordinadorNombre}</p>
-                <p><strong><b>Coordinador de rutas</b></strong></p>
-            </div>
-        `
-    };
-    //Creación del transportador universal con el email y el password del conductor ingresado por el administrador
-    transportador.sendMail(estructuraEmail, (error, info) => {
-        if(error){
-            console.error(error);
-        } else {
-            console.log('Correo enviado: ' + info.response);
-        }
-    });
-}; 
-
-//El envío de correo al conductor para notificarle su eliminación del sistema 
-const eliminacionDelConductor = (email, nombres, apellidos, coordinadorApellido, coordinadorNombre) =>{
-    //Creación de la estuctura que tendrá el correo 
-    let estructuraEmail = {
-        from: process.env.EMAIL_USER,
-        to: email,  
-        subject: "Eliminación del conductor del Unidad Educativa Particular Emaús",
-        html: `
-            <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; background-color: #e0f7fa; padding: 20px; border-radius: 10px;">
-                <h2 style="color: #00796b;">Transportistas de la Unidad Educativa Particular “Emaús”</h2>
-                <p>Estimado(a) ${nombres} ${apellidos},</p>
-                <p>Lamentamos informarle que ha sido eliminado del sistema de transportistas de la Unidad Educativa Particular “Emaús”. A partir de ahora, usted ya no tiene una ruta asignada en nuestra institución.</p>
-                <p>Si tiene alguna pregunta o necesita más información, por favor, póngase en contacto con el coordinador de las rutas.</p>
                 <p><b>Atentamente,</b></p>
                 <p> ${coordinadorApellido} ${coordinadorNombre}</p>
                 <p><strong><b>Coordinador de rutas</b></strong></p>
@@ -368,33 +443,6 @@ const informacionEliminacion = async (email, nombresRepresentante, apellidosRepr
     });
 }
 
-const cambioAdmin = async (nombreConductorNuevo, apellidoConductorNuevo, emailConductor, nombreConductor, apellidoConductor)=>{
-    //Creación de la estuctura que tendrá el correo 
-    let estructuraEmail = {
-        from: process.env.EMAIL_USER,
-        to: emailConductor,  
-        subject: "Nuevo Coordinador de Rutas en la Unidad Educativa Particular Emaús",
-        html: `
-            <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; background-color: #e0f7fa; padding: 20px; border-radius: 10px;">
-                <h2 style="color: #00796b;"> Transportistas de la Unidad Educativa Particular “Emaús”</h2>
-                <p>Estimado(a) ${nombreConductor} ${apellidoConductor}</p>
-                <p>Le informamos que existe un nuevo coordinador de rutas en nuestra institución. El nuevo coordinador es ${nombreConductorNuevo} ${apellidoConductorNuevo}.</p>
-                <p>Por favor, póngase en contacto con el nuevo coordinador para cualquier consulta o coordinación relacionada con su ruta.</p>
-                <p>Atentamente,</p>
-                <p><strong>Coordinador de rutas</strong></p>
-            </div>
-        `   
-    };
-    //Creación del transportador universal con el email y el password del conductor ingresado por el administrador
-    transportador.sendMail(estructuraEmail, (error, info) => {
-        if(error){
-            console.error(error);
-        } else {
-            console.log('Correo enviado: ' + info.response);
-        }
-    });
-}
-
 const asignacionAdministrador = async (email, nombre, apellido, ruta, sectores, nombreAntiguoAdmin, apellidoAntiguoAdmin) => {
     //Creación de la estuctura que tendrá el correo 
     let estructuraEmail = {
@@ -438,54 +486,10 @@ const asignacionAdministrador = async (email, nombre, apellido, ruta, sectores, 
     });
 }
 
-const nuevoAdministrador = async (email, nombreConductor, apellidoConductor, passwordConductor, rutaConductor, sectoresConductor, nombreAntiguoAdmin, apellidoAntiguoAdmin) => {
-    //Creación de la estuctura que tendrá el correo 
-    let estructuraEmail = {
-        from: process.env.EMAIL_USER,
-        to: email,  
-        subject: "Credenciales de acceso a la aplicación para el nuevo Coordinador de rutas de la Unidad Educativa Particular Emaús",
-        html: `
-            <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; background-color: #e0f7fa; padding: 20px; border-radius: 10px;">
-                <h2 style="color: #00796b;">Transportistas de la Unidad Educativa Particular “Emaús</h2>
-                <p>Estimado(a) ${nombreConductor} ${apellidoConductor},</p>
-                <p>Usted ha sido registrado como conductor administrador en nuestra institución. A continuación, encontrará los detalles de su ruta y sus credenciales para acceder a la aplicación:</p>
-                <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
-                    <tr>
-                        <td style="padding: 8px; border: 1px solid #ddd;"><strong>Ruta:</strong></td>
-                        <td style="padding: 8px; border: 1px solid #ddd;">${rutaConductor}</td>
-                    </tr>
-                    <tr>
-                        <td style="padding: 8px; border: 1px solid #ddd;"><strong>Sectores:</strong></td>
-                        <td style="padding: 8px; border: 1px solid #ddd;">${sectoresConductor}</td>
-                    </tr>
-                    <tr>
-                        <td style="padding: 8px; border: 1px solid #ddd;"><strong>Email:</strong></td>
-                        <td style="padding: 8px; border: 1px solid #ddd;">${email}</td>
-                    </tr>
-                    <tr>
-                        <td style="padding: 8px; border: 1px solid #ddd;"><strong>Contraseña:</strong></td>
-                        <td style="padding: 8px; border: 1px solid #ddd;">${passwordConductor}</td>
-                    </tr>
-                </table>
-                <p style="margin-top: 20px;">Por favor, asegúrese de cambiar su contraseña después de iniciar sesión por primera vez.</p>
-                <p>Atentamente,</p>
-                <p><strong> ${nombreAntiguoAdmin} ${apellidoAntiguoAdmin} (Ex Coordinador de rutas)</strong></p>
-            </div>
-        `
-    }; 
-
-    //Creación del transportador universal con el email y el password del conductor ingresado por el administrador
-    transportador.sendMail(estructuraEmail, (error, info) => {
-        if(error){
-            console.error(error);
-        } else {
-            console.log('Correo enviado: ' + info.response);
-        }
-    });
-}
-
 export {
-    enviarCorreoConductor, 
+    enviarCorreoConductor,
+    nuevoAdministrador, 
+    cambioConductor, 
     actualizacionDeConductor,
     recuperacionContrasenia,
     eliminacionDelConductor, 
@@ -496,7 +500,5 @@ export {
     eliminacionDelRepresentante, 
     informacionEliminacion, 
     cambioAdmin,
-    cambioConductor, 
-    asignacionAdministrador, 
-    nuevoAdministrador
+    asignacionAdministrador
 }
