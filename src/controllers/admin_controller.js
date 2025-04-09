@@ -116,7 +116,8 @@ const  RegistroDeLosConductores = async (req, res) => {
             placaAutomovil,
             cedula,
             email, 
-            esReemplazo
+            esReemplazo, 
+            estado: esReemplazo === 'Sí' ? 'Disponible' : 'Activo'
         });
 
         // Verificar si se envió un archivo de imagen
@@ -246,7 +247,7 @@ const RegistrarNuevoAdmin = async (req,res) =>{
             generoConductor,
             institucion: conductorAdmin.institucion,
             esReemplazo: 'No',
-            estado: true,
+            estado: trabajaraOno === 'Sí' ? 'Trabaja como conductor' : 'No trabaja como conductor',
             placaAutomovil,
             cedula,
             email,
@@ -383,34 +384,18 @@ const RegistrarNuevoAdmin = async (req,res) =>{
     }
 };
 
-// Buscar un conductor en especifico por la ruta asignada
-const BuscarConductorRuta = async (req, res) => {
-    try {
-        // Obtener el número de la ruta de los parámetros de la URL
-        const {rutaAsignada} = req.params;
-
-        // Verificación de la existencia de la ruta
-        const conductor = await Conductores.findOne({rutaAsignada: rutaAsignada, estado: true}).select("-password -updatedAt -createdAt -__v");
-        if (!conductor) {
-            return res.status(400).json({ msg: "Lo sentimos, no se ha encontrado ningún conductor con esa ruta o se encuentra inactivo" });
-        }
-
-        // Mensaje de éxito
-        res.status(200).json({ msg_buscar_conductor_ruta: `El conductor de la ruta ${rutaAsignada} se han encontrado exitosamente`, conductor:conductor });
-    } catch (error) {
-        console.log(error);
-        res.status(500).json({ 
-            msg_buscar_conductor_ruta: "Error al buscar conductores por ruta", 
-            error: error.message 
-        });
-    }
-}; 
-
 // Listar todos los conductores de la Unidad Educativa Particular EMAÚS
 const ListarConductor = async (req, res) => {
     try{
         //Obtención de los conductores normales
-        const conductores = await Conductores.find({estado: true}).select("-password -updatedAt -createdAt -__v");
+        const conductores = await Conductores.find({
+            esReemplazo: 'No',
+            $or: [
+            // Conductores normales, solo tienen privilegios de conductor
+            { estado: "Activo", roles: { $in: ["conductor"] } }, 
+            // Conductor administrador, posee privilegios de admin y conductor
+            { estado: "Trabaja como conductor", roles: { $in: ["admin"] } }]
+        }).select("-password -updatedAt -createdAt -__v");
 
         //Validación de que existan conductores
         if (conductores.length === 0) return res.status(400).json({msg_listar_conductores:"El administrador no ha registrado a ningún conductor"});
@@ -426,6 +411,62 @@ const ListarConductor = async (req, res) => {
     }    
 }; 
 
+// Buscar un conductor en especifico por la ruta asignada
+const BuscarConductorRuta = async (req, res) => {
+    try {
+        // Obtener el número de la ruta de los parámetros de la URL
+        const {rutaAsignada} = req.params;
+
+        const conductor = await Conductores.findOne({
+            rutaAsignada: rutaAsignada,
+            esReemplazo: 'No', 
+            $or: [
+                // Conductores normales, solo tienen privilegios de conductor
+                { estado: "Activo", roles: { $in: ["conductor"] } }, 
+                // Conductor administrador, posee privilegios de admin y conductor
+                { estado: "Trabaja como conductor", roles: { $in: ["admin"] } } 
+            ]
+        }).select("-password -updatedAt -createdAt -__v");
+        
+        if (!conductor) {
+            return res.status(400).json({ msg: "Lo sentimos, no se ha encontrado ningún conductor con esa ruta que se encuentra activo o el admin no tiene privilegios de conductor" });
+        }
+
+        // Mensaje de éxito
+        res.status(200).json({ msg_buscar_conductor_ruta: `El conductor de la ruta ${rutaAsignada} se han encontrado exitosamente`, conductor:conductor });
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ 
+            msg_buscar_conductor_ruta: "Error al buscar conductores por ruta", 
+            error: error.message 
+        });
+    }
+}; 
+
+// Visualizar el perfil del conductor logeado, que tiene privilegios de admin
+const VisualizarPerfil = async (req, res)=>{
+    try{
+        // Información del conductor logeado
+        const conductor = await Conductores.findById(req.user.id).select("-password -createdAt -updatedAt -__v");
+        // Verificación de la existencia del conductor
+        if (!conductor) return res.status(404).json({ msg_visualizar_conductor: "Conductor no encontrado" });
+        //Si se encuentra el conductor se envía su información
+        res.status(200).json(conductor);
+
+        res.status(200).json({
+            msg_admin: "Perfil del administrador encontrado exitosamente",
+            administrador: conductor,
+            asignacionOno: conductor.roles.includes("conductor") ? "Sí" : "No"
+        });
+    }catch(error){
+        console.log(error); 
+        res.status(500).json({
+            msg: "Error al visualizar el perfil del administrador",
+            error: error.message
+        });
+    }
+}; 
+
 //Actualizacion de las rutas y sectores de los conductores por su id
 const ActualizarRutasYSectoresId = async (req, res) => {
     //Obtener el id de los parámetros de la URL
@@ -439,7 +480,16 @@ const ActualizarRutasYSectoresId = async (req, res) => {
 
     try{
         // Verificación de la existencia del conductor
-        const conductor = await Conductores.findOne({_id: id, estado: true, esReemplazo: false});
+        const conductor = await Conductores.findOne({
+            _id: id, 
+            esReemplazo: 'No', 
+            $or: [
+                // Conductores normales, solo tienen privilegios de conductor
+                { estado: "Activo", roles: { $in: ["conductor"] } }, 
+                // Conductor administrador, posee privilegios de admin y conductor
+                { estado: "Trabaja como conductor", roles: { $in: ["admin"] } } 
+            ]
+        });
         if (!conductor) return res.status(400).json({ msg_actualizacion_conductor: "Lo sentimos, el conductor no se ha encontrado" });
 
         // Verificar si el conductor tiene un reemplazo activo, esta validación se la deja por si ocurre algún error, pero realmente no es necesaria
@@ -734,28 +784,6 @@ const ListarConductoresReemplazo = async (req, res) => {
         });
     }
 }; 
-
-const VisualizarPerfil = async (req, res)=>{
-    try{
-        // Información del conductor logeado
-        const conductor = await Conductores.findById(req.user.id).select("-password -createdAt -updatedAt -__v");
-        // Verificación de la existencia del conductor
-        if (!conductor) return res.status(404).json({ msg_visualizar_conductor: "Conductor no encontrado" });
-        //Si se encuentra el conductor se envía su información
-        res.status(200).json(conductor);
-
-        res.status(200).json({
-            msg_admin: "Perfil del administrador encontrado exitosamente",
-            administrador: conductor
-        });
-    }catch(error){
-        console.log(error); 
-        res.status(500).json({
-            msg: "Error al visualizar el perfil del administrador",
-            error: error.message
-        });
-    }
-}
 
 const ActualizarInformacionAdmin = async (req, res) => {
     //Extraer los campos del cuerpo de la solicitud

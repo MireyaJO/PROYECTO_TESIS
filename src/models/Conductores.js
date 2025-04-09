@@ -132,8 +132,16 @@ const paraElRegistroDeLosConductores= new Schema(
             default: null
         }, 
         estado:{
-            type: Boolean, 
-            default: true
+            type: String, 
+            enum: [
+                'Activo',
+                'Inactivo',
+                'Disponible',
+                'Ocupado',
+                'Trabaja como conductor', 
+                'No trabaja como conductor'
+            ], 
+            required: true
         },
                                                                                    
     }
@@ -222,7 +230,7 @@ paraElRegistroDeLosConductores.statics.ingresarConductorAdministrador = async fu
             fotografiaDelConductor: 'https://res.cloudinary.com/dwvqq3ugp/image/upload/v1739850955/imagen_prueba_01_zdvioa.jpg',
             email: process.env.ADMIN_EMAIL, 
             password: contraseniaQuemada, 
-            estado: true
+            estado: 'Trabaja como conductor'
         });
 
         //Encriptar la contraseña anteriormente quemada
