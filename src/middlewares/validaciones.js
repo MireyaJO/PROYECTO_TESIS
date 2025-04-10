@@ -80,7 +80,7 @@ const validacionesConductor = [
      }
 ]
 
-//Validaciones para el administrador 
+//Validaciones para el registrar un nuevo administrador
 const validacionesAdmin = [
     // Verificar que se encuentren los campos obligatorios y no estén vacíos
     check(["nombre","apellido","telefono","cedula","placaAutomovil","email", "generoConductor", "fotografiaDelConductor", 
@@ -161,6 +161,34 @@ const validacionesAdmin = [
         }
     }
 
+]
+
+//Validaciones para la actualizacion de un conductor
+const validacionesActualizarConductorNormal = [
+    // Verificar que se encuentren los campos obligatorios y no estén vacíos
+    check(["rutaAsignada","sectoresRuta"])
+    .notEmpty()
+        .withMessage('Los campos "rutaAsignada" y/o "sectoresRuta" no pueden estar vacíos')
+    .customSanitizer(value => value?.trim()),
+
+    // Verificar que la ruta sea un número y que solo existan 12 ruta
+    check("rutaAsignada")
+    .isNumeric()
+        .withMessage('La ruta debe ser un número, no se acepta otro tipo de dato')
+    .isInt({ min: 1, max: 12 })
+        .withMessage('Solo existen 12 rutas disponibles en la Unidad Educativa Particular Emaús')
+    .customSanitizer(value => value?.trim()),
+
+    (req,res,next)=>{
+        const errors = validationResult(req);
+        if (errors.isEmpty()) {
+            return next();
+        } else {
+            //Solo se muestra el primer error no el array completo
+            const Error = errors.array()[0]; 
+            return res.status(400).send({ error: Error});
+        }
+    }
 ]
 
 const validacionesRepresentantes = [
@@ -276,32 +304,6 @@ const validacionesActualizarPerfilAdmin = [
     }
 ]
 
-const validacionesActualizarConductorAdmin = [
-    // Verificar que se encuentren los campos obligatorios y no estén vacíos
-    check(["rutaAsignada","sectoresRuta"])
-    .notEmpty()
-        .withMessage('Los campos "rutaAsignada" y/o "sectoresRuta" no pueden estar vacíos')
-    .customSanitizer(value => value?.trim()),
-
-    // Verificar que la ruta sea un número y que solo existan 12 ruta
-    check("rutaAsignada")
-    .isNumeric()
-        .withMessage('La ruta debe ser un número, no se acepta otro tipo de dato')
-    .isInt({ min: 1, max: 12 })
-        .withMessage('Solo existen 12 rutas disponibles en la Unidad Educativa Particular Emaús')
-    .customSanitizer(value => value?.trim()),
-
-    (req,res,next)=>{
-        const errors = validationResult(req);
-        if (errors.isEmpty()) {
-            return next();
-        } else {
-            //Solo se muestra el primer error no el array completo
-            const Error = errors.array()[0]; 
-            return res.status(400).send({ error: Error});
-        }
-    }
-]
 const validacionesActualizarPerfilConductor = [
     // Verificar que no hayan campos vacíos 
     check(["telefono","placaAutomovil", "email"])
@@ -425,7 +427,7 @@ export {
     validacionesAdmin,
     validacionesConductor, 
     validacionesRepresentantes, 
-    validacionesActualizarConductorAdmin, 
+    validacionesActualizarConductorNormal, 
     validacionesActualizarPerfilConductor, 
     validacionesActualizarPerfilRepresentante,
     validacionesActualizarEstudiante, 

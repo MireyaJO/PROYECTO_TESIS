@@ -166,34 +166,6 @@ const cambioAdmin = async (nombreConductorNuevo, apellidoConductorNuevo, email, 
             console.log('Correo enviado: ' + info.response);
         }
     });
-}
-
-const eliminacionDelConductor = (email, nombresEliminado, apellidosEliminado, coordinadorApellido, coordinadorNombre) =>{
-    //Creación de la estuctura que tendrá el correo 
-    let estructuraEmail = {
-        from: process.env.EMAIL_USER,
-        to: email,  
-        subject: "Eliminación del conductor del Unidad Educativa Particular Emaús",
-        html: `
-            <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; background-color: #e0f7fa; padding: 20px; border-radius: 10px;">
-                <h2 style="color: #00796b;">Transportistas de la Unidad Educativa Particular “Emaús”</h2>
-                <p>Estimado(a) ${nombresEliminado} ${apellidosEliminado},</p>
-                <p>Lamentamos informarle que ha sido eliminado del sistema de transportistas de la Unidad Educativa Particular “Emaús”. A partir de ahora, usted ya no tiene una ruta asignada en nuestra institución.</p>
-                <p>Si tiene alguna pregunta o necesita más información, por favor, póngase en contacto con el coordinador de las rutas.</p>
-                <p><b>Atentamente,</b></p>
-                <p> ${coordinadorApellido} ${coordinadorNombre}</p>
-                <p><strong><b>Coordinador de rutas</b></strong></p>
-            </div>
-        `
-    };
-    //Creación del transportador universal con el email y el password del conductor ingresado por el administrador
-    transportador.sendMail(estructuraEmail, (error, info) => {
-        if(error){
-            console.error(error);
-        } else {
-            console.log('Correo enviado: ' + info.response);
-        }
-    });
 }; 
 
 //El envío del correo al conductor para la actualización de la ruta y sectores
@@ -220,6 +192,35 @@ const actualizacionDeConductor = (email, apellidoConductor, nombreConductor, rut
                     </tr>
                 </table>
                 <p style="margin-top: 20px;">Por último, le recordamos que sus credenciales no se han modificado, siguen siendo las mismas.</p>
+                <p><b>Atentamente,</b></p>
+                <p> ${coordinadorApellido} ${coordinadorNombre}</p>
+                <p><strong><b>Coordinador de rutas</b></strong></p>
+            </div>
+        `
+    };
+    //Creación del transportador universal con el email y el password del conductor ingresado por el administrador
+    transportador.sendMail(estructuraEmail, (error, info) => {
+        if(error){
+            console.error(error);
+        } else {
+            console.log('Correo enviado: ' + info.response);
+        }
+    });
+}; 
+
+
+const eliminacionDelConductor = (email, nombresEliminado, apellidosEliminado, coordinadorApellido, coordinadorNombre) =>{
+    //Creación de la estuctura que tendrá el correo 
+    let estructuraEmail = {
+        from: process.env.EMAIL_USER,
+        to: email,  
+        subject: "Eliminación del conductor del Unidad Educativa Particular Emaús",
+        html: `
+            <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; background-color: #e0f7fa; padding: 20px; border-radius: 10px;">
+                <h2 style="color: #00796b;">Transportistas de la Unidad Educativa Particular “Emaús”</h2>
+                <p>Estimado(a) ${nombresEliminado} ${apellidosEliminado},</p>
+                <p>Lamentamos informarle que ha sido eliminado del sistema de transportistas de la Unidad Educativa Particular “Emaús”. A partir de ahora, usted ya no tiene una ruta asignada en nuestra institución.</p>
+                <p>Si tiene alguna pregunta o necesita más información, por favor, póngase en contacto con el coordinador de las rutas.</p>
                 <p><b>Atentamente,</b></p>
                 <p> ${coordinadorApellido} ${coordinadorNombre}</p>
                 <p><strong><b>Coordinador de rutas</b></strong></p>

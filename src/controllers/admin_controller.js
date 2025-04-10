@@ -390,11 +390,7 @@ const ListarConductor = async (req, res) => {
         //Obtención de los conductores normales
         const conductores = await Conductores.find({
             esReemplazo: 'No',
-            $or: [
-            // Conductores normales, solo tienen privilegios de conductor
-            { estado: "Activo", roles: { $in: ["conductor"] } }, 
-            // Conductor administrador, posee privilegios de admin y conductor
-            { estado: "Trabaja como conductor", roles: { $in: ["admin"] } }]
+            estado: { $in: ["Activo", "Trabaja como conductor"] }
         }).select("-password -updatedAt -createdAt -__v");
 
         //Validación de que existan conductores
@@ -417,15 +413,11 @@ const BuscarConductorRuta = async (req, res) => {
         // Obtener el número de la ruta de los parámetros de la URL
         const {rutaAsignada} = req.params;
 
+        // Busqueda de un conductor que tenga la misma ruta que se encuentra en los parámetros de la URL 
         const conductor = await Conductores.findOne({
             rutaAsignada: rutaAsignada,
             esReemplazo: 'No', 
-            $or: [
-                // Conductores normales, solo tienen privilegios de conductor
-                { estado: "Activo", roles: { $in: ["conductor"] } }, 
-                // Conductor administrador, posee privilegios de admin y conductor
-                { estado: "Trabaja como conductor", roles: { $in: ["admin"] } } 
-            ]
+            estado: { $in: ["Activo", "Trabaja como conductor"] }
         }).select("-password -updatedAt -createdAt -__v");
         
         if (!conductor) {
@@ -450,12 +442,25 @@ const VisualizarPerfil = async (req, res)=>{
         const conductor = await Conductores.findById(req.user.id).select("-password -createdAt -updatedAt -__v");
         // Verificación de la existencia del conductor
         if (!conductor) return res.status(404).json({ msg_visualizar_conductor: "Conductor no encontrado" });
-        //Si se encuentra el conductor se envía su información
-        res.status(200).json(conductor);
 
+        //Objeto con la información necesaria para el administrador
+        const infoAdmin = {
+            nombre: conductor.nombre,
+            apellido: conductor.apellido,
+            cooperativa: conductor.cooperativa,
+            telefono: conductor.telefono,
+            placaAutomovil: conductor.placaAutomovil,
+            generoConductor: conductor.generoConductor,
+            cedula: conductor.cedula,
+            institucion: conductor.institucion,
+            fotografiaDelConductor: conductor.fotografiaDelConductor,
+            email: conductor.email,
+            estado: conductor.estado
+        }
+        //Si se encuentra el conductor se envía su información
         res.status(200).json({
             msg_admin: "Perfil del administrador encontrado exitosamente",
-            administrador: conductor,
+            administrador: infoAdmin,
             asignacionOno: conductor.roles.includes("conductor") ? "Sí" : "No"
         });
     }catch(error){
@@ -479,24 +484,24 @@ const ActualizarRutasYSectoresId = async (req, res) => {
     const {id_coordinador} = req.user;
 
     try{
-        // Verificación de la existencia del conductor
+        // Verificación de la existencia del conductor al que se va actualizar
         const conductor = await Conductores.findOne({
             _id: id, 
             esReemplazo: 'No', 
             $or: [
                 // Conductores normales, solo tienen privilegios de conductor
-                { estado: "Activo", roles: { $in: ["conductor"] } }, 
+                { estado: "Activo" }, 
                 // Conductor administrador, posee privilegios de admin y conductor
-                { estado: "Trabaja como conductor", roles: { $in: ["admin"] } } 
+                { estado: "Trabaja como conductor" } 
             ]
         });
-        if (!conductor) return res.status(400).json({ msg_actualizacion_conductor: "Lo sentimos, el conductor no se ha encontrado" });
+        if (!conductor) return res.status(400).json({ msg_actualizacion_conductor: "Lo sentimos, el conductor ha actualizar no se ha encontrado" });
 
         // Verificar si el conductor tiene un reemplazo activo, esta validación se la deja por si ocurre algún error, pero realmente no es necesaria
         const reemplazoActivo = await Conductores.findOne({
             rutaAsignada: conductor.rutaAsignada,
-            estado: true,
-            esReemplazo: true,
+            estado: 'Ocupado',
+            esReemplazo: 'Sí',
         });
 
         if (reemplazoActivo) {
@@ -519,8 +524,12 @@ const ActualizarRutasYSectoresId = async (req, res) => {
             { new: true } 
         );
 
-        //Envio del correo al conductor 
-        await actualizacionDeConductor(conductor.email, conductor.apellido, conductor.nombre, rutaAsignada, sectoresRuta, id_coordinador.apellido, id_coordinador.nombre);
+        //Solo se envía el correo al conductor que tiene privilegios de conductor
+        if ( conductor.roles.includes["conductor"] && conductor.roles.length === 1){
+            //Envio del correo al conductor 
+            await actualizacionDeConductor(conductor.email, conductor.apellido, conductor.nombre, rutaAsignada, sectoresRuta, id_coordinador.apellido, id_coordinador.nombre);
+
+        }; 
 
         res.status(200).json({
             msg_actualizacion_conductor: `La ruta y sectores que cubrirá el conductor ${nombre} ${apellido} han sido actualizados exitosamente`
@@ -532,7 +541,115 @@ const ActualizarRutasYSectoresId = async (req, res) => {
             error: error.message
         });
     }
-}
+}; 
+
+//Actualización del conductor admin logeado
+const ActualizarInformacionAdmin = async (req, res) => {
+    //Extraer los campos del cuerpo de la solicitud
+    const {
+        telefono, 
+        cedula, 
+        cooperativa,
+        placaAutomovil, 
+        email, 
+    } = req.body;
+    //Obtención del id del conductor logeado
+    const {id} = req.user;
+    // Verificación de los campos vacíos
+    if (Object.values(req.body).includes("")) return res.status(400).json({ msg_actualizacion_perfil: "Lo sentimos, debes llenar todos los campos" });
+    try{
+        // Verificación de la existencia del conductor
+        const conductor = await Conductores.findById(id);
+        if (!conductor) return res.status(404).json({ msg_actualizacion_perfil: "Lo sentimos, el conductor logeado no se encuentra registrado" });
+        
+        // Comprobar si el email ya está registrado
+        const verificarEmailBDD = await Conductores.findOne({email});
+        const verificarRepresentateBDD = await Representantes.findOne({email});
+        if (verificarEmailBDD) {
+           return res.status(400).json({ msg_registro_conductor: "Lo sentimos, el email ya se encuentra registrado como conductor" });
+        }
+        if (verificarRepresentateBDD) {
+           return res.status(400).json({ msg_registro_conductor: "Lo sentimos, el email ya se encuentra registrado como representante" });
+        } 
+
+        // Comprobar si la cédula ya está registrada
+        const verificarCedulaBDD = await Conductores.findOne({cedula});
+        const verificarCedulaRepresentanteBDD = await Representantes.findOne({cedula});
+        if (verificarCedulaBDD) {
+           return res.status(400).json({ msg_registro_conductor: "Lo sentimos, la cédula ya se encuentra registrada en los conductores" });
+        };
+        if (verificarCedulaRepresentanteBDD) {
+           return res.status(400).json({ msg_registro_conductor: "Lo sentimos, la cédula ya se encuentra registrada en los representantes" });
+        };
+
+        // Comprobar si el telefono ya está registrado
+        const verificarTelefonoBDD = await Conductores.findOne({telefono});
+        const verificarTelefonoRepresentanteBDD = await Representantes.findOne({telefono});
+        if (verificarTelefonoBDD) {
+           return res.status(400).json({ msg_registro_conductor: "Lo sentimos, el telefono ya se encuentra registrado en los conductores" });
+        };
+        if (verificarTelefonoRepresentanteBDD) {
+           return res.status(400).json({ msg_registro_conductor: "Lo sentimos, el telefono ya se encuentra registrado en los representantes" });
+        }
+
+        // Comprobar si la placa ya está registrada
+        const verificarPlacaBDD = await Conductores.findOne({placaAutomovil});
+        if (verificarPlacaBDD) {
+           return res.status(400).json({ msg_registro_conductor: "Lo sentimos, la placa ya se encuentra registrada" })
+        };
+
+        // Verificar si se envió un archivo de imagen
+        if (req.files && req.files.fotografiaDelConductor) {
+            const file = req.files.fotografiaDelConductor;
+            try {
+                // Definir el public_id para Cloudinary
+                const publicId = `conductores/${conductor.nombre}_${conductor.apellido}_admin`;
+
+                // Eliminar la imagen anterior en Cloudinary
+                await cloudinary.v2.uploader.destroy(publicId);
+
+                // Guardar la URL de la imagen en la base de datos
+                nuevoConductor.fotografiaDelConductor = await SubirImagen(file, nombre, apellido);
+            } catch (error) {
+                console.error(error);
+                return res.status(500).json({ msg_actualizacion_perfil: "Error al subir la imagen" });
+            }
+        } else {
+            return res.status(400).json({ msg_actualizacion_perfil: "Lo sentimos, debes subir una imagen" });
+        };
+
+        // Si el email cambia, enviar un enlace de confirmación al nuevo correo
+        if (email !== conductor.email) {
+            // Crear un token JWT con el ID del conductor y el nuevo email
+            const token = conductor.crearToken();
+            conductor.token = token;
+            conductor.tokenEmail = email;
+
+            // Guardar el token en la base de datos
+            await conductor.save();
+
+            // Enviar un email de confirmación al nuevo correo electrónico
+            await confirmacionDeCorreoConductorCambio(email, conductor.nombre, conductor.apellido, token);
+
+            // Enviar una respuesta al cliente indicando que se ha enviado un enlace de confirmación
+            return res.status(200).json({ msg_actualizacion_perfil: "Se ha enviado un enlace de confirmación al nuevo correo electrónico" });
+        };
+
+        // Actualización de los datos
+        conductor.telefono = telefono;
+        conductor.cedula = cedula;
+        conductor.cooperativa = cooperativa;
+        conductor.placaAutomovil = placaAutomovil;
+        conductor.email = email;
+
+        // Guardar los cambios en la base de datos
+        await conductor.save();
+        res.status(200).json({ msg_actualizacion_perfil: "Los datos del conductor han sido actualizados exitosamente" });
+    } catch(error){
+        console.error(error);
+        res.status(500).json({msg_actualizacion_perfil:"Error al actualizar el perfil del conductor"});
+    }
+};
 
 const ReemplazoTemporal = async (req, res) => {
     // Obtener los ids del conductor antiguo y nuevo de los parámetros de la URL
@@ -784,106 +901,6 @@ const ListarConductoresReemplazo = async (req, res) => {
         });
     }
 }; 
-
-const ActualizarInformacionAdmin = async (req, res) => {
-    //Extraer los campos del cuerpo de la solicitud
-    const {
-        telefono, 
-        placaAutomovil, 
-        rutaAsignada,
-        sectoresRuta, 
-        email, 
-    } = req.body;
-    //Obtención del id del conductor logeado
-    const {id} = req.user;
-    // Verificación de los campos vacíos
-    if (Object.values(req.body).includes("")) return res.status(400).json({ msg_actualizacion_perfil: "Lo sentimos, debes llenar todos los campos" });
-    try{
-        // Verificación de la existencia del conductor
-        const conductor = await Conductores.findById(id);
-        if (!conductor) return res.status(404).json({ msg_actualizacion_perfil: "Lo sentimos, el conductor no se encuentra registrado" });
-        // Comprobar si el telefono ya está registrado
-        const verificarTelefonoBDD = await Conductores.findOne({telefono, _id: { $ne: id } });
-        if (verificarTelefonoBDD) {
-            return res.status(400).json({ msg_actualizacion_perfil: "Lo sentimos, el telefono ya se encuentra registrado" })
-        };
-        
-        // Comprobar si la placa ya está registrada
-        const verificarPlacaBDD = await Conductores.findOne({placaAutomovil, _id: { $ne: id } });
-        if (verificarPlacaBDD) {
-            return res.status(400).json({ msg_actualizacion_perfil: "Lo sentimos, la placa ya se encuentra registrada" })
-        };
-
-        //Verificar si el email ya está registrado
-        const verificarEmailBDD = await Conductores.findOne({email, _id: { $ne: id } });
-        const verificacionRepresentante = await Representantes.findOne({email: email});
-        if (verificarEmailBDD) {
-            return res.status(400).json({ msg_actualizacion_perfil: "Lo sentimos, el email ya se encuentra registrado como conductor" });
-        };
-        if (verificacionRepresentante){
-            return res.status(400).json({ msg_actualizacion_perfil: "Lo sentimos, el email ya se encuentra registrado como representante" });
-        };
-
-        // Verificar si se envió un archivo de imagen
-        if (req.files && req.files.fotografiaDelConductor) {
-            const file = req.files.fotografiaDelConductor;
-            try {
-                // Definir el public_id para Cloudinary
-                const publicId = `conductores/${conductor.nombre}_${conductor.apellido}_admin`;
-
-                // Eliminar la imagen anterior en Cloudinary
-                await cloudinary.v2.uploader.destroy(publicId);
-
-                // Subir la imagen a Cloudinary con el nombre del conductor como public_id
-                const result = await cloudinary.v2.uploader.upload(file.tempFilePath, {
-                    public_id: publicId,
-                    folder: "conductores", 
-                    overwrite: true
-                });
-                // Guardar la URL de la imagen en la base de datos
-                conductor.fotografiaDelConductor = result.secure_url;
-                // Eliminar el archivo local después de subirlo
-                await fs.unlink(file.tempFilePath);
-            } catch (error) {
-                console.error(error);
-                return res.status(500).json({ msg_actualizacion_perfil: "Error al subir la imagen" });
-            }
-        } else {
-            return res.status(400).json({ msg_actualizacion_perfil: "Lo sentimos, debes subir una imagen" });
-        };
-
-        // Si el email cambia, enviar un enlace de confirmación al nuevo correo
-        if (email && email !== conductor.email) {
-            // Crear un token JWT con el ID del conductor y el nuevo email
-            const token = conductor.crearToken();
-            conductor.token = token;
-            conductor.tokenEmail = email;
-
-            // Guardar el token en la base de datos
-            await conductor.save();
-
-            // Enviar un email de confirmación al nuevo correo electrónico
-            await confirmacionDeCorreoConductorCambio(email, conductor.nombre, conductor.apellido, token);
-
-            // Enviar una respuesta al cliente indicando que se ha enviado un enlace de confirmación
-            return res.status(200).json({ msg_actualizacion_perfil: "Se ha enviado un enlace de confirmación al nuevo correo electrónico" });
-        };
-
-        // Actualización de los datos
-        conductor.telefono = telefono;
-        conductor.placaAutomovil = placaAutomovil;
-        conductor.rutaAsignada = rutaAsignada;
-        conductor.sectoresRuta = sectoresRuta;
-        conductor.email = email;
-
-        // Guardar los cambios en la base de datos
-        await conductor.save();
-        res.status(200).json({ msg_actualizacion_perfil: "Los datos del conductor han sido actualizados exitosamente" });
-    } catch(error){
-        console.error(error);
-        res.status(500).json({msg_actualizacion_perfil:"Error al actualizar el perfil del conductor"});
-    }
-}
 
 const AsignarPrivilegiosDeAdmin = async (req, res) => {
     //Obtener el id del conductor que se desea convertir en administrador
