@@ -739,7 +739,10 @@ const ActualizarPassword = async (req, res) => {
 // Reemplazo temporal de un conductor por otro conductor
 const ReemplazoTemporal = async (req, res) => {
     // Obtener los ids del conductor antiguo y nuevo de los parámetros de la URL
-    const {idAntiguo, idReemplazo, fechaInicial, fechaTermino} = req.params;
+    const {idAntiguo, idReemplazo} = req.params;
+
+    // Lo que se enviará en el cuerpo de la solicitud
+    const {fechaTermino} = req.body;
 
     //Id del coordinador de rutas
     const {idCoordinador} = req.user;
@@ -760,6 +763,24 @@ const ReemplazoTemporal = async (req, res) => {
         //El conductor antiguo no tiene estudiantes asignados
         if(conductorAntiguo.numeroEstudiantes === 0) return res.status(400).json({msg_reemplazo:`El conductor ${conductorAntiguo.nombre} ${conductorAntiguo.apellido} no tiene estudiantes asignados por lo que no se puede realizar el reemplazo`});
 
+        //Fecha inicial sin la hora para evaluar
+        const fechaActual = new Date();
+        const fechaInicialSinHora = new Date(fechaActual.toDateString()); 
+        
+        //Fecha de termino sin la hora para evaluar
+        const fechaTerminoFecha = new Date(fechaTermino);
+        const fechaTerminoSinHora = new Date(fechaTerminoFecha.toDateString());
+
+        //Validacion de que las fehcas se encuentre en el formato correcto
+        if (isNaN(fechaTerminoSinHora.getTime())) {
+            return res.status(400).json({ msg_reemplazo: "La fecha de termino no tiene el formato correcto AAAA-MM-DD" });
+        };        
+
+        //¿Qué sucede si la fecha de termino es pasada?
+        if (fechaTerminoSinHora.getTime() < fechaInicialSinHora.getTime()){
+            res.status(400).json({msg_reemplazo:"Lo sentimos, la fecha de termino no puede ser antes de la fecha inicial"});
+        };
+
         //Realizar el reemplazo de los estudiantes
         const estudiantesConductorAntiguo = await Estudiantes.find({conductor: idAntiguo});
         for(const estudianteId of estudiantesConductorAntiguo){
@@ -770,7 +791,7 @@ const ReemplazoTemporal = async (req, res) => {
 
             //Objeto con la información de cada estudiante que se encuentra vinculado al conductor antiguo
             const estudianteRegistrado = {idEstudiante: estudianteId._id, nombreEstudiante: estudianteId.nombre, apellidoEstudiante: estudianteId.apellido, nivelEscolarEstudiante: estudianteId.nivelEscolar, 
-                paraleloEstudiante: estudianteId.paralelo, cedulaEstudiante: estudianteId.cedula} 
+                paraleloEstudiante: estudianteId.paralelo, cedulaEstudiante: estudianteId.cedula};
             //Actualizar el campo "estudiantesRegistrados" del conductor de reemplazo
             conductorReemplazo.estudiantesRegistrados.push(estudianteRegistrado); 
 
@@ -778,9 +799,9 @@ const ReemplazoTemporal = async (req, res) => {
             for(const representanteId of estudianteId.representantes){
                 const representante = await Representantes.findById(representanteId); 
                 if(representante){
-                    await cambioConductor(representante.email, representante.nombre, representante.apellido, conductorReemplazo.rutaAsignada, conductorReemplazo.nombre, conductorReemplazo.apellido, idCoordinador.apellido, idCoordinador.nombre, "Temporal");            
-                }
-            }
+                    await cambioConductor(representante.email, representante.nombre, representante.apellido, conductorReemplazo.rutaAsignada, conductorReemplazo.nombre, conductorReemplazo.apellido, idCoordinador.apellido, idCoordinador.nombre, "Temporal", fechaInicialSinHora, fechaTerminoSinHora);            
+                };
+            };
         };
 
         //Actualizar información del conductor reemplazo
@@ -798,14 +819,17 @@ const ReemplazoTemporal = async (req, res) => {
         } else if (conductorAntiguo.roles.includes("conductor") && conductorAntiguo.roles.length === 1){
             //Cambiar el campo "estado" del conductor con privilegios de conductor
             conductorAntiguo.estado = 'Inactivo';
-        }
+        };
 
         //Guardar los cambios en la base de datos de conductores
         await conductorReemplazo.save();
         await conductorAntiguo.save();
 
-        //Envio del correo al conductor inactivo
-        
+        if (conductorAntiguo.roles.includes("conductor") && conductorAntiguo.roles.length === 1){
+            //Envio del correo al conductor inactivo solo si es un conductor normal  
+            
+        };
+
         //Enviar correo al conductor de reemplazo
 
         res.status(200).json({

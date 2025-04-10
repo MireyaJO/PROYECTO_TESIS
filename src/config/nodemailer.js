@@ -111,7 +111,17 @@ const nuevoAdministrador = async (email, nombreConductor, apellidoConductor, pas
     });
 }
 
-const cambioConductor = async (email, nombresRepresentante, apellidosRepresentante, ruta, nombresNuevoConductor, apellidosNuevoConductor, coordinadorApellido, coordinadorNombre, tipoDeReemplazo) => {
+const cambioConductor = async (email, nombresRepresentante, apellidosRepresentante, ruta, nombresNuevoConductor, apellidosNuevoConductor, coordinadorApellido, coordinadorNombre, tipoDeReemplazo, fechaInicio = null, fechaFin = null) => {
+    //Variable que contendrá un fragmento de html que existirá solo si el tipo de reemplazo es temporal 
+    let inclusionDeFecha = ""; 
+    if (tipoDeReemplazo === 'Temporal' && fechaInicio && fechaFin) {
+        if (fechaInicio === fechaFin) {
+            inclusionDeFecha = `<p>El reemplazo será efectivo solo <strong>por el día de hoy ${fechaInicio}</strong>.</p>`;
+        } else {
+            inclusionDeFecha = `<p>El reemplazo será efectivo desde el <strong>${fechaInicio}</strong> hasta el <strong>${fechaFin}</strong>.</p>`;
+        }
+    };
+    
     // Creación de la estructura que tendrá el correo
     let estructuraEmail = {
         from: process.env.EMAIL_USER,
@@ -123,6 +133,7 @@ const cambioConductor = async (email, nombresRepresentante, apellidosRepresentan
                 <p>Estimado(a) ${nombresRepresentante} ${apellidosRepresentante},</p>
                 <p>Se le informa que el nuevo conductor de la ruta ${ruta} de sus representados es: ${nombresNuevoConductor} ${apellidosNuevoConductor}.</p>
                 <p>Este cambio será de tipo: <strong>${tipoDeReemplazo}</strong>.</p>
+                ${inclusionDeFecha}
                 <p>Por favor, no dude en ponerse en contacto con el nuevo conductor para coordinar los detalles del transporte.</p>
                 <p><b>Atentamente,</b></p>
                 <p>${coordinadorNombre} ${coordinadorApellido}</p>
@@ -130,6 +141,7 @@ const cambioConductor = async (email, nombresRepresentante, apellidosRepresentan
             </div>  
         `
     };
+
     // Creación del transportador universal con el email y el password del conductor ingresado por el administrador
     transportador.sendMail(estructuraEmail, (error, info) => {
         if (error) {
