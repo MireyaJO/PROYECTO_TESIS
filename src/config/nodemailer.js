@@ -112,15 +112,15 @@ const nuevoAdministrador = async (email, nombreConductor, apellidoConductor, pas
 }
 
 const cambioConductor = async (email, nombresRepresentante, apellidosRepresentante, ruta, nombresNuevoConductor, apellidosNuevoConductor, nombresConductorAnterior, apellidosConductorAnterior, telefonoConductorAnterior, coordinadorApellido, coordinadorNombre, tipoDeReemplazo) => {
-    let inclusionDeFecha = "";
+    let datoPorTipoDeReemplazo = "";
     
     if (tipoDeReemplazo === 'Temporal') {
-        inclusionDeFecha = `
+        datoPorTipoDeReemplazo = `
         <p>Este cambio es temporal. Cuando el conductor original, <strong>${nombresConductorAnterior} ${apellidosConductorAnterior}</strong>, regrese a sus funciones, se le notificará con anticipación.</p>
         <p><b>Contacto del nuevo conductor asignado: </b> <strong>${telefonoConductorAnterior}</strong>. Cabe recalcar que la información del conductor también se encuentra en la aplicación móvil.</p>
         `;
     } else if (tipoDeReemplazo === 'Permanente') {
-        inclusionDeFecha = `
+        datoPorTipoDeReemplazo = `
         <p>Este cambio es permanente. El conductor original, <strong>${nombresConductorAnterior} ${apellidosConductorAnterior}</strong>, ya no estará a cargo de la ruta <strong>${ruta}</strong>.</p>
         <p><b>Contacto del nuevo conductor asignado: </b> <strong>${telefonoConductorAnterior}</strong>. Cabe recalcar que la información del conductor también se encuentra en la aplicación móvil.</p>
         `;
@@ -136,7 +136,7 @@ const cambioConductor = async (email, nombresRepresentante, apellidosRepresentan
             <p>Estimado(a) ${nombresRepresentante} ${apellidosRepresentante},</p>
             <p>Le informamos que el conductor de la ruta <strong>${ruta}</strong> de sus representados ha sido cambiado. El nuevo conductor asignado es <strong>${nombresNuevoConductor} ${apellidosNuevoConductor}</strong>.</p>
             <p>Este cambio será de tipo: <strong>${tipoDeReemplazo}</strong>.</p>
-            ${inclusionDeFecha}
+            ${datoPorTipoDeReemplazo}
             <p>Por favor, no dude en ponerse en contacto con el nuevo conductor para coordinar los detalles del transporte.</p>
             <p><b>Atentamente,</b></p>
             <p>${coordinadorNombre} ${coordinadorApellido}</p>
@@ -327,7 +327,15 @@ const correoConductorDesactivado = async (email, nombreConductorNormal, apellido
     });
 };
 
-const designacionDeReemplazo = async (email, nombreReemplazo, apellidoReemplazo, ruta, sectores, nombreConductorReemplazado, apellidoConductorReemplazado, coordinadorNombre, coordinadorApellido) => {
+const designacionDeReemplazo = async (email, nombreReemplazo, apellidoReemplazo, ruta, sectores, nombreConductorReemplazado, apellidoConductorReemplazado, tipoDeReemplazo, coordinadorNombre, coordinadorApellido) => {
+    let datoPorTipoDeReemplazo = "";
+
+    if (tipoDeReemplazo === 'Temporal') {
+        datoPorTipoDeReemplazo = ` <p><strong>En la aplicacion móvil SOLO PUEDE AGREGAR ESTUDIANTES Y TOMAR ASISTENCIA</strong></p>`; 
+    } else if (tipoDeReemplazo === 'Permanente') {
+        datoPorTipoDeReemplazo = `<p><strong>En la aplicación móvil tiene la posibilidad de GESTIONAR POR COMPLETO A LOS ESTUDIANTES</strong></p>`;
+    }; 
+
     let estructuraEmail = {
         from: process.env.EMAIL_USER,
         to: email,
@@ -338,13 +346,27 @@ const designacionDeReemplazo = async (email, nombreReemplazo, apellidoReemplazo,
             <p>Estimado(a) ${nombreReemplazo} ${apellidoReemplazo},</p>
             <p>Le informamos que ha sido asignado como conductor de reemplazo para la ruta <strong>${ruta}</strong>.</p>
             <p>Detalles de la asignación:</p>
-            <ul>
-                <li><strong>Ruta:</strong> ${ruta}</li>
-                <li><strong>Sectores:</strong> ${sectores}</li>
-                <li><strong>Conductor reemplazado:</strong> ${nombreConductorReemplazado} ${apellidoConductorReemplazado}</li>
-            </ul>
+            <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
+                <tr>
+                    <td style="padding: 8px; border: 1px solid #ddd;"><strong>Ruta:</strong></td>
+                    <td style="padding: 8px; border: 1px solid #ddd;">${ruta}</td>
+                </tr>
+                <tr>
+                    <td style="padding: 8px; border: 1px solid #ddd;"><strong>Sectores:</strong></td>
+                    <td style="padding: 8px; border: 1px solid #ddd;">${sectores}</td>
+                </tr>
+                <tr>
+                    <td style="padding: 8px; border: 1px solid #ddd;"><strong>Conductor ha reemplazar:</strong></td>
+                    <td style="padding: 8px; border: 1px solid #ddd;">${nombreConductorReemplazado} ${apellidoConductorReemplazado}</td>
+                </tr>
+                <tr>
+                    <td style="padding: 8px; border: 1px solid #ddd;"><strong>Tipo de reemplazo:</strong></td>
+                    <td style="padding: 8px; border: 1px solid #ddd;">${tipoDeReemplazo}</td>
+                </tr>
+            </table>
             <p>Por favor, asegúrese de coordinar con los representantes de los estudiantes asignados para garantizar un servicio eficiente.</p>
             <p>Si tiene alguna pregunta o necesita más información, no dude en ponerse en contacto con el coordinador de rutas.</p>
+            ${datoPorTipoDeReemplazo}
             <p><b>Atentamente,</b></p>
             <p>${coordinadorNombre} ${coordinadorApellido}</p>
             <p><strong>Coordinador de Rutas</strong></p>

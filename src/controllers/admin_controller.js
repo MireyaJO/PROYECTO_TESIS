@@ -7,7 +7,6 @@ import {enviarCorreoConductor, actualizacionDeConductor, eliminacionDelConductor
     designacionDeReemplazo, correoConductorDesactivado
 } from "../config/nodemailer.js"; 
 import crypto from 'crypto';
-import e from 'cors';
 
 //Función para subir la imagen a Cloudinary y guardar la URL en la base de datos
 const SubirImagen = async (file, nombre, apellido) =>{
@@ -768,7 +767,7 @@ const ReemplazoTemporal = async (req, res) => {
             //Actualizar el conductor de los estudiantes
             await Estudiantes.findByIdAndUpdate(estudianteId._id, { conductor: conductorReemplazo._id });
             //Se guarda la actualización en la base de datos de estudiantes
-            await estudiantesConductorAntiguo.save();
+            await estudianteId.save();
 
             //Objeto con la información de cada estudiante que se encuentra vinculado al conductor antiguo
             const estudianteRegistrado = {idEstudiante: estudianteId._id, nombreEstudiante: estudianteId.nombre, apellidoEstudiante: estudianteId.apellido, nivelEscolarEstudiante: estudianteId.nivelEscolar, 
@@ -812,7 +811,7 @@ const ReemplazoTemporal = async (req, res) => {
         };
 
         //Enviar correo al conductor de reemplazo
-        await designacionDeReemplazo(conductorReemplazo.email, conductorReemplazo.nombre, conductorReemplazo.apellido, conductorReemplazo.rutaAsignada, conductorReemplazo.sectoresRuta, conductorAntiguo.nombre, conductorAntiguo.apellido, idCoordinador.nombre, idCoordinador.apellido);
+        await designacionDeReemplazo(conductorReemplazo.email, conductorReemplazo.nombre, conductorReemplazo.apellido, conductorReemplazo.rutaAsignada, conductorReemplazo.sectoresRuta, conductorAntiguo.nombre, conductorAntiguo.apellido, 'Temporal', idCoordinador.nombre, idCoordinador.apellido);
 
         res.status(200).json({
             msg_reemplazo: `El reemplazo temporal se ha realizado exitosamente. Los estudiantes han sido transferidos al conductor ${conductorReemplazo.nombre} ${conductorReemplazo.apellido}, y el conductor original ha sido marcado como inactivo.`,
@@ -858,7 +857,7 @@ const ReemplazoPermanente = async (req, res) => {
             await Estudiantes.findByIdAndUpdate(estudianteId._id, { conductor: conductorReemplazo._id });
 
             //Se guarda la actualización en la base de datos de estudiantes
-            await estudiantesConductorAntiguo.save();
+            await estudianteId.save();
 
             //Objeto que contiene la información de cada estudiante que se encuentra vinculado al conductor antiguo
             const estudianteRegistrado = {idEstudiante: estudianteId._id, nombreEstudiante: estudianteId.nombre, apellidoEstudiante: estudianteId.apellido, nivelEscolarEstudiante: estudianteId.nivelEscolar, 

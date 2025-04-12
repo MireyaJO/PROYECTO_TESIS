@@ -1,5 +1,5 @@
 import mongoose, { Schema, model } from 'mongoose';
-
+//Esquema para guardar las acciones de los conductores para reportes de fronted 
 const HistorialConductores = new Schema(
     {
         conductor: {
@@ -17,10 +17,15 @@ const HistorialConductores = new Schema(
         },
         accion: {
             type: String,
-            enum: ['eliminacion', 'reemplazo'],
+            enum: ['Reemplazo', 'Activación'],
             required: true,
         },
-        fecha: {
+        tipoReemplazo: {
+            type: String,
+            enum: ['Temporal', 'Permanente'],
+            required: true,
+        },
+        fechaEnQueInicio: {
             // Cambiar a String para almacenar solo la fecha
             type: String, 
             // Usar función normal para definir el valor predeterminado, divide la cadena de caracteres que da MongoDB
@@ -33,23 +38,20 @@ const HistorialConductores = new Schema(
         conductorReemplazo: {
             type: mongoose.Schema.Types.ObjectId,
             ref: 'Conductores', 
+            required: true,
         },
         nombreConductorReemplazo: {
             type: String,
+            required: true,
         }, 
         apellidoConductorReemplazo: {
             type: String,
+            required: true,
         },
-        estudiantesReasignados: [
-            {
-                idEstudiante: {
-                    type: mongoose.Schema.Types.ObjectId,
-                    ref: 'Estudiantes',
-                },
-                nombreEstudiante: String,
-                apellidoEstudiante: String,
-            },
-        ],
+        numeroDeEstudiantesAsignados: {
+            type: Number,
+            required: true,
+        },
     },
     { timestamps: true }
 );
