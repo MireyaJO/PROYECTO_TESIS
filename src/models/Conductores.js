@@ -67,9 +67,6 @@ const paraElRegistroDeLosConductores= new Schema(
             required : function () {
                 return this.esReemplazo === 'No';  
             }, 
-            unique: function () {
-                return this.esReemplazo === 'No'; 
-            }, 
             trim: true
         }, 
         institucion:{

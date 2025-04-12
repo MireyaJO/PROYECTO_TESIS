@@ -1,6 +1,8 @@
 import {Router} from 'express';
 import {RegistroDeLosConductores, ActualizarRutasYSectoresId, BuscarConductorRuta,  ListarConductor, VisualizarPerfil,
-    ActualizarInformacionAdmin, AsignarPrivilegiosDeAdmin, RegistrarNuevoAdmin, ActualizarPassword, ReemplazoTemporal, ReemplazoPermanente, ActivarConductorOriginal
+    ActualizarInformacionAdmin, AsignarPrivilegiosDeAdmin, RegistrarNuevoAdmin, ActualizarPassword, ReemplazoTemporal, 
+    ReemplazoPermanente, ActivarConductorOriginal, ListarReemplazoDisponibles, ListarConductoresConReemplazo, BuscarConductoresConReemplazo,
+    CantidadReemplazosYActivacion, InformacionParaReporte
 } from '../controllers/admin_controller.js'
 import {verificacionAdminRol, verificacionToken} from '../middlewares/autho.js'
 import {validacionesConductor, validacionesActualizarConductorNormal, validacionesActualizarPerfilAdmin, validacionesAdmin, validarContraseniaNueva} from '../middlewares/validaciones.js'
@@ -9,9 +11,7 @@ const router = Router()
 //Rutas privadas
 router.post('/registro/conductores', verificacionToken, verificacionAdminRol, validacionesConductor, RegistroDeLosConductores);
 router.post('/registro/nuevo/admin', verificacionToken, verificacionAdminRol, validacionesAdmin, RegistrarNuevoAdmin);
-router.get('/listar/conductores', verificacionToken, verificacionAdminRol, ListarConductor);
-router.get('/buscar/conductor/ruta/:rutaAsignada', verificacionToken, BuscarConductorRuta);
-router.get('/visualizar/perfil/admin', verificacionToken, verificacionAdminRol, VisualizarPerfil);
+router.post('/info/completa/reemplazos', verificacionToken, verificacionAdminRol, InformacionParaReporte);
 router.patch('/actualizar/conductor/:id', verificacionToken, verificacionAdminRol, validacionesActualizarConductorNormal, ActualizarRutasYSectoresId);
 router.patch('/actualizar/informacion/admin', verificacionToken, verificacionAdminRol, validacionesActualizarPerfilAdmin, ActualizarInformacionAdmin);
 router.patch('/asignar/privilegios/admin/:idAsignacion', verificacionToken, verificacionAdminRol, AsignarPrivilegiosDeAdmin);
@@ -19,4 +19,12 @@ router.patch('/actualizar/contrasenia/admin', verificacionToken, verificacionAdm
 router.patch('/reemplazo/temporal/:idAntiguo/:idReemplazor', verificacionToken, verificacionAdminRol, ReemplazoTemporal);
 router.patch('/reemplazo/permanente/:idAntiguo/:idReemplazo', verificacionToken, verificacionAdminRol, ReemplazoPermanente);
 router.patch('/activar/conductor/original/:idConductor', verificacionToken, verificacionAdminRol, ActivarConductorOriginal);
+router.get('/listar/conductores', verificacionToken, verificacionAdminRol, ListarConductor);
+router.get('/listar/reemplazo/disponibles', verificacionToken, verificacionAdminRol, ListarReemplazoDisponibles);
+router.get('/buscar/conductor/ruta/:rutaAsignada', verificacionToken, BuscarConductorRuta);
+router.get('/listar/conductores/conreemplazo', verificacionToken, verificacionAdminRol, ListarConductoresConReemplazo);
+router.get('/buscar/conductor/conreemplazo/ruta/:rutaAsignada', verificacionToken, verificacionAdminRol, BuscarConductoresConReemplazo);
+router.get('/info/cantidades', verificacionToken, verificacionAdminRol, CantidadReemplazosYActivacion); 
+router.get('/visualizar/perfil/admin', verificacionToken, verificacionAdminRol, VisualizarPerfil);
+
 export default router

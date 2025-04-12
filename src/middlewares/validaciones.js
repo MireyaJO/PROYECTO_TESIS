@@ -191,6 +191,7 @@ const validacionesActualizarConductorNormal = [
     }
 ]
 
+//Validaciones para la actualizacion de un conductor admin
 const validacionesActualizarPerfilAdmin = [
     // Verificar que el numero de telefono sea de 10 digitos
     check("telefono")
@@ -234,6 +235,7 @@ const validacionesActualizarPerfilAdmin = [
     }
 ]
 
+//Validaciones para ruta en la que el conductor logeado cambia su contrasenia
 const validarContraseniaNueva = [
     check(["passwordAnterior", "passwordActual", "passwordActualConfirm"])
     .exists()

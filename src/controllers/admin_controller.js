@@ -3,10 +3,11 @@ import fs from 'fs-extra';
 import Conductores from '../models/Conductores.js';
 import Estudiantes from '../models/Estudiantes.js'
 import Representantes from '../models/Representantes.js';
+import Historial from '../models/HistorialConductores.js';
 import {enviarCorreoConductor, actualizacionDeConductor, eliminacionDelConductor,  informacionEliminacion, cambioAdmin, cambioConductor, asignacionAdministrador, nuevoAdministrador,
-    designacionDeReemplazo, correoConductorDesactivado
-} from "../config/nodemailer.js"; 
+    designacionDeReemplazo, conductorDesactivado, conductorReactivado, conductorDesocupado} from "../config/nodemailer.js"; 
 import crypto from 'crypto';
+
 
 //Función para subir la imagen a Cloudinary y guardar la URL en la base de datos
 const SubirImagen = async (file, nombre, apellido) =>{
@@ -385,57 +386,6 @@ const RegistrarNuevoAdmin = async (req,res) =>{
     }
 };
 
-// Listar todos los conductores de la Unidad Educativa Particular EMAÚS
-const ListarConductor = async (req, res) => {
-    try{
-        //Obtención de los conductores normales
-        const conductores = await Conductores.find({
-            esReemplazo: 'No',
-            estado: { $in: ["Activo", "Trabaja como conductor"] }
-        }).select("-password -updatedAt -createdAt -__v");
-
-        //Validación de que existan conductores
-        if (conductores.length === 0) return res.status(400).json({msg_listar_conductores:"El administrador no ha registrado a ningún conductor"});
-        
-        //Mensaje de exito
-        res.status(200).json({ msg_listar_conductores: "Los conductores se han encontrado exitosamente", listar_conductores: conductores});
-    }catch(error){
-        console.log(error); 
-        res.status(500).json({
-            msg_listar_conductores: "Error al listar los conductores",
-            error: error.message
-        });
-    }    
-}; 
-
-// Buscar un conductor en especifico por la ruta asignada
-const BuscarConductorRuta = async (req, res) => {
-    try {
-        // Obtener el número de la ruta de los parámetros de la URL
-        const {rutaAsignada} = req.params;
-
-        // Busqueda de un conductor que tenga la misma ruta que se encuentra en los parámetros de la URL 
-        const conductor = await Conductores.findOne({
-            rutaAsignada: rutaAsignada,
-            esReemplazo: 'No', 
-            estado: { $in: ["Activo", "Trabaja como conductor"] }
-        }).select("-password -updatedAt -createdAt -__v");
-        
-        if (!conductor) {
-            return res.status(400).json({ msg: "Lo sentimos, no se ha encontrado ningún conductor con esa ruta que se encuentra activo o el admin no tiene privilegios de conductor" });
-        }
-
-        // Mensaje de éxito
-        res.status(200).json({ msg_buscar_conductor_ruta: `El conductor de la ruta ${rutaAsignada} se han encontrado exitosamente`, conductor:conductor });
-    } catch (error) {
-        console.log(error);
-        res.status(500).json({ 
-            msg_buscar_conductor_ruta: "Error al buscar conductores por ruta", 
-            error: error.message 
-        });
-    }
-}; 
-
 // Visualizar el perfil del conductor logeado, que tiene privilegios de admin
 const VisualizarPerfil = async (req, res)=>{
     try{
@@ -489,12 +439,7 @@ const ActualizarRutasYSectoresId = async (req, res) => {
         const conductor = await Conductores.findOne({
             _id: id, 
             esReemplazo: 'No', 
-            $or: [
-                // Conductores normales, solo tienen privilegios de conductor
-                { estado: "Activo" }, 
-                // Conductor administrador, posee privilegios de admin y conductor
-                { estado: "Trabaja como conductor" } 
-            ]
+            estado: { $in: ["Activo", "Trabaja como conductor"] }
         });
         if (!conductor) return res.status(400).json({ msg_actualizacion_conductor: "Lo sentimos, el conductor ha actualizar no se ha encontrado" });
 
@@ -747,7 +692,7 @@ const ReemplazoTemporal = async (req, res) => {
 
     try{
         //Verificar si los conductores existen 
-        const conductorAntiguo = await Conductores.findById({_id: idAntiguo, estado: 'Activo'});
+        const conductorAntiguo = await Conductores.findById({_id: idAntiguo, estado: { $in: ["Activo", "Trabaja como conductor"] }});
         const conductorReemplazo = await Conductores.findById({_id: idReemplazo, estado: 'Disponible'});
         //El conductor antiguo no existe 
         if(!conductorAntiguo) return res.status(400).json({msg_reemplazo:`El conductor ${conductorAntiguo.nombre} ${conductorAntiguo.apellido} no se encuentra registrado`});
@@ -791,6 +736,8 @@ const ReemplazoTemporal = async (req, res) => {
         //Actualizar la ruta y sectores del conductor de reemplazo
         conductorReemplazo.rutaAsignada = conductorAntiguo.rutaAsignada;
         conductorReemplazo.sectoresRuta = conductorAntiguo.sectoresRuta;
+        //Actualizar el estado del conductor de reemplazo
+        conductorReemplazo.estado = 'Ocupado';
 
         //Desactivar al conductor antiguo 
         if (conductorAntiguo.roles.includes("admin") && conductorAntiguo.roles.length === 2){            
@@ -807,11 +754,28 @@ const ReemplazoTemporal = async (req, res) => {
 
         if (conductorAntiguo.roles.includes("conductor") && conductorAntiguo.roles.length === 1){
             //Envio del correo al conductor inactivo solo si es un conductor normal  
-            await correoConductorDesactivado (conductorAntiguo.email, conductorAntiguo.nombre, conductorAntiguo.apellido, conductorReemplazo.nombre, conductorReemplazo.apellido, conductorReemplazo.rutaAsignada, conductorReemplazo.sectoresRuta, idCoordinador.nombre, idCoordinador.apellido); 
+            await conductorDesactivado (conductorAntiguo.email, conductorAntiguo.nombre, conductorAntiguo.apellido, conductorReemplazo.nombre, conductorReemplazo.apellido, conductorReemplazo.rutaAsignada, conductorReemplazo.sectoresRuta, idCoordinador.nombre, idCoordinador.apellido); 
         };
 
         //Enviar correo al conductor de reemplazo
         await designacionDeReemplazo(conductorReemplazo.email, conductorReemplazo.nombre, conductorReemplazo.apellido, conductorReemplazo.rutaAsignada, conductorReemplazo.sectoresRuta, conductorAntiguo.nombre, conductorAntiguo.apellido, 'Temporal', idCoordinador.nombre, idCoordinador.apellido);
+
+        //Guardar la acción que se realiza en el historial para el reporte del fronted 
+        const historial = new Historial({
+            conductor: conductorAntiguo._id,
+            nombreConductor: conductorAntiguo.nombre,
+            apellidoConductor: conductorAntiguo.apellido,
+            accion: "Reemplazo",
+            rutaAsignada: conductorAntiguo.rutaAsignada,
+            tipoReemplazo: "Temporal",
+            conductorReemplazo: conductorReemplazo._id,
+            nombreConductorReemplazo: conductorReemplazo.nombre,
+            apellidoConductorReemplazo: conductorReemplazo.apellido,
+            numeroDeEstudiantesAsignados: cantidadEstudiantes
+        }); 
+
+        //Guardar el historial en la base de datos
+        await historial.save();
 
         res.status(200).json({
             msg_reemplazo: `El reemplazo temporal se ha realizado exitosamente. Los estudiantes han sido transferidos al conductor ${conductorReemplazo.nombre} ${conductorReemplazo.apellido}, y el conductor original ha sido marcado como inactivo.`,
@@ -835,8 +799,8 @@ const ReemplazoPermanente = async (req, res) => {
 
     try{
         // Verificación de la existencia de los conductores 
-        const conductorAntiguo = await Conductores.findById({_id: idAntiguo, estado: true});
-        const conductorReemplazo = await Conductores.findById({_id: idReemplazo, estado: true});
+        const conductorAntiguo = await Conductores.findById({_id: idAntiguo, estado: { $in: ["Activo", "Trabaja como conductor"] }});
+        const conductorReemplazo = await Conductores.findById({_id: idReemplazo, estado: 'Disponible'});
 
         //El conductor antiguo existe
         if(!conductorAntiguo) return res.status(400).json({msg_reemplazo:`El conductor ${conductorAntiguo.nombre} ${conductorAntiguo.apellido} no se encuentra registrado o esta inactivo`});
@@ -882,17 +846,37 @@ const ReemplazoPermanente = async (req, res) => {
         conductorReemplazo.rutaAsignada = conductorAntiguo.rutaAsignada;
         conductorReemplazo.sectoresRuta = conductorAntiguo.sectoresRuta;
         //Se convierte en un conductor original 
-        conductorReemplazo.esReemplazo = false;
-        //Eliminación de la imagen del conductor antiguo en Cloudinary
-        const publicId = `conductores/${conductorAntiguo.nombre}_${conductorAntiguo.apellido}`;
-        try{
-            await cloudinary.v2.uploader.destroy(publicId);
-        }catch{
-            console.error("Error al eliminar la imagen en Cloudinary");
-            return res.status(500).json({msg_eliminacion_conductor:"Error al eliminar la imagen"}); 
-        } 
-        //Eliminación defenitiva del conductor antiguo
-        await Conductores.findOneAndDelete({_id: idAntiguo});
+        conductorReemplazo.esReemplazo = 'No';
+        conductorReemplazo.estado = 'Activo';
+        
+        //Desactivar al conductor si solo si es un conductor que tiene privilegios de admin y conductor
+        if (conductorAntiguo.roles.includes("admin") && conductorAntiguo.roles.length === 2){     
+            //Quitar los privilegios de administrador
+            const index = conductorAntiguo.roles.indexOf("admin");
+            
+            //Eliminar el rol de administrador
+            if (index > -1) {
+                conductorAntiguo.roles.splice(index, 1);
+            }
+
+            //Cambiar el campo "estado" del conductor con privilegios de admin y conductor 
+            conductorAntiguo.estado = 'No trabaja como conductor';
+
+            //Guardar los cambios en la base de datos de conductores
+            await conductorAntiguo.save();
+        } else if (conductorAntiguo.roles.includes("conductor") && conductorAntiguo.roles.length === 1){
+            //Eliminación de la imagen del conductor antiguo en Cloudinary
+            const publicId = `conductores/${conductorAntiguo.nombre}_${conductorAntiguo.apellido}`;
+            try{
+                await cloudinary.v2.uploader.destroy(publicId);
+            }catch{
+                console.error("Error al eliminar la imagen en Cloudinary");
+                return res.status(500).json({msg_eliminacion_conductor:"Error al eliminar la imagen"}); 
+            } 
+            //Eliminación defenitiva del conductor antiguo
+            await Conductores.findOneAndDelete({_id: idAntiguo});
+        };
+
         //Guardar los cambios en la base de datos de conductores
         await conductorReemplazo.save();
 
@@ -900,7 +884,24 @@ const ReemplazoPermanente = async (req, res) => {
         await eliminacionDelConductor(conductorAntiguo.email, conductorAntiguo.nombre, conductorAntiguo.apellido, idCoordinador.apellido, idCoordinador.nombre);
 
         //Envio del correo al conductor de reemplazo
+        await designacionDeReemplazo(conductorReemplazo.email, conductorReemplazo.nombre, conductorReemplazo.apellido, conductorReemplazo.rutaAsignada, conductorReemplazo.sectoresRuta, conductorAntiguo.nombre, conductorAntiguo.apellido, 'Permanente', idCoordinador.nombre, idCoordinador.apellido);
 
+        //Guardar la acción que se realiza en el historial para el reporte del fronted
+        const historial = new Historial({
+            conductor: conductorAntiguo._id,
+            nombreConductor: conductorAntiguo.nombre,
+            apellidoConductor: conductorAntiguo.apellido,
+            accion: "Reemplazo",
+            rutaHaCubrir: conductorReemplazo.rutaAsignada,
+            tipoReemplazo: "Permanente",
+            conductorReemplazo: conductorReemplazo._id,
+            nombreConductorReemplazo: conductorReemplazo.nombre,
+            apellidoConductorReemplazo: conductorReemplazo.apellido,
+            numeroDeEstudiantesAsignados: cantidadEstudiantes
+        });
+
+        //Guardar el historial en la base de datos
+        await historial.save();
 
         res.status(200).json({
             msg_reemplazo: `El reemplazo permanente se ha realizado exitosamente. Los estudiantes han sido transferidos al conductor ${conductorReemplazo.nombre} ${conductorReemplazo.apellido}, y el conductor original ha sido eliminado del sistema.`,
@@ -915,21 +916,23 @@ const ReemplazoPermanente = async (req, res) => {
 };
 
 const ActivarConductorOriginal = async (req, res) => {
-    try{
-        //Obtener el id del conductor original de los parámetros de la URL
-        const {idConductor} = req.params;
+    //Obtener el id del conductor original de los parámetros de la URL
+    const {idConductor} = req.params;
 
+    //Obtener el id del coordinador de rutas logeado
+    const {idCoordinador} = req.user;
+    try{
         //Verificación de la existencia del conductor original
-        const conductorOriginal = await Conductores.findById({_id: idConductor, estado: false, esReemplazo: false});
+        const conductorOriginal = await Conductores.findById({_id: idConductor, estado: { $in: ["Activo", "Trabaja como conductor"] }, esReemplazo: 'No'});
         if(!conductorOriginal) return res.status(400).json({msg_activacion_conductor:"El conductor original no se encuentra registrado"});
         
         //¿El conductor tiene o no un reemplazo?
-        const reemplazoActivo = await Conductores.findOne({rutaAsignada: conductorOriginal.rutaAsignada, estado: true, esReemplazo: true});
+        const reemplazoActivo = await Conductores.findOne({rutaAsignada: conductorOriginal.rutaAsignada, estado: 'Ocupado', esReemplazo: 'Sí'});
         if(!reemplazoActivo) return res.status(400).json({msg_activacion_conductor:"El conductor original no tiene un reemplazo activo"});
 
         //Realizar la reasignación de los estudiantes
-        const estudaintesAsignados = Estudiantes.find({conductor: reemplazoActivo._id});
-        for(const estudianteId of estudaintesAsignados){
+        const estudiantesAsignados = Estudiantes.find({conductor: reemplazoActivo._id});
+        for(const estudianteId of estudiantesAsignados){
             //Actualizar el conductor de los estudiantes
             await Estudiantes.findByIdAndUpdate(estudianteId._id, {conductor: conductorOriginal._id});
 
@@ -953,22 +956,41 @@ const ActivarConductorOriginal = async (req, res) => {
         }; 
 
         //Actualizar la información del conductor original
-        const cantidadEstudiantes = estudaintesAsignados.length;
+        const cantidadEstudiantes = estudiantesAsignados.length;
         //Actualizar el número de estudiantes del conductor original
         conductorOriginal.numeroEstudiantes = cantidadEstudiantes;
         //Actualizar la ruta y sectores del conductor original
         conductorOriginal.rutaAsignada = reemplazoActivo.rutaAsignada;
         conductorOriginal.sectoresRuta = reemplazoActivo.sectoresRuta;
         //Se actualiza la disponibilidad del conductor original
-        reemplazoActivo.estado = false;
+        reemplazoActivo.estado = 'Trabaja como conductor';
         //Guardar los cambios en la base de datos de conductores
         await conductorOriginal.save();
         await reemplazoActivo.save();
 
-        //Envio del correo al conductor al conductor original
+        //Envio del correo al conductor original
+        if(conductorOriginal.roles.includes("conductor") && conductorOriginal.roles.length === 1){
+            await conductorReactivado(conductorOriginal.email, conductorOriginal.nombre, conductorOriginal.apellido, conductorOriginal.rutaAsignada, conductorOriginal.sectoresRuta, idCoordinador.nombre, idCoordinador.apellido);
+        }
 
         //Envio del correo al conductor de reemplazo
+        await conductorDesocupado(reemplazoActivo.email, reemplazoActivo.nombre, reemplazoActivo.apellido, conductorOriginal.rutaAsignada, conductorOriginal.sectoresRuta, idCoordinador.nombre, idCoordinador.apellido);
+        
+        //Guardar la acción que se realiza en el historial para el reporte del fronted
+        const historial = new Historial({
+            conductor: conductorOriginal._id,
+            nombreConductor: conductorOriginal.nombre,
+            apellidoConductor: conductorOriginal.apellido,
+            accion: "Activación",
+            conductorReemplazo: reemplazoActivo._id,
+            nombreConductorReemplazo: reemplazoActivo.nombre,
+            apellidoConductorReemplazo: reemplazoActivo.apellido,
+            numeroDeEstudiantesAsignados: cantidadEstudiantes
+        });
 
+        //Guardar el historial en la base de datos
+        await historial.save();
+        
         res.status(200).json({
             msg_reemplazo: `$El conductor ${conductorOriginal.nombre} ${conductorOriginal.apellido} se ha activado.`,
         });
@@ -980,31 +1002,228 @@ const ActivarConductorOriginal = async (req, res) => {
             error: error.message
         });
     };
-}
+}; 
 
-const ListarConductoresReemplazo = async (req, res) => {
+// Listar todos los conductores de la Unidad Educativa Particular EMAÚS
+const ListarConductor = async (req, res) => {
+    try{
+        //Obtención de los conductores normales
+        const conductores = await Conductores.find({
+            esReemplazo: 'No',
+            estado: { $in: ["Activo", "Trabaja como conductor"] }
+        }).select("-password -updatedAt -createdAt -__v");
+
+        //Validación de que existan conductores
+        if (conductores.length === 0) return res.status(400).json({msg_listar_conductores:"El administrador no ha registrado a ningún conductor"});
+        
+        //Mensaje de exito
+        res.status(200).json({ msg_listar_conductores: "Los conductores se han encontrado exitosamente", listar_conductores: conductores});
+    }catch(error){
+        console.log(error); 
+        res.status(500).json({
+            msg_listar_conductores: "Error al listar los conductores",
+            error: error.message
+        });
+    }    
+}; 
+
+// Buscar un conductor en especifico por la ruta asignada
+const BuscarConductorRuta = async (req, res) => {
+    try {
+        // Obtener el número de la ruta de los parámetros de la URL
+        const {rutaAsignada} = req.params;
+
+        // Busqueda de un conductor que tenga la misma ruta que se encuentra en los parámetros de la URL 
+        const conductor = await Conductores.findOne({
+            rutaAsignada: rutaAsignada,
+            esReemplazo: 'No', 
+            estado: { $in: ["Activo", "Trabaja como conductor"] }
+        }).select("-password -updatedAt -createdAt -__v");
+        
+        if (!conductor) {
+            return res.status(400).json({ msg: "Lo sentimos, no se ha encontrado ningún conductor con esa ruta que se encuentra activo o el admin no tiene privilegios de conductor" });
+        }
+
+        // Mensaje de éxito
+        res.status(200).json({ msg_buscar_conductor_ruta: `El conductor de la ruta ${rutaAsignada} se han encontrado exitosamente`, conductor: conductor });
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ 
+            msg_buscar_conductor_ruta: "Error al buscar conductores por ruta", 
+            error: error.message 
+        });
+    };
+}; 
+
+//Listar conductores disponibles 
+const ListarReemplazoDisponibles = async (req, res) => {
     try{
         //Consultar los conductores con el campo "esReemplazo" igual a true
-        const conductores = await Conductores.find({roles: { $in: ["conductor"], $nin: ["admin"] }, esReemplazo:true, estado: true}).select("-password -updatedAt -createdAt -__v");
+        const conductores = await Conductores.find({roles: { $in: ["conductor"], $nin: ["admin"] }, esReemplazo: 'Sí', estado: 'Disponible'}).select("-password -updatedAt -createdAt -__v");
 
         //Validación de que existan conductores de reemplazo
         if(conductores.length === 0) return res.status(400).json({msg_listar_conductores_reemplazo:"No se han encontrado conductores de reemplazo"});
         
         //Mensaje de exito
-        res.status(200).json({msg_listar_conductores_reemplazo:"Los conductores de reemplazo se han encontrado exitosamente", conductores});
+        res.status(200).json({msg_listar_conductores_reemplazo:"Los conductores de reemplazo se han encontrado exitosamente", reemplazosDisponibles: conductores});
     }catch(error){
         console.log(error); 
         res.status(500).json({
             msg_listar_conductores_reemplazo: "Error al listar los conductores de reemplazo",
             error: error.message
         });
-    }
+    };
 }; 
+
+//Listar conductores que no son reemplazo que poseen un reemplazo activo
+const ListarConductoresConReemplazo = async (req, res) => {
+    try {
+        // Consultar los conductores que no son reemplazos y tienen un reemplazo activo
+        const conductores = await Conductores.find({
+            esReemplazo: 'No',
+            $or: [
+                { estado: 'Inactivo', roles: ['conductor'] },
+                { estado: 'No trabaja como conductor', roles: ['conductor', 'admin'] }
+            ]
+        }).select("-password -updatedAt -createdAt -__v");
+    
+        // Validar si no se encontraron conductores
+        if (conductores.length === 0) {
+            return res.status(404).json({ msg: "No se encontraron conductores con reemplazos activos" });
+        }
+    
+        // Respuesta exitosa
+        res.status(200).json({ msg: "Conductores con reemplazos activos encontrados", conductoresConReemplazo: conductores });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ msg: "Error al listar conductores con reemplazos activos", error: error.message });
+    };
+};
+
+// Buscar un conductor en especifico por el nombre y apellido
+const BuscarConductoresConReemplazo = async (req, res) => {
+    try{
+        //Obtener el nombre y apellido del conductor de los parámetros de la URL 
+        const {rutaAsignada} = req.params;
+        //Buscar el conductor por nombre y apellido
+        const conductor = await Conductores.findOne({
+            rutaAsignada: rutaAsignada,
+            esReemplazo: 'No',
+            $or: [
+                { estado: 'Inactivo', roles: ['conductor'] },
+                { estado: 'No trabaja como conductor', roles: ['conductor', 'admin'] }
+            ]
+        }).select("-password -updatedAt -createdAt -__v");
+
+        //Validación de que el conductor existe
+        if(!conductor) return res.status(400).json({msg_buscar_conductor_reemplazo:"El conductor no se encuentra registrado o no tiene un reemplazo activo"});
+
+        //Mensaje de exito
+        res.status(200).json({msg_buscar_conductor_reemplazo:"El conductor se ha encontrado exitosamente", conductorConReemplazo: conductor});
+    } catch(error){
+        console.log(error);
+        res.status(500).json({msg_buscar_conductor_reemplazo:"Error al buscar conductores de reemplazo por nombre o apellido", error: error.message});
+    };
+};
+
+//Controladores para los reportes del fronted
+const CantidadReemplazosYActivacion = async (req, res) => {
+    try{
+        //Consultar los reemplazos que se encuentran activos 
+        const reemplazoActivo = await Estudiantes.find({estado: 'Ocupado', esReemplazo: 'Sí'});
+
+        //Cantidad de reemplazos activos
+        const cantidadReemplazosActivos = reemplazoActivo.length;
+
+        //Consultar reemplazos terminados 
+        const reemplazoTerminado = await Historial.find({accion: 'Activación'});  
+        
+        //Cantidad de reemplazos terminados
+        const cantidadReemplazosTerminados = reemplazoTerminado.length;
+
+        //Consultar reemplazos temporales
+        const reemplazosTemporales = await Historial.find({tipoReemplazo: 'Temporal'});
+
+        //Cantidad de reemplazos temporales
+        const cantidadReemplazosTemporales = reemplazosTemporales.length;
+
+        //Consultar reemplazos permanentes
+        const reemplazosPermanentes = await Historial.find({tipoReemplazo: 'Permanente'});
+
+        //Cantidad de reemplazos permanentes
+        const cantidadReemplazosPermanentes = reemplazosPermanentes.length;
+
+        //Mensaje de exito 
+        res.status(200).json({
+            msg_historial_reemplazo:"El historial de reemplazos y activación de conductores se ha encontrado exitosamente", 
+            reemplazoActivo: cantidadReemplazosActivos, 
+            reemplazoTerminado: cantidadReemplazosTerminados, 
+            reemplazosTemporales: cantidadReemplazosTemporales, 
+            reemplazosPermanentes: cantidadReemplazosPermanentes
+        });
+
+
+    } catch(error){
+        console.log(error);
+        res.status(500).json({msg_historial_reemplazo:"Error al listar el historial de conductores reemplazados y sus activaciones", error: error.message});
+    };
+};
+
+//Información completa de reemplazos 
+const InformacionParaReporte = async (req, res) => {
+    try{
+        //Parametros obtenidos desde la petición
+        const {informacionHaVisualizar} = req.body;
+
+        if(informacionHaVisualizar === 'Reemplazo temporal'){
+            //Consultar reemplazos temporales en la base dedatos 
+            const reemplazosTemporales = await Historial.find({tipoReemplazo: 'Temporal'}).select("-conductor -conductorReemplazo -updatedAt -createdAt -__v");
+            
+            //Validación de que existan reemplazos temporales
+            if(reemplazosTemporales.length === 0) return res.status(400).json({msg_historial_reemplazo:"No se han encontrado reemplazos temporales"});
+            
+            //Respuesta exitosa con la información de los reemplazos temporales
+            res.status(200).json({msg_historial_reemplazo:"El historial de reemplazos temporales", infoReemplazosTemporales: reemplazosTemporales});
+        } else if(informacionHaVisualizar === 'Reemplazo permanente'){
+            //Consultar reemplazos permanentes en la base dedatos 
+            const reemplazosPermanentes = await Historial.find({tipoReemplazo: 'Permanente'}).select("-conductor -conductorReemplazo -updatedAt -createdAt -__v");
+
+            //Validación de que existan reemplazos permanentes
+            if(reemplazosPermanentes.length === 0) return res.status(400).json({msg_historial_reemplazo:"No se han encontrado reemplazos permanentes"});
+
+            //Respuesta exitosa con la información de los reemplazos permanentes
+            res.status(200).json({msg_historial_reemplazo:"El historial de reemplazos permanentes", infoReemplazosPermanentes: reemplazosPermanentes});
+        } else if (informacionHaVisualizar === 'Activación de conductores originales'){
+            //Consultar activaciones en la base dedatos 
+            const activaciones = await Historial.find({accion: 'Activación'}).select("-conductor -conductorReemplazo -updatedAt -createdAt -__v");
+
+            //Validación de que existan activaciones, termino del reemplazo temporal
+            if(activaciones.length === 0) return res.status(400).json({msg_historial_reemplazo:"No se han encontrado activaciones de conductores"});
+
+            //Respuesta exitosa con la información de las activaciones
+            res.status(200).json({msg_historial_reemplazo:"El historial de activaciones", infoActivacion: activaciones});
+        } else if (informacionHaVisualizar === 'Reemplazo Activos'){
+            //Consultar reemplazos activos en la base dedatos 
+            const reemplazoActivo = await Estudiantes.find({estado: 'Ocupado', esReemplazo: 'Sí'}).select("nombre apellido rutaAsignada estado");
+
+            //Validación de que existan reemplazos permanentes
+            if(reemplazoActivo.length === 0) return res.status(400).json({msg_historial_reemplazo:"No se han encontrado reemplazos activos"});
+
+            //Respuesta exitosa con la información de los reemplazos activos
+            res.status(200).json({msg_historial_reemplazo:"El historial de reemplazos activos", infoReemplazosActivos: reemplazoActivo});
+
+        } else{
+            return res.status(400).json({msg_historial_reemplazo:"Lo sentimos,solo se puede visualizar el historial de reemplazos temporales, permanentes, activaciones de conductores originales y los reemplazos que siguen activos"});
+        }
+
+    }catch(error){
+        console.log(error);
+        res.status(500).json({msg_historial_reemplazo:"Error al listar el historial de conductores reemplazados y sus activaciones", error: error.message});
+    };
+};
 
 export {
     RegistroDeLosConductores,
-    BuscarConductorRuta,
-    ListarConductor,
     ActualizarRutasYSectoresId,
     VisualizarPerfil, 
     ActualizarInformacionAdmin, 
@@ -1013,5 +1232,12 @@ export {
     ActualizarPassword, 
     ReemplazoTemporal, 
     ReemplazoPermanente, 
-    ActivarConductorOriginal
+    ActivarConductorOriginal, 
+    ListarReemplazoDisponibles, 
+    BuscarConductorRuta,
+    ListarConductor,
+    ListarConductoresConReemplazo, 
+    BuscarConductoresConReemplazo, 
+    CantidadReemplazosYActivacion, 
+    InformacionParaReporte
 };

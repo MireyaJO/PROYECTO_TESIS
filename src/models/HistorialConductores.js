@@ -10,22 +10,35 @@ const HistorialConductores = new Schema(
         nombreConductor: {
             type: String,
             required: true,
+            trim: true
         },
         apellidoConductor: {
             type: String,
             required: true,
+            trim: true
         },
         accion: {
             type: String,
             enum: ['Reemplazo', 'Activación'],
-            required: true,
+            required: true, 
+            trim: true
         },
+        rutaHaCubrir:{
+            type:Number,
+            required : function () {
+                return this.accion === 'Reemplazo';  
+            }, 
+            trim: true
+        }, 
         tipoReemplazo: {
             type: String,
             enum: ['Temporal', 'Permanente'],
-            required: true,
+            required : function () {
+                return this.accion === 'Reemplazo';  
+            }, 
+            trim: true
         },
-        fechaEnQueInicio: {
+        fecha: {
             // Cambiar a String para almacenar solo la fecha
             type: String, 
             // Usar función normal para definir el valor predeterminado, divide la cadena de caracteres que da MongoDB
@@ -38,22 +51,31 @@ const HistorialConductores = new Schema(
         conductorReemplazo: {
             type: mongoose.Schema.Types.ObjectId,
             ref: 'Conductores', 
-            required: true,
+            required: function () {
+                return this.accion === 'Reemplazo';  
+            }, 
+            trim: true
         },
         nombreConductorReemplazo: {
             type: String,
-            required: true,
+            required: function () {
+                return this.accion === 'Reemplazo';  
+            },
+            trim: true
         }, 
         apellidoConductorReemplazo: {
             type: String,
-            required: true,
+            required : function () {
+                return this.accion === 'Reemplazo';  
+            },
+            trim: true
         },
         numeroDeEstudiantesAsignados: {
             type: Number,
-            required: true,
+            required: true
         },
     },
     { timestamps: true }
 );
 
-export default model('HistorialConductores', HistorialConductores);
+export default model('Historial', HistorialConductores);
