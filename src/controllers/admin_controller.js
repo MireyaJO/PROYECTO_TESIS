@@ -3,7 +3,9 @@ import fs from 'fs-extra';
 import Conductores from '../models/Conductores.js';
 import Estudiantes from '../models/Estudiantes.js'
 import Representantes from '../models/Representantes.js';
-import {enviarCorreoConductor, actualizacionDeConductor, eliminacionDelConductor,  informacionEliminacion, cambioAdmin, cambioConductor, asignacionAdministrador, nuevoAdministrador} from "../config/nodemailer.js"; 
+import {enviarCorreoConductor, actualizacionDeConductor, eliminacionDelConductor,  informacionEliminacion, cambioAdmin, cambioConductor, asignacionAdministrador, nuevoAdministrador,
+    designacionDeReemplazo, correoConductorDesactivado
+} from "../config/nodemailer.js"; 
 import crypto from 'crypto';
 import e from 'cors';
 
@@ -806,10 +808,11 @@ const ReemplazoTemporal = async (req, res) => {
 
         if (conductorAntiguo.roles.includes("conductor") && conductorAntiguo.roles.length === 1){
             //Envio del correo al conductor inactivo solo si es un conductor normal  
-            
+            await correoConductorDesactivado (conductorAntiguo.email, conductorAntiguo.nombre, conductorAntiguo.apellido, conductorReemplazo.nombre, conductorReemplazo.apellido, conductorReemplazo.rutaAsignada, conductorReemplazo.sectoresRuta, idCoordinador.nombre, idCoordinador.apellido); 
         };
 
         //Enviar correo al conductor de reemplazo
+        await designacionDeReemplazo(conductorReemplazo.email, conductorReemplazo.nombre, conductorReemplazo.apellido, conductorReemplazo.rutaAsignada, conductorReemplazo.sectoresRuta, conductorAntiguo.nombre, conductorAntiguo.apellido, idCoordinador.nombre, idCoordinador.apellido);
 
         res.status(200).json({
             msg_reemplazo: `El reemplazo temporal se ha realizado exitosamente. Los estudiantes han sido transferidos al conductor ${conductorReemplazo.nombre} ${conductorReemplazo.apellido}, y el conductor original ha sido marcado como inactivo.`,

@@ -301,14 +301,14 @@ const correoConductorDesactivado = async (email, nombreConductorNormal, apellido
     let estructuraEmail = {
         from: process.env.EMAIL_USER,
         to: email,
-        subject: "A comenzado Unidad Educativa Particular Emaús",
+        subject: "Ha comenzado su periodo de inactividad en el sistema de transportistas escolares de la Unidad Educativa Particular Emaús",
         html: `
         <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; background-color: #e0f7fa; padding: 20px; border-radius: 10px;">
             <h2 style="color: #00796b;">Transportistas de la Unidad Educativa Particular “Emaús”</h2>
             <p>Estimado(a) ${nombreConductorNormal} ${apellidoConductorNormal},</p>
             <p>Le informamos que su tiempo de servicio como conductor de la ruta <strong>${ruta}</strong> ha sido temporalmente suspendido. El conductor <strong>${nombreReemplazo} ${apellidoReemplazo}</strong> ha sido asignado como su reemplazo.</p>
             <p>El reemplazo cubrirá los siguientes sectores: <strong>${sectores}</strong>.</p>
-            <p>Por favor, comuníquese con el coordinador de rutas, <strong>${coordinadorNombre} ${coordinadorApellido}</strong>, para coordinar su regreso cuando sea necesario.</p>
+            <p>Por favor, comuníquese con el coordinador de rutas para coordinar su regreso cuando sea necesario.</p>
             <p>Si tiene alguna pregunta o necesita más información, no dude en ponerse en contacto con el coordinador.</p>
             <p><b>Atentamente,</b></p>
             <p>${coordinadorApellido} ${coordinadorNombre}</p>
@@ -326,6 +326,41 @@ const correoConductorDesactivado = async (email, nombreConductorNormal, apellido
         }
     });
 };
+
+const designacionDeReemplazo = async (email, nombreReemplazo, apellidoReemplazo, ruta, sectores, nombreConductorReemplazado, apellidoConductorReemplazado, coordinadorNombre, coordinadorApellido) => {
+    let estructuraEmail = {
+        from: process.env.EMAIL_USER,
+        to: email,
+        subject: "Designación de reemplazo en el sistema de transportistas escolares de la Unidad Educativa Particular Emaús",
+        html: `
+        <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; background-color: #e0f7fa; padding: 20px; border-radius: 10px;">
+            <h2 style="color: #00796b;">Transportistas de la Unidad Educativa Particular “Emaús”</h2>
+            <p>Estimado(a) ${nombreReemplazo} ${apellidoReemplazo},</p>
+            <p>Le informamos que ha sido asignado como conductor de reemplazo para la ruta <strong>${ruta}</strong>.</p>
+            <p>Detalles de la asignación:</p>
+            <ul>
+                <li><strong>Ruta:</strong> ${ruta}</li>
+                <li><strong>Sectores:</strong> ${sectores}</li>
+                <li><strong>Conductor reemplazado:</strong> ${nombreConductorReemplazado} ${apellidoConductorReemplazado}</li>
+            </ul>
+            <p>Por favor, asegúrese de coordinar con los representantes de los estudiantes asignados para garantizar un servicio eficiente.</p>
+            <p>Si tiene alguna pregunta o necesita más información, no dude en ponerse en contacto con el coordinador de rutas.</p>
+            <p><b>Atentamente,</b></p>
+            <p>${coordinadorNombre} ${coordinadorApellido}</p>
+            <p><strong>Coordinador de Rutas</strong></p>
+        </div>
+        `
+    };
+
+    //Creación del transportador universal con el email y el password del conductor ingresado por el administrador
+    transportador.sendMail(estructuraEmail, (error, info) => {
+        if(error){
+            console.error(error);
+        } else {
+            console.log('Correo enviado: ' + info.response);
+        }
+    });
+}
 
 const eliminacionDelConductor = (email, nombresEliminado, apellidosEliminado, coordinadorApellido, coordinadorNombre) =>{
     //Creación de la estuctura que tendrá el correo 
@@ -546,5 +581,6 @@ export {
     informacionEliminacion, 
     cambioAdmin,
     asignacionAdministrador, 
-    correoConductorDesactivado
+    correoConductorDesactivado, 
+    designacionDeReemplazo
 }
