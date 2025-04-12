@@ -741,9 +741,6 @@ const ReemplazoTemporal = async (req, res) => {
     // Obtener los ids del conductor antiguo y nuevo de los parámetros de la URL
     const {idAntiguo, idReemplazo} = req.params;
 
-    // Lo que se enviará en el cuerpo de la solicitud
-    const {fechaTermino} = req.body;
-
     //Id del coordinador de rutas
     const {idCoordinador} = req.user;
 
@@ -763,24 +760,6 @@ const ReemplazoTemporal = async (req, res) => {
         //El conductor antiguo no tiene estudiantes asignados
         if(conductorAntiguo.numeroEstudiantes === 0) return res.status(400).json({msg_reemplazo:`El conductor ${conductorAntiguo.nombre} ${conductorAntiguo.apellido} no tiene estudiantes asignados por lo que no se puede realizar el reemplazo`});
 
-        //Fecha inicial sin la hora para evaluar
-        const fechaActual = new Date();
-        const fechaInicialSinHora = new Date(fechaActual.toDateString()); 
-        
-        //Fecha de termino sin la hora para evaluar
-        const fechaTerminoFecha = new Date(fechaTermino);
-        const fechaTerminoSinHora = new Date(fechaTerminoFecha.toDateString());
-
-        //Validacion de que las fehcas se encuentre en el formato correcto
-        if (isNaN(fechaTerminoSinHora.getTime())) {
-            return res.status(400).json({ msg_reemplazo: "La fecha de termino no tiene el formato correcto AAAA-MM-DD" });
-        };        
-
-        //¿Qué sucede si la fecha de termino es pasada?
-        if (fechaTerminoSinHora.getTime() < fechaInicialSinHora.getTime()){
-            res.status(400).json({msg_reemplazo:"Lo sentimos, la fecha de termino no puede ser antes de la fecha inicial"});
-        };
-
         //Realizar el reemplazo de los estudiantes
         const estudiantesConductorAntiguo = await Estudiantes.find({conductor: idAntiguo});
         for(const estudianteId of estudiantesConductorAntiguo){
@@ -799,7 +778,7 @@ const ReemplazoTemporal = async (req, res) => {
             for(const representanteId of estudianteId.representantes){
                 const representante = await Representantes.findById(representanteId); 
                 if(representante){
-                    await cambioConductor(representante.email, representante.nombre, representante.apellido, conductorReemplazo.rutaAsignada, conductorReemplazo.nombre, conductorReemplazo.apellido, idCoordinador.apellido, idCoordinador.nombre, "Temporal", fechaInicialSinHora, fechaTerminoSinHora);            
+                    await cambioConductor(representante.email, representante.nombre, representante.apellido, conductorReemplazo.rutaAsignada, conductorReemplazo.nombre, conductorReemplazo.apellido, conductorAntiguo.nombre, conductorAntiguo.apellido, conductorReemplazo.telefono, idCoordinador.apellido, idCoordinador.nombre, "Temporal");            
                 };
             };
         };

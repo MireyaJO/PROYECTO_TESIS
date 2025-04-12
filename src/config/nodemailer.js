@@ -111,40 +111,43 @@ const nuevoAdministrador = async (email, nombreConductor, apellidoConductor, pas
     });
 }
 
-const cambioConductor = async (email, nombresRepresentante, apellidosRepresentante, ruta, nombresNuevoConductor, apellidosNuevoConductor, coordinadorApellido, coordinadorNombre, tipoDeReemplazo, fechaInicio = null, fechaFin = null) => {
-    //Variable que contendrá un fragmento de html que existirá solo si el tipo de reemplazo es temporal 
-    let inclusionDeFecha = ""; 
-    if (tipoDeReemplazo === 'Temporal' && fechaInicio && fechaFin) {
-        if (fechaInicio === fechaFin) {
-            inclusionDeFecha = `<p>El reemplazo será efectivo solo <strong>por el día de hoy ${fechaInicio}</strong>.</p>`;
-        } else {
-            inclusionDeFecha = `<p>El reemplazo será efectivo desde el <strong>${fechaInicio}</strong> hasta el <strong>${fechaFin}</strong>.</p>`;
-        }
-    };
+const cambioConductor = async (email, nombresRepresentante, apellidosRepresentante, ruta, nombresNuevoConductor, apellidosNuevoConductor, nombresConductorAnterior, apellidosConductorAnterior, telefonoConductorAnterior, coordinadorApellido, coordinadorNombre, tipoDeReemplazo) => {
+    let inclusionDeFecha = "";
     
-    // Creación de la estructura que tendrá el correo
+    if (tipoDeReemplazo === 'Temporal') {
+        inclusionDeFecha = `
+        <p>Este cambio es temporal. Cuando el conductor original, <strong>${nombresConductorAnterior} ${apellidosConductorAnterior}</strong>, regrese a sus funciones, se le notificará con anticipación.</p>
+        <p><b>Contacto del nuevo conductor asignado: </b> <strong>${telefonoConductorAnterior}</strong>. Cabe recalcar que la información del conductor también se encuentra en la aplicación móvil.</p>
+        `;
+    } else if (tipoDeReemplazo === 'Permanente') {
+        inclusionDeFecha = `
+        <p>Este cambio es permanente. El conductor original, <strong>${nombresConductorAnterior} ${apellidosConductorAnterior}</strong>, ya no estará a cargo de la ruta <strong>${ruta}</strong>.</p>
+        <p><b>Contacto del nuevo conductor asignado: </b> <strong>${telefonoConductorAnterior}</strong>. Cabe recalcar que la información del conductor también se encuentra en la aplicación móvil.</p>
+        `;
+    }
+
     let estructuraEmail = {
         from: process.env.EMAIL_USER,
-        to: email,  
-        subject: "Cambio del conductor del sistema de transporte escolar de la Unidad Educativa Particular Emaús",
+        to: email,
+        subject: "Cambio de Conductor de la Unidad Educativa Particular Emaús",
         html: `
-            <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; background-color: #e0f7fa; padding: 20px; border-radius: 10px;">
-                <h2 style="color: #00796b;">Unidad Educativa Particular “Emaús”</h2>
-                <p>Estimado(a) ${nombresRepresentante} ${apellidosRepresentante},</p>
-                <p>Se le informa que el nuevo conductor de la ruta ${ruta} de sus representados es: ${nombresNuevoConductor} ${apellidosNuevoConductor}.</p>
-                <p>Este cambio será de tipo: <strong>${tipoDeReemplazo}</strong>.</p>
-                ${inclusionDeFecha}
-                <p>Por favor, no dude en ponerse en contacto con el nuevo conductor para coordinar los detalles del transporte.</p>
-                <p><b>Atentamente,</b></p>
-                <p>${coordinadorNombre} ${coordinadorApellido}</p>
-                <p><strong>Coordinador de Rutas</strong></p>
-            </div>  
+        <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; background-color: #e0f7fa; padding: 20px; border-radius: 10px;">
+            <h2 style="color: #00796b;">Unidad Educativa Particular “Emaús”</h2>
+            <p>Estimado(a) ${nombresRepresentante} ${apellidosRepresentante},</p>
+            <p>Le informamos que el conductor de la ruta <strong>${ruta}</strong> de sus representados ha sido cambiado. El nuevo conductor asignado es <strong>${nombresNuevoConductor} ${apellidosNuevoConductor}</strong>.</p>
+            <p>Este cambio será de tipo: <strong>${tipoDeReemplazo}</strong>.</p>
+            ${inclusionDeFecha}
+            <p>Por favor, no dude en ponerse en contacto con el nuevo conductor para coordinar los detalles del transporte.</p>
+            <p><b>Atentamente,</b></p>
+            <p>${coordinadorNombre} ${coordinadorApellido}</p>
+            <p><strong>Coordinador de Rutas</strong></p>
+        </div>
         `
     };
 
-    // Creación del transportador universal con el email y el password del conductor ingresado por el administrador
+    //Creación del transportador universal con el email y el password del conductor ingresado por el administrador
     transportador.sendMail(estructuraEmail, (error, info) => {
-        if (error) {
+        if(error){
             console.error(error);
         } else {
             console.log('Correo enviado: ' + info.response);
@@ -293,6 +296,36 @@ const asignacionAdministrador = async (email, nombre, apellido, ruta, sectores, 
         }
     });
 }
+
+const correoConductorDesactivado = async (email, nombreConductorNormal, apellidoConductorNormal, nombreReemplazo, apellidoReemplazo, ruta, sectores, coordinadorNombre, coordinadorApellido) => {
+    let estructuraEmail = {
+        from: process.env.EMAIL_USER,
+        to: email,
+        subject: "A comenzado Unidad Educativa Particular Emaús",
+        html: `
+        <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; background-color: #e0f7fa; padding: 20px; border-radius: 10px;">
+            <h2 style="color: #00796b;">Transportistas de la Unidad Educativa Particular “Emaús”</h2>
+            <p>Estimado(a) ${nombreConductorNormal} ${apellidoConductorNormal},</p>
+            <p>Le informamos que su tiempo de servicio como conductor de la ruta <strong>${ruta}</strong> ha sido temporalmente suspendido. El conductor <strong>${nombreReemplazo} ${apellidoReemplazo}</strong> ha sido asignado como su reemplazo.</p>
+            <p>El reemplazo cubrirá los siguientes sectores: <strong>${sectores}</strong>.</p>
+            <p>Por favor, comuníquese con el coordinador de rutas, <strong>${coordinadorNombre} ${coordinadorApellido}</strong>, para coordinar su regreso cuando sea necesario.</p>
+            <p>Si tiene alguna pregunta o necesita más información, no dude en ponerse en contacto con el coordinador.</p>
+            <p><b>Atentamente,</b></p>
+            <p>${coordinadorApellido} ${coordinadorNombre}</p>
+            <p><strong>Coordinador de Rutas</strong></p>
+        </div>
+        `
+    };
+
+    //Creación del transportador universal con el email y el password del conductor ingresado por el administrador
+    transportador.sendMail(estructuraEmail, (error, info) => {
+        if(error){
+            console.error(error);
+        } else {
+            console.log('Correo enviado: ' + info.response);
+        }
+    });
+};
 
 const eliminacionDelConductor = (email, nombresEliminado, apellidosEliminado, coordinadorApellido, coordinadorNombre) =>{
     //Creación de la estuctura que tendrá el correo 
@@ -512,5 +545,6 @@ export {
     eliminacionDelRepresentante, 
     informacionEliminacion, 
     cambioAdmin,
-    asignacionAdministrador
+    asignacionAdministrador, 
+    correoConductorDesactivado
 }
