@@ -43,9 +43,10 @@ const paraElRegistroDeLosEstudiantes= new Schema(
             type: String, 
             required: true, 
         },  
-        ManianaOTarde:{
+        turno:{
             type: String, 
-            required: true
+            required: true, 
+            trim: true
         }, 
         genero:{
             type: String, 

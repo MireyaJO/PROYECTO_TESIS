@@ -139,8 +139,7 @@ const paraElRegistroDeLosConductores= new Schema(
                 'No trabaja como conductor'
             ], 
             required: true
-        },
-                                                                                   
+        },                                                                         
     }
 , { timestamps: true}
 );

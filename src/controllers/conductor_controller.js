@@ -22,40 +22,8 @@ const RegistroDeLosEstudiantes = async (req, res) => {
         paralelo,
         cedula,
         ubicacionDomicilio,
-        ManianaOTarde
+        turno
     } = req.body;
-
-    // Verificar que no haya campos vacíos
-    if (Object.values(req.body).includes("")) {
-        return res.status(400).json({ msg_registro_estudiantes: "Lo sentimos, debes llenar todos los campos" });
-    }
-
-    // Comprobar el tamaño de la cedula
-    if(!cedula || cedula.toString().length !== 10){
-        return res.status(400).json({ msg_registro_estudiantes: "Lo sentimos, el número de cédula debe tener 10 dígitos" });
-    }
-
-    //Comprobar que el nivel escolar se encuentre bien escrito 
-    if(nivelEscolar !== "Nocional" && nivelEscolar !== "Inicial 1" && nivelEscolar !== "Inicial 2"
-        && nivelEscolar !== "Primero de básica" && nivelEscolar !== "Segundo de básica" && nivelEscolar !== "Tercero de básica"
-        && nivelEscolar !== "Cuarto de básica" && nivelEscolar !== "Quinto de básica" && nivelEscolar !== "Sexto de básica"
-        && nivelEscolar !== "Séptimo de básica" && nivelEscolar !== "Octavo de básica" && nivelEscolar !== "Noveno de básica"
-        && nivelEscolar !== "Décimo de básica" && nivelEscolar !== "Primero de bachillerato" && nivelEscolar !== "Segundo de bachillerato"
-        && nivelEscolar !== "Tercero de bachillerato"
-    ){
-        return res.status(400).json({ msg_registro_estudiantes: "Lo sentimos, el nivel escolar debe ser Educación Inicial, Educación General Básica o Educación Media (Bachillerato)" });
-    }
-
-    //Comprobar el paralelo en el que se encuentra el estudiante
-    if(paralelo !== "A" && paralelo !== "B" && paralelo !== "C" ){
-        return res.status(400).json({ msg_registro_estudiantes: "Lo sentimos, el paralelo debe ser de la A a la C" });
-    }
-
-    //Comprobación de lo escrito en el genero del estudiante 
-    if(genero!== "Femenino" && genero !== "Masculino" && genero !== "Prefiero no decirlo"){
-        return res.status(400).json({ msg_registro_estudiantes: "Lo sentimos, el género debe ser Femenino, Masculino o Prefiero no decirlo" });
-    }
-
     try {
         //Información del conductor logeado
         const conductor = await Conductores.findById(req.user.id);
@@ -73,11 +41,12 @@ const RegistroDeLosEstudiantes = async (req, res) => {
         //Validación de que la cedula no este registrada en otro estudiante
         const cedulaExistente = await Estudiantes.findOne({ cedula });
         if (cedulaExistente) {
-            return res.status(400).json({ msg_registro_estudiantes: "Lo sentimos, la cédula ya está registrada" });
+            return res.status(400).json({ msg_registro_estudiantes: "Lo sentimos, la cédula ya está registrada en otro estudiante" });
         }
 
         //Extraer las coordenadas de la direccion del estudiante
         const coordenadas = await ExtraerCoordenadasLinkGoogleMaps(ubicacionDomicilio);
+        //Si existe un error en la extración de las coordenadas se envia un mensaje de error
         if (coordenadas.msg_extracion_coordenadas_estudiantes) {
             return res.status(400).json({ msg_registro_estudiantes: coordenadas.msg_extracion_coordenadas_estudiantes});
         }
@@ -93,7 +62,7 @@ const RegistroDeLosEstudiantes = async (req, res) => {
             ruta: conductor.rutaAsignada,
             ubicacionDomicilio,
             institucion: conductor.institucion,
-            ManianaOTarde, 
+            turno, 
             latitud: coordenadas.latitud,
             longitud: coordenadas.longitud,
             conductor: conductor._id
@@ -116,18 +85,13 @@ const RegistroDeLosEstudiantes = async (req, res) => {
     } catch (error) {
         console.error(error);
         res.status(500).json({ msg_registro_estudiantes: "Error al registrar el estudiante", error: error.message });
-    }
-}
+    };
+};
 
 //Cambio de contraseña del conductor una vez logeado el mismo 
 const ActualizarPassword = async (req, res) => {
     // Toma de los datos del conductor que desea cambiar su contraseña
     const {passwordAnterior, passwordActual, passwordActualConfirm} = req.body;
-
-    // Verificar que no haya campos vacíos
-    if (Object.values(req.body).includes("")) {
-        return res.status(400).json({ msg_actualizacion_contrasenia: "Lo sentimos, debes llenar todos los campos" });
-    }
 
     try{
         // Verificación de la contraseña anterior
@@ -149,23 +113,27 @@ const ActualizarPassword = async (req, res) => {
     } catch (error) {
         console.error(error);
         res.status(500).json({ msg_actualizacion_contrasenia: "Error al actualizar la contraseña" });
-    }
-
-}
+    };
+};
 
 //Todos los estudiantes de la ruta del conductor logeado
 const ListarEstudiantes = async (req, res) => {
     try{
         //Información del conductor logeado
         const conductor = await Conductores.findById(req.user.id);
+        
         //Enlistar los estudiantes de la ruta del conductor logeado
-        const estudiantes = await Estudiantes.find({ruta: conductor.rutaAsignada}).where('conductor').equals(conductor._id).select("-createdAt -updatedAt -__v").populate('conductor','_id nombre apellido')
+        const estudiantes = await Estudiantes.find({ruta: conductor.rutaAsignada}).where('conductor').equals(conductor._id).select("-createdAt -updatedAt -__v").populate('conductor','_id nombre apellido'); 
+        
+        //Verificación de la existencia de los estudiantes
+        if(estudiantes.length === 0) return res.status(404).json({msg_lista_estudiantes:"Lo sentimos, no se han encontrado estudiantes registrados en su ruta"});
+        
         res.status(200).json({msg_lista_estudiantes:`Los estudiantes registrados del conductor ${conductor.nombre} ${conductor.apellido}`, estudiantes});
     } catch (error) {
         console.error(error);
         res.status(500).json({msg_lista_estudiantes:"Error al listar los estudiantes"});
-    }
-}
+    };
+};
 
 //Buscar un estudiante por su cedula
 const BuscarEstudianteCedula = async (req, res) => {
@@ -190,86 +158,57 @@ const BuscarEstudianteCedula = async (req, res) => {
 const ActualizarEstudiante = async (req, res) => {
     //Obtención de datos de lo escrito por el conductor
     const { 
-        nombre,
-        apellido,
         nivelEscolar,
-        genero,
         paralelo,
-        cedula,
         ubicacionDomicilio,
-        recoCompletoOMedio
+        turno
     } = req.body;
+
     //Obtención del id del estudiante (facilitado en la URL)
     const {id} = req.params;
-    //Información del conductor logeado
-    const conductor = await Conductores.findById(req.user.id); 
+    try {
+        //Información del conductor logeado
+        const conductor = await Conductores.findById(req.user.id); 
 
-    // Verificación de los campos vacíos
-    if (Object.values(req.body).includes("")) return res.status(400).json({ msg_actualizar_estudiantes: "Lo sentimos, debes llenar todos los campos" });
+        //Verificar de que el conductor logeado no sea un reemplazo
+        if (conductor.esReemplazo === 'Sí') return res.status(400).json({ msg: "Lo sentimos, no puedes actualizar los datos del estudiante ya que eres un reemplazo" });
 
-    //Comprobar que la cedula sea unica 
-    const cedulaExistente = await Estudiantes.findOne({cedula: cedula, conductor: conductor._id});
-    if(cedulaExistente && cedulaExistente._id.toString() !== id){
-        return res.status(400).json({ msg_registro_estudiantes: "Lo sentimos, la cédula ya se encuentra registrada" });
+        // Verificación de la existencia del estudiante
+        const estudiante = await Estudiantes.findOne({_id:id, conductor: conductor._id});
+        if (!estudiante) return res.status(400).json({ msg: "Lo sentimos, el estudiante no se encuentra o no pertenece a la ruta" });
+    
+        //Extraer las coordenadas de la direccion del estudiante
+        const coordenadas = await ExtraerCoordenadasLinkGoogleMaps(ubicacionDomicilio);
+        if (coordenadas.msg_extracion_coordenadas_estudiantes) return res.status(400).json({ msg_actualizar_estudiantes: coordenadas.msg_extracion_coordenadas_estudiantes });
+
+        // Actualización de los datos del estudiante
+        const estudianteActualizado = await Estudiantes.findByIdAndUpdate(
+            id,
+            {
+                nivelEscolar,
+                paralelo,
+                ubicacionDomicilio,
+                turno,
+                latitud: coordenadas.latitud,
+                longitud: coordenadas.longitud,
+            },
+            // Esta opción devuelve el documento actualizado en lugar del original
+            { new: true }
+        );
+
+        // Actualización en el array del conductor
+        const estudianteParaListado = {nombreEstudiante: estudianteActualizado.nombre, apellidoEstudiante: estudianteActualizado.apellido, nivelEscolarEstudiante: estudianteActualizado.nivelEscolar, paraleloEstudiante: estudianteActualizado.paralelo, cedulaEstudiante: estudianteActualizado.cedula}
+        const actualizar = await conductor.actualizarListaEstudiantes(estudianteParaListado, estudianteActualizado._id);
+        if (actualizar?.error) return res.status(400).json({ msg_actualizar_estudiantes: actualizar.error });
+        await conductor.save();
+
+        res.status(200).json({
+            msg_actualizar_estudiantes: `Los datos del estudiante ${estudiante.nombre} ${estudiante.apellido} han sido actualizados exitosamente`
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ msg_actualizar_estudiantes: "Error al actualizar el estudiante", error: error.message });
     }
-
-    // Verificación de la existencia del estudiante
-    const estudiante = await Estudiantes.findOne({_id:id, conductor: conductor._id});
-    if (!estudiante) return res.status(400).json({ msg: "Lo sentimos, el estudiante no se encuentra o no pertenece a la ruta" });
-
-    //Comprobar que el nivel escolar se encuentre bien escrito 
-    if(nivelEscolar !== "Nocional" && nivelEscolar !== "Inicial 1" && nivelEscolar !== "Inicial 2"
-        && nivelEscolar !== "Primero de básica" && nivelEscolar !== "Segundo de básica" && nivelEscolar !== "Tercero de básica"
-        && nivelEscolar !== "Cuarto de básica" && nivelEscolar !== "Quinto de básica" && nivelEscolar !== "Sexto de básica"
-        && nivelEscolar !== "Séptimo de básica" && nivelEscolar !== "Octavo de básica" && nivelEscolar !== "Noveno de básica"
-        && nivelEscolar !== "Décimo de básica" && nivelEscolar !== "Primero de bachillerato" && nivelEscolar !== "Segundo de bachillerato"
-        && nivelEscolar !== "Tercero de bachillerato"
-    ){
-        return res.status(400).json({ msg_registro_estudiantes: "Lo sentimos, el nivel escolar debe ser Educación Inicial, Educación General Básica o Educación Media (Bachillerato)" });
-    }
-
-    //Comprobar el paralelo en el que se encuentra el estudiante
-    if(paralelo !== "A" && paralelo !== "B" && paralelo !== "C" ){
-        return res.status(400).json({ msg_registro_estudiantes: "Lo sentimos, el paralelo debe ser de la A a la C" });
-    }
-
-    //Comprobación de lo escrito en el genero del estudiante 
-    if(genero!== "Femenino" && genero !== "Masculino" && genero !== "Prefiero no decirlo"){
-        return res.status(400).json({ msg_registro_estudiantes: "Lo sentimos, el género debe ser Femenino, Masculino o Prefiero no decirlo" });
-    }
-   
-    //Extraer las coordenadas de la direccion del estudiante
-    const coordenadas = await ExtraerCoordenadasLinkGoogleMaps(ubicacionDomicilio);
-    if (coordenadas.msg_extracion_coordenadas_estudiantes) return res.status(400).json({ msg_actualizar_estudiantes: coordenadas.msg_extracion_coordenadas_estudiantes });
-
-    // Actualización de los datos del estudiante
-    const estudianteActualizado = await Estudiantes.findByIdAndUpdate(
-        id,
-        {
-            nivelEscolar,
-            paralelo,
-            ubicacionDomicilio,
-            recoCompletoOMedio,
-            latitud: coordenadas.latitud,
-            longitud: coordenadas.longitud,
-            nombre,
-            apellido,
-            genero,
-            cedula
-        },
-        // Esta opción devuelve el documento actualizado en lugar del original
-        { new: true }
-    );
-
-    // Actualización en el array del conductor
-    const estudianteParaListado = {nombreEstudiante: estudianteActualizado.nombre, apellidoEstudiante: estudianteActualizado.apellido, nivelEscolarEstudiante: estudianteActualizado.nivelEscolar, paraleloEstudiante: estudianteActualizado.paralelo, cedulaEstudiante: estudianteActualizado.cedula}
-    const actualizar = await conductor.actualizarListaEstudiantes(estudianteParaListado, estudianteActualizado._id);
-    if (actualizar?.error) return res.status(400).json({ msg_actualizar_estudiantes: actualizar.error });
-    await conductor.save();
-
-    res.status(200).json({
-        msg_actualizar_estudiantes: `Los datos del estudiante ${estudiante.nombre} ${estudiante.apellido} han sido actualizados exitosamente`
-    });
 }
 
 // Función para enviar notificaciones a los padres de familia
@@ -391,7 +330,7 @@ const ExtraerCoordenadasLinkGoogleMaps = async (url) => {
     } catch (error) {
         console.error(error);
         return { msg_extracion_coordenadas_estudiantes: "Error al resolver el enlace de Google Maps" };
-    }
+    };
 };
 
 //Funcion para calcular la distancia y el tiempo entre dos ubicaciones
@@ -465,7 +404,7 @@ const VisuallizarPerfil = async (req, res) => {
         // Verificación de la existencia del conductor
         if (!conductor) return res.status(404).json({ msg_visualizar_conductor: "Conductor no encontrado" });
         //Si se encuentra el conductor se envía su información
-        res.status(200).json(conductor);
+        res.status(200).json({perfilConductorLogeado: conductor});
     } catch (error) {
         console.error(error);
         res.status(500).json({  msg_visualizar_conductor: "Error al visualizar el perfil del conductor" });
@@ -474,15 +413,15 @@ const VisuallizarPerfil = async (req, res) => {
 
 const ActualizarPerfil = async (req, res) => {
     //Obtención de datos de lo escrito por el conductor
-    const {placaAutomovil, telefono, email} = req.body;
+    const {placaAutomovil, telefono, email, cooperativa} = req.body;
     //Obtención del id del conductor logeado
     const {id} = req.user;
-    // Verificación de los campos vacíos
-    if (Object.values(req.body).includes("")) return res.status(400).json({ msg_actualizacion_perfil: "Lo sentimos, debes llenar todos los campos" });
+
     try{
         // Verificación de la existencia del conductor
         const conductor = await Conductores.findById(id);
         if (!conductor) return res.status(404).json({ msg_actualizacion_perfil: "Lo sentimos, el conductor no se encuentra registrado" });
+        
         // Comprobar si el telefono ya está registrado
         const verificarTelefonoBDD = await Conductores.findOne({telefono, _id: { $ne: id } });
         if (verificarTelefonoBDD) {
@@ -534,7 +473,7 @@ const ActualizarPerfil = async (req, res) => {
         }
 
         // Si el email cambia, enviar un enlace de confirmación al nuevo correo
-        if (email && email !== conductor.email) {
+        if (email !== conductor.email) {
             // Crear un token JWT con el ID del conductor y el nuevo email
             const token = conductor.crearToken();
             conductor.token = token;
@@ -553,7 +492,7 @@ const ActualizarPerfil = async (req, res) => {
         // Actualización de los datos
         conductor.placaAutomovil = placaAutomovil;
         conductor.telefono = telefono;
-        conductor.email = email;
+        conductor.cooperativa = cooperativa;
 
         // Guardar los cambios en la base de datos
         await conductor.save();

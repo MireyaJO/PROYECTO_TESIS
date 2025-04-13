@@ -1,5 +1,5 @@
 import { check, validationResult } from 'express-validator'
-//Validaciones para las rutas del administrador
+//Validaciones para las rutas que manejsdel administrador
 //Validaciones para el registro del conductor 
 const validacionesConductor = [
     // Verificar que se encuentren los campos obligatorios y no estén vacíos
@@ -251,6 +251,144 @@ const validarContraseniaNueva = [
         .matches(/^(?=.*[A-Za-z])(?=(?:.*\d){3})(?=(?:.*[!@#$%^&*()\-_=+{};:,<.>]){3})/)
         .withMessage('La contraseña debe contener letras, al menos 3 números y 3 signos especiales')
         .customSanitizer(value => value?.trim()),
+
+    (req,res,next)=>{
+        const errors = validationResult(req);
+        if (errors.isEmpty()) {
+            return next();
+        } else {
+            //Solo se muestra el primer error no el array completo
+            const Error = errors.array()[0]; 
+            return res.status(400).send({ error: Error});
+        }
+    }
+]
+
+//Validaciones para las rutas que manejará el conductor 
+//Validaciones para el registro del estudiante
+const validacionesEstudiantes = [
+    // Verificar que se encuentren los campos obligatorios y no estén vacíos
+    check(["nombre", "apellido", "nivelEscolar", "genero", "paralelo", "cedula", "ubicacionDomicilio", "turno"
+    ])
+    .exists()
+        .withMessage('Los campos "nombre","apellido","nivelEscolar","genero", "paralelo", "cedula", "ubicacionDomicilio" y/o "turno"  son obligatorios')
+    .notEmpty()
+        .withMessage('Los campos "nombre","apellido","nivelEscolar","genero", "paralelo", "cedula", "ubicacionDomicilio" y/o "turno"  no pueden estar vacíos')
+    .customSanitizer(value => value?.trim()),
+
+    //Verificación de que todo sea un string
+    check(["nombre", "apellido"])
+    .matches(/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/)
+        .withMessage('El campo debe ser un texto y puede contener espacios')
+    .customSanitizer(value => value?.trim()),
+
+    // Verificar que el campo "nivelEscolar" sea uno de los valores permitidos
+    check("nivelEscolar")
+    .isIn(["Nocional", "Inicial 1", "Inicial 2", "Primero de básica", "Segundo de básica", "Tercero de básica", "Cuarto de básica", "Quinto de básica", 
+        "Sexto de básica", "Séptimo de básica", "Octavo de básica", "Noveno de básica", "Décimo de básica", "Primero de bachillerato", "Segundo de bachillerato", "Tercero de bachillerato"])
+        .withMessage('Lo sentimos, el nivel escolar debe ser Educación Inicial, Educación General Básica o Educación Media (Bachillerato)') 
+    .customSanitizer(value => value?.trim()),
+
+    // Verificar que el campo "paralelo" sea uno de los valores permitidos
+    check("paralelo")
+    .isIn(["A", "B", "C"])
+        .withMessage('Lo sentimos, el paralelo debe ser de la A a la C')
+    .customSanitizer(value => value?.trim()),
+
+    // Verificar que el numero de cedula sea de 10 digitos
+    check("genero")
+    .isIn(["Femenino", "Masculino", "Prefiero no decirlo"])
+        .withMessage('El género debe ser "Femenino", "Masculino" o "Prefiero no decirlo"')
+    .customSanitizer(value => value?.trim()),
+
+    // Verificar que el "turno" sea uno de los valores permitidos
+    check("turno")
+    .isIn(["Mañana", "Tarde", "Completo"])
+        .withMessage('El turno debe ser "Mañana", "Tarde" o "Completo"')
+    .customSanitizer(value => value?.trim()),
+
+    (req,res,next)=>{
+        const errors = validationResult(req);
+        if (errors.isEmpty()) {
+            return next();
+        } else {
+            //Solo se muestra el primer error no el array completo
+            const Error = errors.array()[0]; 
+            return res.status(400).send({ error: Error});
+        }
+    }
+]
+
+const validacionesActualizarEstudiante = [
+    // Verificar que se encuentren los campos obligatorios y no estén vacíos
+    check(["nivelEscolar", "paralelo",  "ubicacionDomicilio", "turno"
+    ])
+    .exists()
+        .withMessage('Los campos "nivelEscolar", "paralelo", "ubicacionDomicilio" y/o "turno"  son obligatorios')
+    .notEmpty()
+        .withMessage('Los campos "nivelEscolar", "paralelo", "ubicacionDomicilio" y/o "turno"  no pueden estar vacíos')
+    .customSanitizer(value => value?.trim()),
+
+    // Verificar que el campo "nivelEscolar" sea uno de los valores permitidos
+    check("nivelEscolar")
+    .isIn(["Nocional", "Inicial 1", "Inicial 2", "Primero de básica", "Segundo de básica", "Tercero de básica", "Cuarto de básica", "Quinto de básica", 
+        "Sexto de básica", "Séptimo de básica", "Octavo de básica", "Noveno de básica", "Décimo de básica", "Primero de bachillerato", "Segundo de bachillerato", "Tercero de bachillerato"])
+        .withMessage('Lo sentimos, el nivel escolar debe ser Educación Inicial, Educación General Básica o Educación Media (Bachillerato)') 
+    .customSanitizer(value => value?.trim()),
+
+    // Verificar que el campo "paralelo" sea uno de los valores permitidos
+    check("paralelo")
+    .isIn(["A", "B", "C"])
+        .withMessage('Lo sentimos, el paralelo debe ser de la A a la C')
+    .customSanitizer(value => value?.trim()),
+
+    // Verificar que el "turno" sea uno de los valores permitidos
+    check("turno")
+    .isIn(["Mañana", "Tarde", "Completo"])
+        .withMessage('El turno debe ser "Mañana", "Tarde" o "Completo"')
+    .customSanitizer(value => value?.trim()), 
+
+    (req,res,next)=>{
+        const errors = validationResult(req);
+        if (errors.isEmpty()) {
+            return next();
+        } else {
+            //Solo se muestra el primer error no el array completo
+            const Error = errors.array()[0]; 
+            return res.status(400).send({ error: Error});
+        }
+    }
+]
+
+const validacionesActualizarPerfilConductor = [
+    // Verificar que no hayan campos vacíos 
+    check(["telefono","placaAutomovil", "email"])
+    .notEmpty()
+        .withMessage('Se necesita campos para actualizar')
+    .customSanitizer(value => value?.trim()),
+
+    // Verificar que el numero de telefono sea de 10 digitos
+    check("telefono")
+    .isLength({ min: 10, max: 10 })
+        .withMessage('El teléfono debe ser de 10 digitos')
+    .matches(/^\d{10}$/)
+        .withMessage('El campo "teléfono" debe contener solo números')
+    .customSanitizer(value => value?.trim()),
+
+    // Verificar que el número de placa tenga 7 dígitos
+    check("placaAutomovil")
+    .isLength({ min: 8, max: 8 })
+        .withMessage('La placa debe tener exactamente 8 caracteres, incluyendo el guion')
+    .matches(/^[A-Z]{3}-\d{4}$/i)
+        .withMessage('El campo "placa" debe seguir el formato de tres letras, un guion y cuatro números,  Ejemplo: PUH-7869')
+    .customSanitizer(value => value?.trim()),
+
+    // Verificar que el email se enceuntre bien escrito
+    check("email")
+    .isEmail()
+        .withMessage('El email debe ser un correo válido')
+    .customSanitizer(value => value?.trim()),
+    
     (req,res,next)=>{
         const errors = validationResult(req);
         if (errors.isEmpty()) {
@@ -264,13 +402,13 @@ const validarContraseniaNueva = [
 ]
 
 const validacionesRepresentantes = [
-     // Verificar que se encuentren los campos obligatorios y no estén vacíos
+    // Verificar que se encuentren los campos obligatorios y no estén vacíos
      check(["nombre","apellido","telefono","cedula", "institucion", "email", "password", "cedulaRepresentado"
     ])
     .exists()
-        .withMessage('Los campos "nombre","apellido","telefono","cedula"", "institucion", "fotografia", "password" y/o "email"  son obligatorios')
+        .withMessage('Los campos "nombre","apellido","telefono","cedula", "institucion", "fotografia", "password" y/o "email"  son obligatorios')
     .notEmpty()
-        .withMessage('Los campos "nombre","apellido","telefono","cedula"", "institucion", "fotografia", "password" y/o "email" no pueden estar vacíos')
+        .withMessage('Los campos "nombre","apellido","telefono","cedula", "institucion", "fotografia", "password" y/o "email" no pueden estar vacíos')
     .customSanitizer(value => value?.trim()),
 
     //Verificación de que todo sea un string
@@ -328,48 +466,9 @@ const validacionesRepresentantes = [
         if (errors.isEmpty()) {
             return next();
         } else {
-            return res.status(400).send({ errors: errors.array() });
-        }
-    }
-    
-    
-]
-
-const validacionesActualizarPerfilConductor = [
-    // Verificar que no hayan campos vacíos 
-    check(["telefono","placaAutomovil", "email"])
-    .notEmpty()
-        .withMessage('Se necesita campos para actualizar')
-    .customSanitizer(value => value?.trim()),
-
-    // Verificar que el numero de telefono sea de 10 digitos
-    check("telefono")
-    .isLength({ min: 10, max: 10 })
-        .withMessage('El teléfono debe ser de 10 digitos')
-    .matches(/^\d{10}$/)
-        .withMessage('El campo "teléfono" debe contener solo números')
-    .customSanitizer(value => value?.trim()),
-
-    // Verificar que el número de placa tenga 7 dígitos
-    check("placaAutomovil")
-    .isLength({ min: 8, max: 8 })
-        .withMessage('La placa debe tener exactamente 8 caracteres, incluyendo el guion')
-    .matches(/^[A-Z]{3}-\d{4}$/i)
-        .withMessage('El campo "placa" debe seguir el formato de tres letras, un guion y cuatro números,  Ejemplo: PUH-7869')
-    .customSanitizer(value => value?.trim()),
-
-    // Verificar que el email se enceuntre bien escrito
-    check("email")
-    .isEmail()
-        .withMessage('El email debe ser un correo válido')
-    .customSanitizer(value => value?.trim()),
-    
-    (req,res,next)=>{
-        const errors = validationResult(req);
-        if (errors.isEmpty()) {
-            return next();
-        } else {
-            return res.status(400).send({ errors: errors.array() });
+            //Solo se muestra el primer error no el array completo
+            const Error = errors.array()[0]; 
+            return res.status(400).send({ error: Error});
         }
     }
 ]
@@ -413,36 +512,13 @@ const validacionesActualizarPerfilRepresentante = [
     }
 ]
 
-const validacionesActualizarEstudiante = [
-    //Verificación de que todo sea un string
-    check(["nombre", "apellido"])
-    .matches(/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/)
-        .withMessage('El campo debe ser un texto y puede contener espacios')
-    .customSanitizer(value => value?.trim()),
-
-    // Verificar que el numero de cedula sea de 10 digitos
-    check("cedula")
-    .isLength({ min: 10, max: 10 })
-        .withMessage('La cedula debe ser de 10 digitos')
-    .isNumeric()
-        .withMessage('El campo "cedula" debe contener solo números')
-    .customSanitizer(value => value?.trim()),
-    (req,res,next)=>{
-        const errors = validationResult(req);
-        if (errors.isEmpty()) {
-            return next();
-        } else {
-            return res.status(400).send({ errors: errors.array() });
-        }
-    }
-]
-
 export {
     validacionesAdmin,
     validacionesConductor, 
     validacionesRepresentantes, 
     validacionesActualizarConductorNormal, 
     validacionesActualizarPerfilConductor, 
+    validacionesEstudiantes,
     validacionesActualizarPerfilRepresentante,
     validacionesActualizarEstudiante, 
     validarContraseniaNueva, 
