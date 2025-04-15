@@ -73,18 +73,6 @@ const paraElRegistroDeLosRepresentantes = new Schema(
         confirmacionEmail:{
             type: Boolean, 
             default: false
-        },
-        notificacionAlerta: {
-            type: Boolean, 
-            default: false
-        }, 
-        notificacionAsistencia:{
-            type: Boolean, 
-            default: false
-        }, 
-        notificacionEliminacion:{
-            type: Boolean, 
-            default: false
         }
     }
 ,{

@@ -362,7 +362,7 @@ const validacionesActualizarEstudiante = [
 
 const validacionesActualizarPerfilConductor = [
     // Verificar que no hayan campos vacíos 
-    check(["telefono","placaAutomovil", "email"])
+    check(["telefono","placaAutomovil", "email", "cooperativa"])
     .notEmpty()
         .withMessage('Se necesita campos para actualizar')
     .customSanitizer(value => value?.trim()),

@@ -1,34 +1,46 @@
-import mongoose, {Schema, model} from 'mongoose'
-const NotificacionesParaRepresentante = new Schema({
+import mongoose, { Schema, model } from 'mongoose';
+
+// Definición de la estructura en la base de datos 
+// Esquema para el registro de asistencias
+const paraElRegistroDeAsistencias= new Schema({
+    turno:{
+        type: String,
+        enum: ['Mañana', 'Tarde'],
+        required: true
+    }, 
     conductor: {
         type: Schema.Types.ObjectId,
         ref: 'Conductores',
         required: true
     },
-    representante: {
-        type: Schema.Types.ObjectId,
-        ref: 'Representantes',
-        required: true
-    },
-    mensaje: {
-        type: String,
-        required: true
-    },
     fecha: {
-        // Cambiar a String para almacenar solo la fecha
-        type: String, 
+        type: String, // Cambiar a String para almacenar solo la fecha
         // Usar función normal para definir el valor predeterminado, divide la cadena de caracteres que da MongoDB
         // para que solo se guarde la fecha
         default: function() { 
             return new Date().toISOString().split('T')[0];
         },
         required: true
-    }
+    },
+    estudiantes: [
+        {
+            _id: false,
+            estudiante: {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: 'Estudiantes'
+            },
+            asistio: {
+                type: Boolean,
+                default: false
+            }
+        }
+    ]
 }, {
     timestamps: true
-}); 
+});
+
 // Middleware para validar que la fecha no sea anterior a la fecha actual ni futura
-NotificacionesParaRepresentante.pre('save', function (next) {
+paraElRegistroDeAsistencias.pre('save', function (next) {
     // Obtiene la fecha actual en formato ISO 8601 y la divide para obtener solo la fecha
     const today = new Date().toISOString().split('T')[0];
     //Compara la fecha actual con la fecha de la asistencia
@@ -38,4 +50,4 @@ NotificacionesParaRepresentante.pre('save', function (next) {
     next();
 });
 
-export default model('NotificacionesRepresentantes', NotificacionesParaRepresentante)
+export default model('Asistencias', paraElRegistroDeAsistencias);
