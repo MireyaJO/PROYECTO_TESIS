@@ -471,7 +471,38 @@ const conductorDesocupado = async (email, nombre, apellido, ruta, sectores, coor
     });
 };
 
-const recuperacionContrasenia = (email, nombres, apellidos, token) => {
+const confirmacionDeCorreoRepresentante = async (email, nombre, apellido, token, coordinadorApellido, coordinadorNombre) => {
+    //Creación de la estuctura que tendrá el correo
+    let estructuraEmail = {
+        from: process.env.EMAIL_USER,
+        to: email,  
+        subject: "Confirmación de correo electrónico del representante de estudiantes registrados en el sistema de transporte de la Unidad Educativa Particular Emaús",
+        html: `
+            <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; background-color: #e0f7fa; padding: 20px; border-radius: 10px;">
+                <h2 style="color: #00796b;">Transportistas de la Unidad Educativa Particular “Emaús”</h2>
+                <p>Estimado(a) ${nombre} ${apellido},</p>
+                <p>Usted ha sido registrado en el sistema de la Unidad Educativa Particular Emaús. Para confirmar su correo electrónico, haga clic en el siguiente enlace:</p>
+                <p style="text-align: center; margin: 20px 0;">
+                    <a href="${process.env.URL_BACKEND}confirmar/correoRepresentante/${encodeURIComponent(token)}" style="background-color: #00796b; color: #fff; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Confirmar Correo Electrónico</a>
+                </p>
+                <p><b>Atentamente,</b></p>
+                <p>${coordinadorApellido} ${coordinadorNombre}</p>
+                <p><strong>Coordinador de Rutas</strong></p>
+            </div>
+        `
+    };
+
+    //Creación del transportador universal con el email y el password del conductor ingresado por el administrador
+    transportador.sendMail(estructuraEmail, (error, info) => {
+        if(error){
+            console.error(error);
+        } else {
+            console.log('Correo enviado: ' + info.response);
+        }
+    });
+}; 
+
+const recuperacionContrasenia = (email, nombres, apellidos, token, coordinadorApellido, coordinadorNombre) => {
     //Creación de la estuctura que tendrá el correo 
     let estructuraEmail = {
         from: process.env.EMAIL_USER,
@@ -486,8 +517,9 @@ const recuperacionContrasenia = (email, nombres, apellidos, token) => {
                     <a href="${process.env.URL_BACKEND}comprobar/token/${token}" style="background-color: #00796b; color: #fff; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Restablecer Contraseña</a>
                 </p>
                 <p>Si no solicitó este cambio, por favor ignore este correo.</p>
-                <p>Atentamente,</p>
-                <p><strong>Un dirigente de la Cooperativa de Transporte Escolar y Turismo Ciudad de Quito</strong></p>
+                <p><b>Atentamente,</b></p>
+                <p>${coordinadorApellido} ${coordinadorNombre}</p>
+                <p><strong>Coordinador de Rutas</strong></p>
             </div>
         `
     }
@@ -501,43 +533,12 @@ const recuperacionContrasenia = (email, nombres, apellidos, token) => {
     });
 }; 
 
-const confirmacionDeCorreoRepresentante = async (email, nombre, apellido, token) => {
-    //Creación de la estuctura que tendrá el correo
-    let estructuraEmail = {
-        from: process.env.EMAIL_USER,
-        to: email,  
-        subject: "Confirmación de correo electrónico",
-        html: `
-            <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; background-color: #e0f7fa; padding: 20px; border-radius: 10px;">
-                <h2 style="color: #00796b;">Transportistas de la Unidad Educativa Particular “Emaús”</h2>
-                <p>Estimado(a) ${nombre} ${apellido},</p>
-                <p>Usted ha sido registrado en el sistema de la Unidad Educativa Particular Emaús. Para confirmar su correo electrónico, haga clic en el siguiente enlace:</p>
-                <p style="text-align: center; margin: 20px 0;">
-                    <a href="${process.env.URL_BACKEND}confirmar/correoRepresentante/${encodeURIComponent(token)}" style="background-color: #00796b; color: #fff; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Confirmar Correo Electrónico</a>
-                </p>
-                <p>Si no solicitó este cambio, por favor ignore este correo.</p>
-                <p>Atentamente,</p>
-                <p><strong>Un dirigente de la Cooperativa de Transporte Escolar y Turismo Ciudad de Quito</strong></p>
-            </div>
-        `
-    };
-
-    //Creación del transportador universal con el email y el password del conductor ingresado por el administrador
-    transportador.sendMail(estructuraEmail, (error, info) => {
-        if(error){
-            console.error(error);
-        } else {
-            console.log('Correo enviado: ' + info.response);
-        }
-    });
-}
-
-const recuperacionContraseniaRepresentante = async (email, nombre, apellido, token) => {
+const recuperacionContraseniaRepresentante = async (email, nombre, apellido, token, coordinadorApellido, coordinadorNombre) => {
     //Creación de la estuctura que tendrá el correo 
     let estructuraEmail = {
         from: process.env.EMAIL_USER,
         to: email,  
-        subject: "Recuperación de contraseña del representante de la Unidad Educativa Particular Emaús",
+        subject: "Recuperación de contraseña del representante de un estudiante registrado en el sistema de transporte escolar de la Unidad Educativa Particular Emaús",
         html:  `
         <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; background-color: #e0f7fa; padding: 20px; border-radius: 10px;">
             <h2 style="color: #00796b;">Transportistas de la Unidad Educativa Particular “Emaús”</h2>
@@ -547,8 +548,9 @@ const recuperacionContraseniaRepresentante = async (email, nombre, apellido, tok
                 <a href="${process.env.URL_BACKEND}comprobar/token/${token}" style="background-color: #00796b; color: #fff; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Restablecer Contraseña</a>
             </p>
             <p>Si no solicitó este cambio, por favor ignore este correo.</p>
-            <p>Atentamente,</p>
-            <p><strong>Un dirigente de la Cooperativa de Transporte Escolar y Turismo Ciudad de Quito</strong></p>
+            <p><b>Atentamente,</b></p>
+            <p>${coordinadorApellido} ${coordinadorNombre}</p>
+            <p><strong>Coordinador de Rutas</strong></p>
         </div>
     `
     }
@@ -562,12 +564,12 @@ const recuperacionContraseniaRepresentante = async (email, nombre, apellido, tok
     });
 }
 
-const confirmacionDeCorreoRepresentanteCambio = async (email, nombre, apellido, token) => {
+const confirmacionDeCorreoRepresentanteCambio = async (email, nombre, apellido, token, coordinadorApellido, coordinadorNombre) => {
     //Creación de la estuctura que tendrá el correo
     let estructuraEmail = {
         from: process.env.EMAIL_USER,
         to: email,  
-        subject: "Confirmación del nuevo correo electrónico para el representante de un estudiante de la Unidad Educativa Particular Emaús",
+        subject: "Confirmación del nuevo correo electrónico para el representante de un estudiante registrado en el sistema de transporte escolar de la Unidad Educativa Particular Emaús",
         html:  `
         <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; background-color: #e0f7fa; padding: 20px; border-radius: 10px;">
             <h2 style="color: #00796b;">Transportistas de la Unidad Educativa Particular “Emaús”</h2>
@@ -577,8 +579,9 @@ const confirmacionDeCorreoRepresentanteCambio = async (email, nombre, apellido, 
                 <a href="${process.env.URL_BACKEND}cambio/email/${encodeURIComponent(token)}" style="background-color: #00796b; color: #fff; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Confirmar Correo Electrónico</a>
             </p>
             <p>Si no solicitó este cambio, por favor ignore este correo.</p>
-            <p>Atentamente,</p>
-            <p><strong>Un dirigente de la Cooperativa de Transporte Escolar y Turismo Ciudad de Quito</strong></p>
+            <p><b>Atentamente,</b></p>
+            <p>${coordinadorApellido} ${coordinadorNombre}</p>
+            <p><strong>Coordinador de Rutas</strong></p>
         </div>
     `
     };
@@ -593,49 +596,23 @@ const confirmacionDeCorreoRepresentanteCambio = async (email, nombre, apellido, 
     });
 }
 
-const eliminacionDelRepresentante = async (email, nombresRepresentante, apellidosRepresentante, nombresEstudiante, apellidosEstudiante) => {
+const eliminacionDelRepresentante = async (email, nombresRepresentante, apellidosRepresentante, nombresEstudiante, apellidosEstudiante, coordinadorApellido, coordinadorNombre) => {
     //Creación de la estuctura que tendrá el correo 
     let estructuraEmail = {
         from: process.env.EMAIL_USER,
         to: email,  
-        subject: "Eliminación del sistema de transporte escolar de la Unidad Educativa Particular Emaús",
+        subject: "Eliminación del representante de un estudiante registrado en el sistema de transporte escolar de la Unidad Educativa Particular Emaús",
         html: `
             <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; background-color: #e0f7fa; padding: 20px; border-radius: 10px;">
                 <h2 style="color: #00796b;">Transportistas de la Unidad Educativa Particular “Emaús”</h2>
                 <p>Estimado(a) ${nombresRepresentante} ${apellidosRepresentante},</p>
                 <p>Lamentamos informarle que el estudiante ${nombresEstudiante} ${apellidosEstudiante}, del cual usted es representante, ha sido eliminado del sistema de transporte escolar de la Unidad Educativa Particular Emaús. Como resultado, usted ya no tiene representados vinculados y ha sido eliminado del sistema.</p>
                 <p>Si tiene alguna pregunta o necesita más información, por favor, póngase en contacto con nosotros.</p>
-                <p>Atentamente,</p>
-                <p><strong>Un dirigente de la Cooperativa de Transporte Escolar y Turismo Ciudad de Quito</strong></p>
+                <p><b>Atentamente,</b></p>
+                <p>${coordinadorApellido} ${coordinadorNombre}</p>
+                <p><strong>Coordinador de Rutas</strong></p>
             </div>
         `
-    };
-    //Creación del transportador universal con el email y el password del conductor ingresado por el administrador
-    transportador.sendMail(estructuraEmail, (error, info) => {
-        if(error){
-            console.error(error);
-        } else {
-            console.log('Correo enviado: ' + info.response);
-        }
-    });
-}
-
-const informacionEliminacion = async (email, nombresRepresentante, apellidosRepresentante, ruta, nombresConductor, apellidosConductor)=>{
-    //Creación de la estuctura que tendrá el correo 
-    let estructuraEmail = {
-        from: process.env.EMAIL_USER,
-        to: email,  
-        subject: "Eliminación del conductor del sistema de transporte escolar de la Unidad Educativa Particular Emaús",
-        html: `
-            <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; background-color: #e0f7fa; padding: 20px; border-radius: 10px;">
-                <h2 style="color: #00796b;">Transportistas de la Unidad Educativa Particular “Emaús”</h2>
-                <p>Estimado(a) ${nombresRepresentante} ${apellidosRepresentante},</p>
-                <p>Le informamos que el conductor de la ruta ${ruta} de sus representados, ${nombresConductor} ${apellidosConductor}, ha sido eliminado del sistema.</p>
-                <p>Por favor, esté pendiente a su correo, se le notificará el nuevo conductor asignado.</p>
-                <p>Atentamente,</p>
-                <p><strong>Un dirigente de la Cooperativa de Transporte Escolar y Turismo Ciudad de Quito</strong></p>
-            </div>
-        `    
     };
     //Creación del transportador universal con el email y el password del conductor ingresado por el administrador
     transportador.sendMail(estructuraEmail, (error, info) => {
@@ -659,7 +636,6 @@ export {
     confirmacionDeCorreoRepresentanteCambio, 
     confirmacionDeCorreoConductorCambio,
     eliminacionDelRepresentante, 
-    informacionEliminacion, 
     cambioAdmin,
     asignacionAdministrador, 
     conductorDesactivado, 

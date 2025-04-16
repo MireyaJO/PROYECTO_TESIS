@@ -4,7 +4,7 @@ import Conductores from '../models/Conductores.js';
 import Estudiantes from '../models/Estudiantes.js'
 import Representantes from '../models/Representantes.js';
 import Historial from '../models/HistorialConductores.js';
-import {enviarCorreoConductor, actualizacionDeConductor, eliminacionDelConductor,  informacionEliminacion, cambioAdmin, cambioConductor, asignacionAdministrador, nuevoAdministrador,
+import {enviarCorreoConductor, actualizacionDeConductor, eliminacionDelConductor, cambioAdmin, cambioConductor, asignacionAdministrador, nuevoAdministrador,
     designacionDeReemplazo, conductorDesactivado, conductorReactivado, conductorDesocupado} from "../config/nodemailer.js"; 
 import crypto from 'crypto';
 

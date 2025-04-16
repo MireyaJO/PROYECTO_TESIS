@@ -1,10 +1,8 @@
 import Conductores from '../models/Conductores.js';
-import Estudiantes from '../models/Estudiantes.js';
 import Representantes from '../models/Representantes.js';
 import { createToken } from '../middlewares/autho.js';
 import {recuperacionContrasenia} from "../config/nodemailer.js"; 
 import {recuperacionContraseniaRepresentante} from '../config/nodemailer.js';
-import crypto from 'crypto';
 
 // Logeo de todos los roles
 const Login = async (req, res) => {
@@ -68,6 +66,9 @@ const RecuperacionDeContrasenia = async (req, res) => {
         //Recepción del email del conductor
         const {email} = req.body;
 
+        //Datos del admin para el correo de confirmación
+        const admin = await Conductores.findOne({ roles: { $in: ['admin'] } });
+
         //Verificación de que el email no se encuentre vacío
         if (Object.values(req.body).includes("")) return res.status(400).json({msg_recuperacion_contrasenia:"Lo sentimos, debes llenar todos los campos"})
         const conductor = await Conductores.findOne({email: email});
@@ -78,7 +79,7 @@ const RecuperacionDeContrasenia = async (req, res) => {
             conductor.token = token;
 
             //Envío del correo de recuperación de la contraseña
-            await recuperacionContrasenia(conductor.email, conductor.nombre, conductor.apellido, token);
+            await recuperacionContrasenia(conductor.email, conductor.nombre, conductor.apellido, token, admin.apellido, admin.nombre);
             await conductor.save();
             return res.status(200).json({ msg_recuperacion_contrasenia:"Correo de recuperación de contraseña enviado satisfactoriamente"})
         }
@@ -91,7 +92,7 @@ const RecuperacionDeContrasenia = async (req, res) => {
             representante.token = token;
 
             //Envío del correo de recuperación de la contraseña
-            await recuperacionContraseniaRepresentante(representante.email, representante.nombre, representante.apellido, token);
+            await recuperacionContraseniaRepresentante(representante.email, representante.nombre, representante.apellido, token, admin.apellido, admin.nombre);
             await representante.save();
             return res.status(200).json({ msg_recuperacion_contrasenia:"Correo de recuperación de contraseña enviado satisfactoriamente"})
         }

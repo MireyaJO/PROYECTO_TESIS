@@ -507,7 +507,9 @@ const validacionesActualizarPerfilRepresentante = [
         if (errors.isEmpty()) {
             return next();
         } else {
-            return res.status(400).send({ errors: errors.array() });
+            //Solo se muestra el primer error no el array completo
+            const Error = errors.array()[0]; 
+            return res.status(400).send({ error: Error});
         }
     }
 ]

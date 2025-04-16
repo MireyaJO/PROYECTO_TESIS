@@ -232,6 +232,10 @@ const EliminarEstudiante = async (req, res) => {
     // Obtener el ID de los parámetros de la URL
     const { id } = req.params;
 
+    //Datos del admin para el correo de confirmación
+    const admin = await Conductores.findOne({ roles: { $in: ['admin'] } });
+
+
     try{
         //Información del conductor logeado
         const conductor = await Conductores.findById(req.user.id);
@@ -266,7 +270,7 @@ const EliminarEstudiante = async (req, res) => {
                     datosParaNotificar.push({
                         mensaje: `El representante ${representante.nombre} ${representante.apellido} ha sido eliminado ya que no tiene estudiantes registrados, se le envió un correo` 
                     }); 
-                    await eliminacionDelRepresentante(representante.email, representante.nombre, representante.apellido, nombre, apellido);
+                    await eliminacionDelRepresentante(representante.email, representante.nombre, representante.apellido, nombre, apellido, admin.apellido, admin.nombre);
                 } else if (representante.cedulaRepresentado.length > 0 ){
                     //Se coloca información relevante para que se envie la notificación
                     datosParaNotificar.push({

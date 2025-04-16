@@ -9,9 +9,9 @@ router.get("/confirmar/correoRepresentante/:token", ConfirmacionCorreo);
 
 //Rutas privadas
 router.patch('/actualizar/contrasenia/representante', verificacionToken, verificacionRepresentanteRol, validarContraseniaNueva, ActualizarPasswordRepresentante);  
+router.patch("/actualizar/perfil/representante", verificacionToken, verificacionRepresentanteRol, validacionesActualizarPerfilRepresentante, ActualizarPerfilRepresentante);
+router.delete("/eliminar/cuenta/representante", verificacionToken, verificacionRepresentanteRol, EliminarCuentaRepresentante);
 router.get("/info/conductor", verificacionToken, verificacionRepresentanteRol, ConductorInfo);
 router.get("/perfil/representante", verificacionToken, verificacionRepresentanteRol, VisuallizarPerfil);
-router.delete("/eliminar/cuenta/representante", verificacionToken, verificacionRepresentanteRol, EliminarCuentaRepresentante);
-router.patch("/actualizar/perfil/representante", verificacionToken, verificacionRepresentanteRol, validacionesActualizarPerfilRepresentante, ActualizarPerfilRepresentante);
 
 export default router

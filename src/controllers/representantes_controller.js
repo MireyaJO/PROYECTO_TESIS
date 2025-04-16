@@ -3,7 +3,6 @@ import fs from 'fs-extra';
 import Conductores from '../models/Conductores.js';
 import Estudiantes from '../models/Estudiantes.js';
 import Representantes from '../models/Representantes.js';
-import {createToken} from '../middlewares/autho.js';
 import {confirmacionDeCorreoRepresentante, confirmacionDeCorreoRepresentanteCambio } from '../config/nodemailer.js';
 
 //Registro de los representantes
@@ -128,10 +127,13 @@ const RegistroDeRepresentantes = async (req, res) => {
         // Guardar el nuevo representante en la base de datos
         await nuevoRepresentante.save();
 
+        //Datos del admin para el correo de confirmación
+        const admin = await Conductores.findOne({ roles: { $in: ['admin'] } });
+
         //Enviar el correo de confirmación
-        await confirmacionDeCorreoRepresentante(email, nombre, apellido, token);
+        await confirmacionDeCorreoRepresentante(email, nombre, apellido, token, admin.apellido, admin.nombre);
         
-        res.status(200).json({ msg_registro_representante: "Representante registrado exitosamente", nuevoRepresentante});
+        res.status(200).json({ msg_registro_representante: "Representante registrado exitosamente", registroRepresentante: nuevoRepresentante});
     } catch (error) {
         console.error(error);
         res.status(500).json({ msg_registro_representante: "Error al registrar el representante" });
@@ -143,7 +145,7 @@ const ConfirmacionCorreo = async (req, res) => {
     //Obtenencion del token de la url 
     const token = req.params.token;
     try {
-        // Verificar si el token es válido|
+        // Verificar si el token es válido
         if(!token) return res.status(400).json({msg_confirmar_correo:"Lo sentimos, no se puede validar la cuenta"})
         const representante= await Representantes.findOne({token:token})
 
@@ -162,8 +164,8 @@ const ConfirmacionCorreo = async (req, res) => {
         res.status(200).json({ msg_confirmar_correo: "Cuenta confirmada exitosamente" });
     } catch (error) {
         res.status(400).json({ msg_confirmar_correo: "Token inválido o expirado" });
-    }
-}
+    };
+};
 
 // Actualización de la contraseña del representante
 const ActualizarPasswordRepresentante = async (req, res) => {
@@ -195,9 +197,8 @@ const ActualizarPasswordRepresentante = async (req, res) => {
     } catch (error) {
         console.error(error);
         res.status(500).json({ msg_actualizacion_contrasenia: "Error al actualizar la contraseña" });
-    }
-
-}
+    };
+};
 
 // Información de los estudiantes representados 
 const ConductorInfo = async (req, res) => {
@@ -206,7 +207,7 @@ const ConductorInfo = async (req, res) => {
         const { id } = req.user;
 
         // Búsqueda de los estudiantes representados por el representante y populación del conductor
-        const estudiantes = await Estudiantes.find({ representantes: id }).populate('conductor', 'nombre apellido email telefono rutaAsignada sectoresRuta fotografiaDelConductor').select("-createdAt -updatedAt -__v");
+        const estudiantes = await Estudiantes.find({ representantes: id }).populate('conductor', 'nombre apellido email telefono rutaAsignada sectoresRuta fotografiaDelConductor esReemplazo').select("-createdAt -updatedAt -__v");
 
         // Verificación de que el representante tenga estudiantes representados
         if (estudiantes.length === 0) return res.status(404).json({ msg_info_conductor: "Lo sentimos, no tiene estudiantes representados" });
@@ -219,8 +220,8 @@ const ConductorInfo = async (req, res) => {
     } catch (error) {
         console.error(error);
         res.status(500).json({ msg_info_conductor: "Error al obtener los estudiantes representados" });
-    }
-}
+    };
+};
 
 // Visualización del perfil del representante
 const VisuallizarPerfil = async (req, res) => {
@@ -234,8 +235,8 @@ const VisuallizarPerfil = async (req, res) => {
     } catch (error) {
         console.error(error);
         res.status(500).json({ msg: "Error al visualizar el perfil del representante" });
-    }
-}
+    };
+};
 
 //Eliminar su cuenta de representante
 const EliminarCuentaRepresentante = async (req, res) => {
@@ -265,8 +266,8 @@ const EliminarCuentaRepresentante = async (req, res) => {
     } catch (error) {
         console.error(error);
         res.status(500).json({ msg_eliminacion_cuenta: "Error al eliminar la cuenta del representante" });
-    }
-}
+    };
+};
 
 //Actualizar su perfil de representante
 const ActualizarPerfilRepresentante = async (req, res) => {
@@ -329,11 +330,11 @@ const ActualizarPerfilRepresentante = async (req, res) => {
             } catch (error) {
                 console.error(error);
                 return res.status(500).json({ msg_actualizacion_perfil: "Error al subir la imagen" });
-            }
-        }
+            };
+        };
 
         // Si el email cambia, enviar un enlace de confirmación al nuevo correo
-        if (email && email !== representante.email) {
+        if (email !== representante.email) {
             // Crear un token JWT con el ID del representante y el nuevo email
             const token = representante.crearToken();
             representante.token = token;
@@ -342,12 +343,15 @@ const ActualizarPerfilRepresentante = async (req, res) => {
             // Guardar el token en la base de datos
             await representante.save();
 
+            //Datos del admin para el correo de confirmación
+            const admin = await Conductores.findOne({ roles: { $in: ['admin'] } });
+
             // Enviar un email de confirmación al nuevo correo electrónico
-            await confirmacionDeCorreoRepresentanteCambio(email, representante.nombre, representante.apellido, token);
+            await confirmacionDeCorreoRepresentanteCambio(email, representante.nombre, representante.apellido, token, admin.apellido, admin.nombre);
 
             // Enviar una respuesta al cliente indicando que se ha enviado un enlace de confirmación
             return res.status(200).json({ msg_actualizacion_perfil: "Se ha enviado un enlace de confirmación al nuevo correo electrónico" });
-        }
+        };
 
         // Actualización del perfil del representante
         representante.nombre = nombre;
@@ -362,7 +366,7 @@ const ActualizarPerfilRepresentante = async (req, res) => {
     } catch (error) {
         console.error(error);
         res.status(500).json({ msg_actualizacion_perfil: "Error al actualizar el perfil del representante" });
-    }
+    };
 };
 
 export {
