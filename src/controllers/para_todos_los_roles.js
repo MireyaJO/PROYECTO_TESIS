@@ -20,7 +20,7 @@ const Login = async (req, res) => {
         };   
 
         // Verificación en la base de datos del conductor
-        const conductor = await Conductores.findOne({ email: email });
+        const conductor = await Conductores.findOne({ email: email }).select("-createdAt -updatedAt -__v");
         if (conductor) {
             // Verificar el rol seleccionado
             if (!conductor.roles.includes(role)) {
