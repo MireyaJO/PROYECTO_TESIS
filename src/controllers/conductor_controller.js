@@ -432,7 +432,7 @@ const VisuallizarPerfil = async (req, res) => {
         // Verificación de la existencia del conductor
         if (!conductor) return res.status(404).json({ msg_visualizar_conductor: "Conductor no encontrado" });
         //Si se encuentra el conductor se envía su información
-        res.status(200).json({perfilConductorLogeado: conductor});
+        res.status(200).json({conductor: conductor});
     } catch (error) {
         console.error(error);
         res.status(500).json({  msg_visualizar_conductor: "Error al visualizar el perfil del conductor" });

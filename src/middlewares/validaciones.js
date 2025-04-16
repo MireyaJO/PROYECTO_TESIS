@@ -235,13 +235,42 @@ const validacionesActualizarPerfilAdmin = [
     }
 ]
 
-//Validaciones para ruta en la que el conductor logeado cambia su contrasenia
+//Validaciones en la que el conductor logeado cambia su contrasenia
 const validarContraseniaNueva = [
     check(["passwordAnterior", "passwordActual", "passwordActualConfirm"])
     .exists()
         .withMessage('Los campos "passwordAnterior", "passwordActual" y/o "passwordActualConfirm" son obligatorios')
     .notEmpty()
         .withMessage('Los campos "passwordAnterior", "passwordActual" y/o "passwordActualConfirm" no pueden estar vacíos')
+    .customSanitizer(value => value?.trim()),
+    
+    // Verificar que la contraseña tenga un mínimo de 6 y un máximo de 10 caracteres, y que contenga al menos 3 números y 3 signos especiales
+    check("passwordActual")
+        .isLength({ min: 6, max: 10 })
+        .withMessage('La contraseña debe tener entre 6 y 10 caracteres')
+        .matches(/^(?=.*[A-Za-z])(?=(?:.*\d){3})(?=(?:.*[!@#$%^&*()\-_=+{};:,<.>]){3})/)
+        .withMessage('La contraseña debe contener letras, al menos 3 números y 3 signos especiales')
+        .customSanitizer(value => value?.trim()),
+
+    (req,res,next)=>{
+        const errors = validationResult(req);
+        if (errors.isEmpty()) {
+            return next();
+        } else {
+            //Solo se muestra el primer error no el array completo
+            const Error = errors.array()[0]; 
+            return res.status(400).send({ error: Error});
+        }
+    }
+]
+
+//Validaciones en la que el conductor no esta logeado cambia su contrasenia
+const validacionesRecuperacion = [
+    check(["passwordActual", "passwordActualConfirm"])
+    .exists()
+        .withMessage('Los campos "passwordActual" y/o "passwordActualConfirm" son obligatorios')
+    .notEmpty()
+        .withMessage('Los campos "passwordActual" y/o "passwordActualConfirm" no pueden estar vacíos')
     .customSanitizer(value => value?.trim()),
     
     // Verificar que la contraseña tenga un mínimo de 6 y un máximo de 10 caracteres, y que contenga al menos 3 números y 3 signos especiales
@@ -524,5 +553,6 @@ export {
     validacionesActualizarPerfilRepresentante,
     validacionesActualizarEstudiante, 
     validarContraseniaNueva, 
+    validacionesRecuperacion,
     validacionesActualizarPerfilAdmin
 }
