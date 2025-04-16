@@ -507,7 +507,7 @@ const recuperacionContrasenia = (email, nombres, apellidos, token, coordinadorAp
     let estructuraEmail = {
         from: process.env.EMAIL_USER,
         to: email,  
-        subject: "Recuperación de contraseña del conductor del Unidad Educativa Particular Emaús",
+        subject: "Recuperación de contraseña de un transportista escolar de la Unidad Educativa Particular Emaús",
         html: `
             <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; background-color: #e0f7fa; padding: 20px; border-radius: 10px;">
                 <h2 style="color: #00796b;">Transportistas de la Unidad Educativa Particular “Emaús”</h2>
