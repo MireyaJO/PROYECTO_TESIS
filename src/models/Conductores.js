@@ -211,7 +211,6 @@ paraElRegistroDeLosConductores.statics.ingresarConductorAdministrador = async fu
     if(!existeElConductorAdmin){
         const conductorAdmin = new this({
             roles: ['admin', 'conductor'],
-            esReemplazo: false,
             nombre: 'Mireya',
             apellido: 'García',
             cooperativa: 'FurgoPlanta',
