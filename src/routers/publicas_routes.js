@@ -6,7 +6,7 @@ const router = Router()
 router.post("/login", Login);
 router.post('/recuperacion/contrasenia', RecuperacionDeContrasenia);
 router.get('/comprobar/token/:token', ComprobarTokenPassword);
-router.patch('/nueva/contrasenia/:token', validarContraseniaNueva, NuevaPassword);
 router.get("/cambio/email/:token", ConfirmacionCorreoNuevo);
+router.patch('/nueva/contrasenia/:token', validarContraseniaNueva, NuevaPassword);
 
 export default router
