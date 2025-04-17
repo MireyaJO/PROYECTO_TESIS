@@ -148,6 +148,8 @@ const  RegistroDeLosConductores = async (req, res) => {
         //No se crea un token de confirmación, ya que, al conductor solo se le necesita enviar un correo para que se diriga a su cuenta
         await enviarCorreoConductor(email, randomPassword, rutaAsignada, sectoresRuta, nuevoConductor.nombre, nuevoConductor.apellido, coordinadorRutas.apellido, coordinadorRutas.nombre); 
 
+        //Mensaje de éxito 
+        return res.status(200).json({msg_registro_conductor:`El conductor ${nuevoConductor.nombre} ${nuevoConductor.apellido} ha sido registrado exitosamente`, nuevoConductor: nuevoConductor});
     }catch(error){
         console.log(error); 
         res.status(500).json({

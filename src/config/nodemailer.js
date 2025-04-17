@@ -21,7 +21,7 @@ const enviarCorreoConductor = (email, password, ruta, sectores, nombreConductor,
     let estructuraEmail = {
         from: process.env.EMAIL_USER,
         to: email,  
-        subject: "Credenciales de acceso a la aplicación para los conductores de la Unidad Educativa Particular Emaús",
+        subject: "Credenciales de acceso para el sistema de los transportistas escolares de la Unidad Educativa Particular Emaús",
         html: `
             <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; background-color: #e0f7fa; padding: 20px; border-radius: 10px;">
                 <h2 style="color: #00796b;">Transportistas de la Unidad Educativa Particular "Emaús"</h2>
