@@ -66,6 +66,36 @@ const validacionesConductor = [
         .withMessage('El campo "placa" debe seguir el formato de tres letras, un guion y cuatro números,  Ejemplo: PUH-7869')
     .customSanitizer(value => value?.trim()),
 
+    // Verificar que el email se enceuntre bien escrito
+    check("email")
+    .exists()
+        .withMessage('El campo "email" es obligatorio')
+    .notEmpty()
+        .withMessage('El campo "email" no puede estar vacío')
+    .isEmail()
+        .withMessage('El email debe ser un correo válido')
+    .customSanitizer(value => value?.trim()),
+
+    // Verificar que el género sea uno de los valores permitidos
+    check("generoConductor")
+    .exists()
+        .withMessage('El campo "generoConductor" es obligatorio')
+    .notEmpty()
+        .withMessage('El campo "generoConductor" no puede estar vacío')
+    .isIn(["Femenino", "Masculino", "Prefiero no decirlo"])
+        .withMessage('El género debe ser "Femenino", "Masculino" o "Prefiero no decirlo"')
+    .customSanitizer(value => value?.trim()),
+
+    //Verificar el valor del campo "esReemplazo"
+    check("esReemplazo")
+    .exists()
+        .withMessage('El campo "esReemplazo" es obligatorio')
+    .notEmpty()
+        .withMessage('El campo "esReemplazo" no puede estar vacío')
+    .isIn(["Sí", "No"])
+        .withMessage('Solo se admiten los valores "Sí" o "No" para afirmar si es un reemplazo')
+    .customSanitizer(value => value?.trim()),
+
     // Verificar que la ruta sea un número y que solo existan 12 rutaa
     check("rutaAsignada")
     .custom((value, { req }) => {
@@ -101,36 +131,6 @@ const validacionesConductor = [
         } 
         return true;
     })
-    .customSanitizer(value => value?.trim()),
-
-    // Verificar que el email se enceuntre bien escrito
-    check("email")
-    .exists()
-        .withMessage('El campo "email" es obligatorio')
-    .notEmpty()
-        .withMessage('El campo "email" no puede estar vacío')
-    .isEmail()
-        .withMessage('El email debe ser un correo válido')
-    .customSanitizer(value => value?.trim()),
-
-    // Verificar que el género sea uno de los valores permitidos
-    check("generoConductor")
-    .exists()
-        .withMessage('El campo "generoConductor" es obligatorio')
-    .notEmpty()
-        .withMessage('El campo "generoConductor" no puede estar vacío')
-    .isIn(["Femenino", "Masculino", "Prefiero no decirlo"])
-        .withMessage('El género debe ser "Femenino", "Masculino" o "Prefiero no decirlo"')
-    .customSanitizer(value => value?.trim()),
-
-    //Verificar el valor del campo "esReemplazo"
-    check("esReemplazo")
-    .exists()
-        .withMessage('El campo "esReemplazo" es obligatorio')
-    .notEmpty()
-        .withMessage('El campo "esReemplazo" no puede estar vacío')
-    .isIn(["Sí", "No"])
-        .withMessage('Solo se admiten los valores "Sí" o "No" para afirmar si es un reemplazo')
     .customSanitizer(value => value?.trim()),
     
     (req,res,next)=>{
