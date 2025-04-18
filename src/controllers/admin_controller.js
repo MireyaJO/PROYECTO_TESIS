@@ -125,16 +125,21 @@ const  RegistroDeLosConductores = async (req, res) => {
         // Verificar si se envió un archivo de imagen
         if (req.files && req.files.fotografiaDelConductor) {
             const file = req.files.fotografiaDelConductor;
+            // Validar que el archivo sea una imagen
+            const formatosPermitidos = ["image/jpeg", "image/png", "image/jpg"];
+            if (!formatosPermitidos.includes(file.mimetype)) {
+                return res.status(400).json({ msg_registro_representante: "Solo se permiten archivos de imagen en formato JPG, JPEG o PNG" });
+            };
             try {
                 // Guardar la URL de la imagen en la base de datos
                 nuevoConductor.fotografiaDelConductor = await SubirImagen(file, nombre, apellido);
             } catch (error) {
                 console.error(error);
                 return res.status(500).json({ msg_registro_conductor: "Error al subir la imagen" });
-            }
+            }; 
         } else {
             return res.status(400).json({ msg_registro_conductor: "Lo sentimos, debes subir una imagen" });
-        }
+        };
 
         // Generar una contraseña aleatoria
         const randomPassword = crypto.randomBytes(8).toString('hex');
