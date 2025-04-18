@@ -69,12 +69,6 @@ const  RegistroDeLosConductores = async (req, res) => {
             return res.status(400).json({ msg_registro_conductor: "Lo sentimos, la cédula ya se encuentra registrada en los representantes" });
         };
 
-        // Comprobar si la ruta ya está asignada
-        const verificarRutaBDD = await Conductores.findOne({rutaAsignada});
-        if (verificarRutaBDD) {
-            return res.status(400).json({ msg_registro_conductor: "Lo sentimos, la ruta ya se encuentra asignada" })
-        } 
-
         // Comprobar si el telefono ya está registrado
         const verificarTelefonoBDD = await Conductores.findOne({telefono});
         const verificarTelefonoRepresentanteBDD = await Representantes.findOne({telefono});
@@ -93,13 +87,19 @@ const  RegistroDeLosConductores = async (req, res) => {
 
         // ¿Qué sucede si el conductor no es un reemplazo y no se coloca la ruta y los sectores?
         if (esReemplazo == 'No'){
-            if(!rutaAsignada){
-                return res.status(400).json({ msg_registro_conductor: "Lo sentimos, debes colocar la ruta asignada, ya que, no es un conductor reemplazo" });
+            // Comprobar si la ruta ya está asignada
+            const verificarRutaBDD = await Conductores.findOne({rutaAsignada});
+            if (verificarRutaBDD) {
+                return res.status(400).json({ msg_registro_conductor: "Lo sentimos, la ruta ya se encuentra asignada" })
             };
-            if(!sectoresRuta){
-                return res.status(400).json({ msg_registro_conductor: "Lo sentimos, debes colocar los sectores de la ruta asignada, ya que, no es un conductor reemplazo" });
+        } else if (esReemplazo == 'Sí'){
+            if(rutaAsignada){
+                return res.status(400).json({ msg_registro_conductor: "Lo sentimos, en el registro no se asigna una ruta al conductor reemplazo" });
             };
-        };
+            if(sectoresRuta){
+                return res.status(400).json({ msg_registro_conductor: "Lo sentimos, en el registro no se asignan sectores al conductor reemplazo" })
+            }; 
+        }
 
         //Datos del coordinador de rutas
         const coordinadorRutas = await Conductores.findById(id);

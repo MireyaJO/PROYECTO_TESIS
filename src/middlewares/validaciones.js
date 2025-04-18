@@ -44,10 +44,39 @@ const validacionesConductor = [
 
     // Verificar que la ruta sea un número y que solo existan 12 rutaa
     check("rutaAsignada")
-    .isNumeric()
-        .withMessage('La ruta debe ser un número, no se acepta otro tipo de dato')
-    .isInt({ min: 1, max: 12 })
-        .withMessage('Solo existen 12 rutas disponibles en la Unidad Educativa Particular Emaús')
+    .custom((value, { req }) => {
+        if (req.body.esReemplazo === "No") {
+            // Verificar si el valor está vacío o no definido
+            if (!value || value.trim() === "") {
+                throw new Error("Debe especificarse una ruta para conductores que no son reemplazo");
+            }
+
+            // Convertir el valor a número y verificar si es válido
+            const num = Number(value.trim());
+            if (isNaN(num)) {
+                throw new Error("La ruta debe ser un número, no se acepta otro tipo de dato");
+            }
+
+            // Verificar que el número esté en el rango permitido
+            if (num < 1 || num > 12) {
+                throw new Error("Solo existen 12 rutas disponibles en la Unidad Educativa Particular Emaús");
+            }
+        }
+        return true;
+    })
+    .customSanitizer(value => value?.trim()),
+
+    //Verificar que los sectores de la ruta no esten vacios cuando el conductor no es reemplazo
+    check("sectoresRuta")
+    .custom((value, { req }) => {
+        if (req.body.esReemplazo === "No") {
+            // Verificar si el valor está vacío o no definido
+            if (!value || value.trim() === "") {
+                throw new Error("Los sectores de la ruta no pueden estar vacíos para conductores que no son reemplazo");
+            }
+        } 
+        return true;
+    })
     .customSanitizer(value => value?.trim()),
 
     // Verificar que el email se enceuntre bien escrito

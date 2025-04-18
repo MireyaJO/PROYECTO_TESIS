@@ -17,16 +17,24 @@ let transportador = nodemailer.createTransport({
 
 // Correos para el admin
 const enviarCorreoConductor = (email, password, ruta, sectores, nombreConductor, apellidoConductor, coordinadorApellido, coordinadorNombre) =>{
-    //Creación de la estuctura que tendrá el correo 
-    let estructuraEmail = {
-        from: process.env.EMAIL_USER,
-        to: email,  
-        subject: "Credenciales de acceso para el sistema de los transportistas escolares de la Unidad Educativa Particular Emaús",
-        html: `
-            <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; background-color: #e0f7fa; padding: 20px; border-radius: 10px;">
-                <h2 style="color: #00796b;">Transportistas de la Unidad Educativa Particular "Emaús"</h2>
-                <p>Estimado(a) ${nombreConductor} ${apellidoConductor},</p>
-                <p>Usted ha sido registrado como conductor en nuestra institución. A continuación, encontrará los detalles de su ruta y sus credenciales para acceder a la aplicación:</p>
+    let cambiosReemplazo = "";
+
+    if (ruta === undefined || sectores === undefined) {
+        cambiosReemplazo= ` 
+                <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
+                    <tr>
+                        <td style="padding: 8px; border: 1px solid #ddd;"><strong>Email:</strong></td>
+                        <td style="padding: 8px; border: 1px solid #ddd;">${email}</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 8px; border: 1px solid #ddd;"><strong>Contraseña:</strong></td>
+                        <td style="padding: 8px; border: 1px solid #ddd;">${password}</td>
+                    </tr>
+                </table>
+                <p>Usted es reemplazo así que su ruta y sectores variarán según sea el caso.</p>
+        `; 
+    } else {
+        cambiosReemplazo = `
                 <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
                     <tr>
                         <td style="padding: 8px; border: 1px solid #ddd;"><strong>Ruta:</strong></td>
@@ -45,6 +53,20 @@ const enviarCorreoConductor = (email, password, ruta, sectores, nombreConductor,
                         <td style="padding: 8px; border: 1px solid #ddd;">${password}</td>
                     </tr>
                 </table>
+        `;
+    }; 
+
+    //Creación de la estuctura que tendrá el correo 
+    let estructuraEmail = {
+        from: process.env.EMAIL_USER,
+        to: email,  
+        subject: "Credenciales de acceso para el sistema de los transportistas escolares de la Unidad Educativa Particular Emaús",
+        html: `
+            <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; background-color: #e0f7fa; padding: 20px; border-radius: 10px;">
+                <h2 style="color: #00796b;">Transportistas de la Unidad Educativa Particular "Emaús"</h2>
+                <p>Estimado(a) ${nombreConductor} ${apellidoConductor},</p>
+                <p>Usted ha sido registrado como conductor en nuestra institución. A continuación, encontrará los detalles de su ruta y sus credenciales para acceder a la aplicación:</p>
+                ${cambiosReemplazo}
                 <p style="margin-top: 20px;">Por favor, asegúrese de cambiar su contraseña después de iniciar sesión por primera vez.</p>
                 <p><b>Atentamente,</b></p>
                 <p> ${coordinadorApellido} ${coordinadorNombre}</p>
