@@ -4,13 +4,13 @@ import { check, validationResult } from 'express-validator'
 const validacionesConductor = [
     // Verificar que el campo "nombre" no esté vacío y que sea un string
     check("nombre")
-        .exists()
-            .withMessage('El campo "nombre" es obligatorio')
-        .notEmpty()
-            .withMessage('El campo "nombre" no puede estar vacío')
-        .matches(/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/)
-            .withMessage('El campo "nombre" debe ser un texto y puede contener espacios')
-        .customSanitizer(value => value?.trim()),
+    .exists()
+        .withMessage('El campo "nombre" es obligatorio')
+    .notEmpty()
+        .withMessage('El campo "nombre" no puede estar vacío')
+    .matches(/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/)
+        .withMessage('El campo "nombre" debe ser un texto y puede contener espacios')
+    .customSanitizer(value => value?.trim()),
 
     // Verificar que el campo "apellido" no esté vacío y que sea un string
     check("apellido")
@@ -404,23 +404,32 @@ const validacionesRecuperacion = [
 //Validaciones para las rutas que manejará el conductor 
 //Validaciones para el registro del estudiante
 const validacionesEstudiantes = [
-    // Verificar que se encuentren los campos obligatorios y no estén vacíos
-    check(["nombre", "apellido", "nivelEscolar", "genero", "paralelo", "cedula", "ubicacionDomicilio", "turno"
-    ])
+    //Verificación que "nombre" sea un string y no se encuentre vacío
+    check(["nombre"])
     .exists()
-        .withMessage('Los campos "nombre","apellido","nivelEscolar","genero", "paralelo", "cedula", "ubicacionDomicilio" y/o "turno"  son obligatorios')
+        .withMessage('El campo "nombre" es obligatorio')
     .notEmpty()
-        .withMessage('Los campos "nombre","apellido","nivelEscolar","genero", "paralelo", "cedula", "ubicacionDomicilio" y/o "turno"  no pueden estar vacíos')
+        .withMessage('El campo "nombre" no puede estar vacío')
+    .matches(/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/)
+        .withMessage('El campo debe ser un texto y puede contener espacios')
     .customSanitizer(value => value?.trim()),
 
-    //Verificación de que todo sea un string
-    check(["nombre", "apellido"])
+    //Verificación que "apellido"sea un string y no se encuentre vacío
+    check(["apellido"])
+    .exists()
+        .withMessage('El campo "apellido" es obligatorio')
+    .notEmpty()
+        .withMessage('El campo "apellido" no puede estar vacío')
     .matches(/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/)
         .withMessage('El campo debe ser un texto y puede contener espacios')
     .customSanitizer(value => value?.trim()),
 
     // Verificar que el campo "nivelEscolar" sea uno de los valores permitidos
     check("nivelEscolar")
+    .exists()
+        .withMessage('El campo "nivelEscolar" es obligatorio')
+    .notEmpty()
+        .withMessage('El campo "nivelEscolar" no puede estar vacío')
     .isIn(["Nocional", "Inicial 1", "Inicial 2", "Primero de básica", "Segundo de básica", "Tercero de básica", "Cuarto de básica", "Quinto de básica", 
         "Sexto de básica", "Séptimo de básica", "Octavo de básica", "Noveno de básica", "Décimo de básica", "Primero de bachillerato", "Segundo de bachillerato", "Tercero de bachillerato"])
         .withMessage('Lo sentimos, el nivel escolar debe ser Educación Inicial, Educación General Básica o Educación Media (Bachillerato)') 
@@ -428,18 +437,50 @@ const validacionesEstudiantes = [
 
     // Verificar que el campo "paralelo" sea uno de los valores permitidos
     check("paralelo")
+    .exists()
+        .withMessage('El campo "paralelo" es obligatorio')
+    .notEmpty()
+        .withMessage('El campo "paralelo" no puede estar vacío')
     .isIn(["A", "B", "C"])
         .withMessage('Lo sentimos, el paralelo debe ser de la A a la C')
     .customSanitizer(value => value?.trim()),
 
+    // Verificar que el número de cédula tenga 10 dígitos
+    check("cedula")
+    .exists()
+        .withMessage('El campo "cedula" es obligatorio')
+    .notEmpty()
+        .withMessage('El campo "cedula" no puede estar vacío')
+    .isLength({ min: 10, max: 10 })
+        .withMessage('La cedula debe ser de 10 digitos')
+    .isNumeric()
+        .withMessage('El campo "cedula" debe contener solo números')
+    .customSanitizer(value => value?.trim()),  
+
+    // Verificar que el número de cédula tenga 10 dígitos
+    check("ubicacionDomicilio")
+    .exists()
+        .withMessage('El campo "ubicacionDomicilio" es obligatorio')
+    .notEmpty()
+        .withMessage('El campo "ubicacionDomicilio" no puede estar vacío')
+    .customSanitizer(value => value?.trim()), 
+
     // Verificar que el numero de cedula sea de 10 digitos
     check("genero")
+    .exists()
+        .withMessage('El campo "genero" es obligatorio')
+    .notEmpty()
+        .withMessage('El campo "genero" no puede estar vacío')
     .isIn(["Femenino", "Masculino", "Prefiero no decirlo"])
         .withMessage('El género debe ser "Femenino", "Masculino" o "Prefiero no decirlo"')
     .customSanitizer(value => value?.trim()),
 
     // Verificar que el "turno" sea uno de los valores permitidos
     check("turno")
+    .exists()
+        .withMessage('El campo "turno" es obligatorio')
+    .notEmpty()
+        .withMessage('El campo "turno" no puede estar vacío')
     .isIn(["Mañana", "Tarde", "Completo"])
         .withMessage('El turno debe ser "Mañana", "Tarde" o "Completo"')
     .customSanitizer(value => value?.trim()),
