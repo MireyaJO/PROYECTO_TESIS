@@ -2,24 +2,40 @@ import { check, validationResult } from 'express-validator'
 //Validaciones para las rutas que manejsdel administrador
 //Validaciones para el registro del conductor 
 const validacionesConductor = [
-    // Verificar que se encuentren los campos obligatorios y no estén vacíos
-    check(["nombre","apellido", "cooperativa", "telefono","cedula","placaAutomovil", 
-        "email", "generoConductor", "esReemplazo"
-    ])
-    .exists()
-        .withMessage('Los campos "nombre","apellido","cooperativa","telefono","cedula","placaAutomovil", "fotografiaDelConductor", "generoConductor", "esReemplazo" y/o "email"  son obligatorios')
-    .notEmpty()
-        .withMessage('Los campos "nombre","apellido","cooperativa","telefono","cedula","placaAutomovil", "fotografiaDelConductor", "generoConductor", "esReemplazo" y/o "email" no pueden estar vacíos')
-    .customSanitizer(value => value?.trim()),
+    // Verificar que el campo "nombre" no esté vacío y que sea un string
+    check("nombre")
+        .exists()
+            .withMessage('El campo "nombre" es obligatorio')
+        .notEmpty()
+            .withMessage('El campo "nombre" no puede estar vacío')
+        .matches(/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/)
+            .withMessage('El campo "nombre" debe ser un texto y puede contener espacios')
+        .customSanitizer(value => value?.trim()),
 
-    //Verificación de que todo sea un string
-    check(["nombre", "apellido"])
-    .matches(/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/)
-        .withMessage('El campo debe ser un texto y puede contener espacios')
-    .customSanitizer(value => value?.trim()),
+    // Verificar que el campo "apellido" no esté vacío y que sea un string
+    check("apellido")
+        .exists()
+            .withMessage('El campo "apellido" es obligatorio')
+        .notEmpty()
+            .withMessage('El campo "apellido" no puede estar vacío')
+        .matches(/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/)
+            .withMessage('El campo "apellido" debe ser un texto y puede contener espacios')
+        .customSanitizer(value => value?.trim()),
+
+    // Verificar que el campo "cooperativa" no esté vacío
+    check("cooperativa")
+        .exists()
+            .withMessage('El campo "cooperativa" es obligatorio')
+        .notEmpty()
+            .withMessage('El campo "cooperativa" no puede estar vacío')
+        .customSanitizer(value => value?.trim()),
 
     // Verificar que el numero de telefono sea de 10 digitos
     check("telefono")
+    .exists()
+        .withMessage('El campo "telefono" es obligatorio')
+    .notEmpty()
+        .withMessage('El campo "telefono" no puede estar vacío')
     .isLength({ min: 10, max: 10 })
         .withMessage('El teléfono debe ser de 10 digitos')
     .matches(/^\d{10}$/)
@@ -28,6 +44,10 @@ const validacionesConductor = [
 
     // Verificar que el número de cédula tenga 10 dígitos
     check("cedula")
+    .exists()
+        .withMessage('El campo "cedula" es obligatorio')
+    .notEmpty()
+        .withMessage('El campo "cedula" no puede estar vacío')
     .isLength({ min: 10, max: 10 })
         .withMessage('La cedula debe ser de 10 digitos')
     .isNumeric()
@@ -36,6 +56,10 @@ const validacionesConductor = [
     
     // Verificar que el número de placa tenga 7 dígitos
     check("placaAutomovil")
+    .exists()
+        .withMessage('El campo "placaAutomovil" es obligatorio')
+    .notEmpty()
+        .withMessage('El campo "placaAutomovil" no puede estar vacío')
     .isLength({ min: 8, max: 8 })
         .withMessage('La placa debe tener exactamente 8 caracteres, incluyendo el guion')
     .matches(/^[A-Z]{3}-\d{4}$/i)
@@ -81,18 +105,30 @@ const validacionesConductor = [
 
     // Verificar que el email se enceuntre bien escrito
     check("email")
+    .exists()
+        .withMessage('El campo "email" es obligatorio')
+    .notEmpty()
+        .withMessage('El campo "email" no puede estar vacío')
     .isEmail()
         .withMessage('El email debe ser un correo válido')
     .customSanitizer(value => value?.trim()),
 
     // Verificar que el género sea uno de los valores permitidos
     check("generoConductor")
+    .exists()
+        .withMessage('El campo "generoConductor" es obligatorio')
+    .notEmpty()
+        .withMessage('El campo "generoConductor" no puede estar vacío')
     .isIn(["Femenino", "Masculino", "Prefiero no decirlo"])
         .withMessage('El género debe ser "Femenino", "Masculino" o "Prefiero no decirlo"')
     .customSanitizer(value => value?.trim()),
 
     //Verificar el valor del campo "esReemplazo"
     check("esReemplazo")
+    .exists()
+        .withMessage('El campo "esReemplazo" es obligatorio')
+    .notEmpty()
+        .withMessage('El campo "esReemplazo" no puede estar vacío')
     .isIn(["Sí", "No"])
         .withMessage('Solo se admiten los valores "Sí" o "No" para afirmar si es un reemplazo')
     .customSanitizer(value => value?.trim()),
