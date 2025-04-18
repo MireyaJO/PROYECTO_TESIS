@@ -174,6 +174,7 @@ const RegistrarNuevoAdmin = async (req,res) =>{
         placaAutomovil,
         generoConductor, 
         cedula,
+        cooperativa, 
         email, 
         trabajaraOno,
         asignacionOno,
@@ -259,6 +260,7 @@ const RegistrarNuevoAdmin = async (req,res) =>{
             estado: trabajaraOno === 'Sí' ? 'Trabaja como conductor' : 'No trabaja como conductor',
             placaAutomovil,
             cedula,
+            cooperativa,     
             email,
             roles: trabajaraOno === 'Sí' ? ["conductor", "admin"] : ["admin"],
         });
