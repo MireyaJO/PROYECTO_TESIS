@@ -51,7 +51,7 @@ const validacionesConductor = [
     .isLength({ min: 10, max: 10 })
         .withMessage('La cedula debe ser de 10 digitos')
     .isNumeric()
-        .withMessage('El campo "teléfono" debe contener solo números')
+        .withMessage('El campo "cedula" debe contener solo números')
     .customSanitizer(value => value?.trim()), 
     
     // Verificar que el número de placa tenga 7 dígitos
