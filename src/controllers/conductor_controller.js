@@ -139,7 +139,7 @@ const ListarEstudiantesTarde = async (req, res) => {
         const conductor = await Conductores.findById(req.user.id);
 
         //Enlistar a los estudiantes de la ruta del conductor logeado y son solamente de la tarde o ambos
-        const estudiantes = await Estudiantes.find({ruta: conductor.rutaAsignada, turno: {$in: ["Tarde", "Ambos"]}}).where('conductor').equals(conductor._id).select("-conductor -createdAt -updatedAt -__v");
+        const estudiantes = await Estudiantes.find({ruta: conductor.rutaAsignada, turno: {$in: ["Tarde", "Completo"]}}).where('conductor').equals(conductor._id).select("-conductor -createdAt -updatedAt -__v");
 
         //Verificación de la existencia de los estudiantes 
         if(estudiantes.length === 0) return res.status(404).json({msg_lista_estudiantes:"Lo sentimos, no se han encontrado estudiantes registrados en su ruta"});
@@ -757,7 +757,7 @@ const ListarEstudiantesManiana = async (req, res) => {
         const conductor = await Conductores.findById(req.user.id);
         
         //Enlistar los estudiantes de la ruta del conductor logeado
-        const estudiantes = await Estudiantes.find({ruta: conductor.rutaAsignada, turno: {$in: ["Mañana", "Ambos"]}}).where('conductor').equals(conductor._id).select("-conductor -createdAt -updatedAt -__v"); 
+        const estudiantes = await Estudiantes.find({ruta: conductor.rutaAsignada, turno: {$in: ["Mañana", "Completo"]}}).where('conductor').equals(conductor._id).select("-conductor -createdAt -updatedAt -__v"); 
         
         //Verificación de la existencia de los estudiantes
         if(estudiantes.length === 0) return res.status(404).json({msg_lista_estudiantes:"Lo sentimos, no se han encontrado estudiantes registrados en su ruta"});
