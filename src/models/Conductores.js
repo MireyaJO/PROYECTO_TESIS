@@ -1,6 +1,7 @@
 import mongoose, {Schema, model} from 'mongoose'
 import bcrypt from 'bcryptjs'
 import { env } from 'process';
+import { type } from 'os';
 //Definición de la estructura en la base de datos 
 //Esquema para el registro de los conductores
 const paraElRegistroDeLosConductores= new Schema(
@@ -115,10 +116,18 @@ const paraElRegistroDeLosConductores= new Schema(
             type: String,
             default: null
         },
+        tokenExpiracion:{
+            type: Date, 
+            default: null
+        },
         tokenEmail:{
             type: String,
             default: null
         }, 
+        tokenEmailExpiracion:{
+            type: Date,
+            default: null
+        },
         estado:{
             type: String, 
             enum: [
@@ -149,9 +158,18 @@ paraElRegistroDeLosConductores.methods.matchPassword = async function(passwordIn
 }
 
 // Método para crear un token 
-paraElRegistroDeLosConductores.methods.crearToken = function(){
+paraElRegistroDeLosConductores.methods.crearToken = function(tipo){
     const tokenGenerado = this.token = Math.random().toString(36).slice(2)
-    return tokenGenerado
+    if(tipo === 'recuperacion'){
+        this.token = tokenGenerado; 
+        //Tiempo en el token es válido
+        this.tokenExpiracion = Date.now() + 3600000;
+    }else if(tipo === 'confirmacionCorreo'){
+        this.tokenEmail = tokenGenerado; 
+        //Tiempo en el token es válido
+        this.tokenEmailExpiracion = Date.now() + 86400000;
+    };
+    return tokenGenerado;
 }
 
 // Metodo para ingresar un estudiante

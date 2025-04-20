@@ -75,12 +75,10 @@ const RecuperacionDeContrasenia = async (req, res) => {
         //Verificación de que el conductor exista
         if(conductor){
             //Creación del token para la recuperación de la contraseña
-            const token = conductor.crearToken();
-            conductor.token = token;
-
+            const token = conductor.crearToken('recuperacion');
+            await conductor.save();
             //Envío del correo de recuperación de la contraseña
             await recuperacionContrasenia(conductor.email, conductor.nombre, conductor.apellido, token, admin.apellido, admin.nombre);
-            await conductor.save();
             return res.status(200).json({ msg_recuperacion_contrasenia:"Correo de recuperación de contraseña enviado satisfactoriamente"})
         }
 
@@ -88,12 +86,10 @@ const RecuperacionDeContrasenia = async (req, res) => {
         const representante = await Representantes.findOne({ email });
         if(representante){
             //Creación del token para la recuperación de la contraseña
-            const token = representante.crearToken();
-            representante.token = token;
-
+            const token = representante.crearToken('recuperacion');
+            await representante.save();
             //Envío del correo de recuperación de la contraseña
             await recuperacionContraseniaRepresentante(representante.email, representante.nombre, representante.apellido, token, admin.apellido, admin.nombre);
-            await representante.save();
             return res.status(200).json({ msg_recuperacion_contrasenia:"Correo de recuperación de contraseña enviado satisfactoriamente"})
         }
         return res.status(404).json({msg_recuperacion_contrasenia:"El usuario no se encuentra registrado"});
@@ -111,19 +107,29 @@ const ComprobarTokenPassword = async (req, res) => {
         //Verificación de que el token sea válido
         if(!tokenURL) return res.status(400).json({msg_recuperacion_contrasenia:"Lo sentimos, el token se encuentra vacío"});
         
-        //Verificación de que exista un conductor con el token
-        const conductor = await Conductores.findOne({token:tokenURL});
-        if(conductor?.token === tokenURL){
-            await conductor.save();
-            return res.status(200).json({msg_recuperacion_contrasenia:"Token confirmado, ya puedes crear tu nuevo password"})
-        };
-        
-        //Verificación de que exista un representante con el token 
-        const representante = await Representantes.findOne({token: tokenURL});
-        if(representante?.token === tokenURL) {
-            await representante.save()
-            return res.status(200).json({msg_recuperacion_contrasenia:"Token confirmado, ya puedes crear tu nuevo password"})
-        } 
+        // Verificar si el token pertenece a un conductor
+        const conductor = await Conductores.findOne({ token: tokenURL });
+        if (conductor) {
+            // Verificar si el token ha expirado
+            if (conductor.tokenExpiracion <= Date.now()) {
+                return res.status(400).json({ msg_recuperacion_contrasenia: "Lo sentimos, el token ha expirado" });
+            }
+
+            // Si el token es válido
+            return res.status(200).json({ msg_recuperacion_contrasenia: "Token confirmado, ya puedes crear tu nuevo password" });
+        }
+
+        // Verificar si el token pertenece a un representante
+        const representante = await Representantes.findOne({ token: tokenURL });
+        if (representante) {
+            // Verificar si el token ha expirado
+            if (representante.tokenExpiracion <= Date.now()) {
+                return res.status(400).json({ msg_recuperacion_contrasenia: "Lo sentimos, el token ha expirado" });
+            }
+
+            // Si el token es válido
+            return res.status(200).json({ msg_recuperacion_contrasenia: "Token confirmado, ya puedes crear tu nuevo password" });
+        }
         return res.status(400).json({msg_recuperacion_contrasenia:"Lo sentimos, el token no coincide con ningún usuario"});
     }catch(error){
         console.error(error);
@@ -151,8 +157,9 @@ const NuevaPassword= async (req, res) => {
 
         //Verificación de que exista un conductor con el token
         const conductor = await Conductores.findOne({token:tokenURL});
-        if(conductor?.token === tokenURL){
+        if(conductor){
             conductor.password = await conductor.encrypPassword(passwordActual);
+            //Eliminar el token de la base de datos para que no se pueda volver a usar 
             conductor.token = null;
             await conductor.save();
             return res.status(200).json({msg_recuperacion_contrasenia: "La contraseña se ha actualizado satisfactoriamente, por favor vuelva a logearse"});
@@ -160,7 +167,7 @@ const NuevaPassword= async (req, res) => {
         
         //Verificación de que exista un representante con el token 
         const representante = await Representantes.findOne({token: tokenURL});
-        if(representante?.token === tokenURL) {
+        if(representante) {
             representante.password = await representante.encrypPassword(passwordActual);
             //Eliminar el token de la base de datos para que no se pueda volver a usar 
             representante.token = null;
@@ -182,28 +189,36 @@ const ConfirmacionCorreoNuevo = async (req, res) => {
         const { token } = req.params;
 
         // Buscar conductor por token
-        const conductor = await Conductores.findOne({ token: token });
+        const conductor = await Conductores.findOne({ tokenEmail: token });
         if (conductor) {
+            // Verificar si el token ha expirado
+            if (conductor.tokenEmailExpiracion <= Date.now()) {
+                return res.status(400).json({ msg: "Lo sentimos, el token ha expirado. Solicite un nuevo cambio de correo." });
+            }
+
             // Actualizar el email
             conductor.email = conductor.tokenEmail;
-            conductor.token = null;
-            //Almacenamiento temporal de el correo nuevo hasta que se confirme el cambio de correo
             conductor.tokenEmail = null;
-        
+            conductor.tokenEmailExpiracion = null;
+
             // Guardar los cambios en la base de datos
             await conductor.save();
             return res.status(200).json({ msg: "Correo electrónico actualizado exitosamente, puede logearse con su nuevo email" });
         }
 
         // Buscar representante por token
-        const representante = await Representantes.findOne({token: token}); 
+        const representante = await Representantes.findOne({ tokenEmail: token });
         if (representante) {
+            // Verificar si el token ha expirado
+            if (representante.tokenEmailExpiracion <= Date.now()) {
+                return res.status(400).json({ msg: "Lo sentimos, el token ha expirado. Solicite un nuevo cambio de correo." });
+            }
+
             // Actualizar el email
             representante.email = representante.tokenEmail;
-            representante.token = null;
-            //Almacenamiento temporal de el correo nuevo hasta que se confirme el cambio de correo
             representante.tokenEmail = null;
-    
+            representante.tokenEmailExpiracion = null;
+
             // Guardar los cambios en la base de datos
             await representante.save();
             return res.status(200).json({ msg: "Correo electrónico actualizado exitosamente, puede logearse con su nuevo email" });
