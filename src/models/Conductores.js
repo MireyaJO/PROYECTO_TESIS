@@ -54,20 +54,11 @@ const paraElRegistroDeLosConductores= new Schema(
         },
         rutaAsignada:{
             type: Number, 
-            required : function () {
-                return this.esReemplazo === 'No'; 
-            }, 
-            unique: function () {
-                return this.esReemplazo === 'No'; 
-            }, 
-            trim: true
+            default: null
         }, 
         sectoresRuta:{
             type: String, 
-            required : function () {
-                return this.esReemplazo === 'No';  
-            }, 
-            trim: true
+            default: null
         }, 
         institucion:{
             type: String, 
