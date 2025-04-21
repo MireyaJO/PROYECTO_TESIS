@@ -735,14 +735,6 @@ const ReemplazoTemporal = async (req, res) => {
         for(const estudianteId of estudiantesConductorAntiguo){
             //Actualizar el conductor de los estudiantes
             await Estudiantes.findByIdAndUpdate(estudianteId._id, { conductor: conductorReemplazo._id });
-            //Se guarda la actualización en la base de datos de estudiantes
-            await estudianteId.save();
-
-            //Objeto con la información de cada estudiante que se encuentra vinculado al conductor antiguo
-            const estudianteRegistrado = {idEstudiante: estudianteId._id, nombreEstudiante: estudianteId.nombre, apellidoEstudiante: estudianteId.apellido, nivelEscolarEstudiante: estudianteId.nivelEscolar, 
-                paraleloEstudiante: estudianteId.paralelo, cedulaEstudiante: estudianteId.cedula};
-            //Actualizar el campo "estudiantesRegistrados" del conductor de reemplazo
-            conductorReemplazo.estudiantesRegistrados.push(estudianteRegistrado); 
 
             //Obtener los representantes de los estudiantes
             for(const representanteId of estudianteId.representantes){
@@ -955,7 +947,7 @@ const ActivarConductorOriginal = async (req, res) => {
         if(!reemplazoActivo) return res.status(400).json({msg_activacion_conductor:"El conductor original no tiene un reemplazo activo"});
 
         //Realizar la reasignación de los estudiantes
-        const estudiantesAsignados = Estudiantes.find({conductor: reemplazoActivo._id});
+        const estudiantesAsignados = await Estudiantes.find({conductor: reemplazoActivo._id});
         for(const estudianteId of estudiantesAsignados){
             //Actualizar el conductor de los estudiantes
             await Estudiantes.findByIdAndUpdate(estudianteId._id, {conductor: conductorOriginal._id});
@@ -974,7 +966,7 @@ const ActivarConductorOriginal = async (req, res) => {
             for(const representanteId of estudianteId.representantes){
                 const representante = await Representantes.findById(representanteId);
                 if(representante){
-                    await cambioConductor(representante.email, representante.nombre, representante.apellido, conductorReemplazo.rutaAsignada, conductorReemplazo.nombre, conductorReemplazo.apellido, idCoordinador.apellido, idCoordinador.nombre, "Permanente");
+                    await cambioConductor(representante.email, representante.nombre, representante.apellido, reemplazoActivo.rutaAsignada, reemplazoActivo.nombre, reemplazoActivo.apellido, idCoordinador.apellido, idCoordinador.nombre, "Permanente");
                 }
             }
         }; 
