@@ -836,14 +836,11 @@ const ReemplazoPermanente = async (req, res) => {
             //Actualizar el conductor de los estudiantes
             await Estudiantes.findByIdAndUpdate(estudianteId._id, { conductor: conductorReemplazo._id });
 
-            //Se guarda la actualización en la base de datos de estudiantes
-            await estudianteId.save();
-
             //Objeto que contiene la información de cada estudiante que se encuentra vinculado al conductor antiguo
             const estudianteRegistrado = {idEstudiante: estudianteId._id, nombreEstudiante: estudianteId.nombre, apellidoEstudiante: estudianteId.apellido, nivelEscolarEstudiante: estudianteId.nivelEscolar, 
                 paraleloEstudiante: estudianteId.paralelo, cedulaEstudiante: estudianteId.cedula}
             //Actualizar el campo "estudiantesRegistrados" del conductor de reemplazo
-            idReemplazo.estudiantesRegistrados.push(estudianteRegistrado);
+            conductorReemplazo.estudiantesRegistrados.push(estudianteRegistrado);
 
             //Obtener los representantes de los estudiantes 
             for(const representanteId of estudianteId.representantes){
