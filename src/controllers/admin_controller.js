@@ -951,16 +951,6 @@ const ActivarConductorOriginal = async (req, res) => {
             //Actualizar el conductor de los estudiantes
             await Estudiantes.findByIdAndUpdate(estudianteId._id, {conductor: conductorOriginal._id});
 
-            //Guardar los cambios en la base de datos de estudiantes
-            await estudianteId.save();
-
-            //Objeto con la información de los estudiantes para devolverlos al conductor original
-            const estudianteRegistrado = {idEstudiante: estudianteId._id, nombreEstudiante: estudianteId.nombre, apellidoEstudiante: estudianteId.apellido, nivelEscolarEstudiante: estudianteId.nivelEscolar,
-                paraleloEstudiante: estudianteId.paralelo, cedulaEstudiante: estudianteId.cedula}; 
-            
-            //Actualizar el campo "estudiantesRegistrados" del conductor original
-            conductorOriginal.estudiantesRegistrados.push(estudianteRegistrado);
-
             //Obtener los representantes de los estudiantes e informar que el conductor original ha sido reactivado
             for(const representanteId of estudianteId.representantes){
                 const representante = await Representantes.findById(representanteId);
