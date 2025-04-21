@@ -892,9 +892,11 @@ const ReemplazoPermanente = async (req, res) => {
 
         //Guardar los cambios en la base de datos de conductores
         await conductorReemplazo.save();
-
-        //Envio del correo al conductor eliminado 
-        await eliminacionDelConductor(conductorAntiguo.email, conductorAntiguo.nombre, conductorAntiguo.apellido, idCoordinador.apellido, idCoordinador.nombre);
+        
+        if (conductorAntiguo.roles.includes("conductor") && conductorAntiguo.roles.length === 1){
+            //Envio del correo al conductor eliminado 
+            await eliminacionDelConductor(conductorAntiguo.email, conductorAntiguo.nombre, conductorAntiguo.apellido, idCoordinador.apellido, idCoordinador.nombre);
+        };
 
         //Envio del correo al conductor de reemplazo
         await designacionDeReemplazo(conductorReemplazo.email, conductorReemplazo.nombre, conductorReemplazo.apellido, conductorReemplazo.rutaAsignada, conductorReemplazo.sectoresRuta, conductorAntiguo.nombre, conductorAntiguo.apellido, 'Permanente', idCoordinador.nombre, idCoordinador.apellido);
