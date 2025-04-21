@@ -62,7 +62,7 @@ const validacionesConductor = [
         .withMessage('El campo "placaAutomovil" no puede estar vacío')
     .isLength({ min: 8, max: 8 })
         .withMessage('La placa debe tener exactamente 8 caracteres, incluyendo el guion')
-    .matches(/^[A-Z]{3}-\d{4}$/i)
+    .matches(/^[A-Z]{3}-\d{4}$/)
         .withMessage('El campo "placa" debe seguir el formato de tres letras, un guion y cuatro números,  Ejemplo: PUH-7869')
     .customSanitizer(value => value?.trim()),
 
