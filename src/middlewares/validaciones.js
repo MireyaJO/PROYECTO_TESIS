@@ -310,18 +310,24 @@ const validacionesAdmin = [
 
 //Validaciones para la actualizacion de un conductor
 const validacionesActualizarConductorNormal = [
-    // Verificar que se encuentren los campos obligatorios y no estén vacíos
-    check(["rutaAsignada","sectoresRuta"])
-    .notEmpty()
-        .withMessage('Los campos "rutaAsignada" y/o "sectoresRuta" no pueden estar vacíos')
-    .customSanitizer(value => value?.trim()),
-
     // Verificar que la ruta sea un número y que solo existan 12 ruta
     check("rutaAsignada")
+    .exists()
+        .withMessage('El campo "rutaAsignada" es obligatorio')
+    .notEmpty()
+        .withMessage('El campo "rutaAsignada" no puede estar vacío') 
     .isNumeric()
         .withMessage('La ruta debe ser un número, no se acepta otro tipo de dato')
     .isInt({ min: 1, max: 12 })
         .withMessage('Solo existen 12 rutas disponibles en la Unidad Educativa Particular Emaús')
+    .customSanitizer(value => value?.trim()),
+
+    // Verificar que se encuentren los campos obligatorios y no estén vacíos
+    check(["sectoresRuta"])
+    .exists()
+        .withMessage('El campo "sectoresRuta" es obligatorio')
+    .notEmpty()
+        .withMessage('El campo "sectoresRuta" no puede estar vacío') 
     .customSanitizer(value => value?.trim()),
 
     (req,res,next)=>{
