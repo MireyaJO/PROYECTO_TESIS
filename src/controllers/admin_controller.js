@@ -476,6 +476,14 @@ const ActualizarRutasYSectoresId = async (req, res) => {
         // Para conocer el nombre del conductor que posee ese id
         const {nombre, apellido} = conductor;
 
+        //Verificación de que la ruta asignada no esté ocupada por otro conductor
+        const verificarRutaBDD = await Conductores.findOne({
+            rutaAsignada: rutaAsignada, 
+            estado: { $in: ["Activo", "Trabaja como conductor"] }, 
+            esReemplazo: 'No'
+        });
+        if (verificarRutaBDD) return res.status(400).json({ msg_actualizacion_conductor: "Lo sentimos, la ruta ya se encuentra asignada a otro conductor" });
+
         // Actualización de los datos
         await Conductores.findOneAndUpdate(
             id,
