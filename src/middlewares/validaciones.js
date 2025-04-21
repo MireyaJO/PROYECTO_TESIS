@@ -418,9 +418,9 @@ const validacionesRecuperacion = [
         .withMessage('Los campos "passwordActual" y/o "passwordActualConfirm" no pueden estar vacíos')
     .customSanitizer(value => value?.trim()),
     
-    // Verificar que la contraseña tenga un mínimo de 6 y un máximo de 10 caracteres, y que contenga al menos 3 números y 3 signos especiales
+    // Verificar que la contraseña tenga un mínimo de 8 y un máximo de 10 caracteres, y que contenga al menos 3 números y 3 signos especiales
     check("passwordActual")
-        .isLength({ min: 6, max: 10 })
+        .isLength({ min: 8, max: 10 })
         .withMessage('La contraseña debe tener entre 6 y 10 caracteres')
         .matches(/^(?=.*[A-Za-z])(?=(?:.*\d){3})(?=(?:.*[!@#$%^&*()\-_=+{};:,<.>]){3})/)
         .withMessage('La contraseña debe contener letras, al menos 3 números y 3 signos especiales')
