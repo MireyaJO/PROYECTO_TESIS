@@ -1073,12 +1073,12 @@ const BuscarConductorRuta = async (req, res) => {
         // Busqueda de un conductor que tenga la misma ruta que se encuentra en los parámetros de la URL 
         const conductor = await Conductores.findOne({
             rutaAsignada: rutaAsignada,
-            esReemplazo: 'No', 
+            esReemplazo: 'No',   
             estado: { $in: ["Activo", "Trabaja como conductor"] }
         }).select("-password -updatedAt -createdAt -__v");
         
         if (!conductor) {
-            return res.status(400).json({ msg: "Lo sentimos, no se ha encontrado ningún conductor con esa ruta que se encuentra activo o el admin no tiene privilegios de conductor" });
+            return res.status(400).json({ msg: "Lo sentimos, no se ha encontrado ningún conductor con esa ruta que se encuentre activo o el admin no tiene privilegios de conductor" });
         }
 
         // Mensaje de éxito
