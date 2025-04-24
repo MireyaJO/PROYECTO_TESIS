@@ -337,7 +337,7 @@ const ActualizarPerfilRepresentante = async (req, res) => {
         if (email !== representante.email) {
             // Crear un token JWT con el ID del representante y el nuevo email
             const token = representante.crearToken('confirmacionCorreo');
-            representante.tokenEmail = email;
+            representante.emailTemporal = email;
 
             // Guardar el token en la base de datos
             await representante.save();

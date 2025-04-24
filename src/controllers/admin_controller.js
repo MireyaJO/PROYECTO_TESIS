@@ -624,7 +624,7 @@ const ActualizarInformacionAdmin = async (req, res) => {
         if (email !== conductor.email) {
             // Crear un token JWT con el ID del conductor y el nuevo email
             const token = conductor.crearToken('confirmacionCorreo');
-            conductor.tokenEmail = email;
+            conductor.emailTemporal = email;
 
             // Guardar el token en la base de datos
             await conductor.save();
