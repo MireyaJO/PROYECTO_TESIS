@@ -5,7 +5,7 @@ import {RegistroDeLosConductores, ActualizarRutasYSectoresId, BuscarConductorRut
     CantidadReemplazosYActivacion, InformacionParaReporte, CambiarPasswordPorEmail
 } from '../controllers/admin_controller.js'
 import {verificacionAdminRol, verificacionToken} from '../middlewares/autho.js'
-import {validacionesConductor, validacionesActualizarConductorNormal, validacionesActualizarPerfilAdmin, validacionesAdmin, validarContraseniaNueva} from '../middlewares/validaciones.js'
+import {validacionesConductor, validacionesActualizarConductorNormal, validacionesActualizarPerfilAdmin, validacionesAdmin, validarContraseniaNueva, validacionesRecuperacion} from '../middlewares/validaciones.js'
 const router = Router()
 
 //Rutas privadas
@@ -26,6 +26,6 @@ router.get('/listar/conductores/conreemplazo', verificacionToken, verificacionAd
 router.get('/buscar/conductor/conreemplazo/ruta/:rutaAsignada', verificacionToken, verificacionAdminRol, BuscarConductoresConReemplazo);
 router.get('/info/cantidades', verificacionToken, verificacionAdminRol, CantidadReemplazosYActivacion); 
 router.get('/visualizar/perfil/admin', verificacionToken, verificacionAdminRol, VisualizarPerfil);
-router.patch('/cambiar/contrasenia/primer/inicio', CambiarPasswordPorEmail);
+router.patch('/cambiar/contrasenia/primer/inicio', validacionesRecuperacion, CambiarPasswordPorEmail);
 
 export default router
