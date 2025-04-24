@@ -5,7 +5,7 @@ import Estudiantes from '../models/Estudiantes.js'
 import Representantes from '../models/Representantes.js';
 import Historial from '../models/HistorialConductores.js';
 import {enviarCorreoConductor, actualizacionDeConductor, eliminacionDelConductor, cambioAdmin, cambioConductor, asignacionAdministrador, nuevoAdministrador,
-    designacionDeReemplazo, conductorDesactivado, conductorReactivado, conductorDesocupado} from "../config/nodemailer.js"; 
+    designacionDeReemplazo, conductorDesactivado, conductorReactivado, conductorDesocupado,confirmacionDeCorreoConductorCambio} from "../config/nodemailer.js"; 
 import crypto from 'crypto';
 
 
@@ -605,13 +605,13 @@ const ActualizarInformacionAdmin = async (req, res) => {
             const file = req.files.fotografiaDelConductor;
             try {
                 // Definir el public_id para Cloudinary
-                const publicId = `conductores/${conductor.nombre}_${conductor.apellido}_admin`;
+                const publicId = `conductores/${conductor.nombre}_${conductor.apellido}`;
 
                 // Eliminar la imagen anterior en Cloudinary
                 await cloudinary.v2.uploader.destroy(publicId);
 
                 // Guardar la URL de la imagen en la base de datos
-                conductor.fotografiaDelConductor = await SubirImagen(file, nombre, apellido);
+                conductor.fotografiaDelConductor = await SubirImagen(file, conductor.nombre, conductor.apellido);
             } catch (error) {
                 console.error(error);
                 return res.status(500).json({ msg_actualizacion_perfil: "Error al subir la imagen" });
