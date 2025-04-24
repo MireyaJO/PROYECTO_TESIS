@@ -31,6 +31,13 @@ const Login = async (req, res) => {
             const verificacionContrasenia = await conductor.matchPassword(password);
             // Si la contraseña es correcta se crea el token JWT
             if (verificacionContrasenia) {
+                // Verificar si el conductor debe cambiar su contraseña
+                if (conductor.requiereCambioContrasenia === true) {
+                    return res.status(403).json({ 
+                        msg: "Debe cambiar su contraseña antes de continuar.", 
+                        redirigir: true 
+                    });
+                };
                 const token = createToken({ id: conductor._id, email: conductor.email, role: role });
                 return res.status(200).json({ token, msg_login_conductor: `Bienvenido ${role} ${conductor.nombre} ${conductor.apellido}`, rol: role, conductor: conductor });
             } else {

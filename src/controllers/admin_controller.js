@@ -164,6 +164,38 @@ const  RegistroDeLosConductores = async (req, res) => {
     }
 };
 
+// Para el primer inicio de sesión
+const CambiarPasswordPorEmail = async (req, res) => {
+    const { email, nuevaContrasenia, confirmarContrasenia } = req.body;
+
+    try {
+        // Buscar al conductor por email
+        const conductor = await Conductores.findOne({ email });
+        if (!conductor) {
+            return res.status(404).json({ msg: "Usuario no encontrado" });
+        }
+
+        // Verificar que las contraseñas coincidan
+        if (nuevaContrasenia !== confirmarContrasenia) {
+            return res.status(400).json({ msg: "Las contraseñas no coinciden" });
+        }
+
+        // Encriptar la nueva contraseña
+        conductor.password = await conductor.encrypPassword(nuevaContrasenia);
+
+        // Restablecer el campo `requiereCambioContrasenia`
+        conductor.requiereCambioContrasenia = false;
+
+        // Guardar los cambios en la base de datos
+        await conductor.save();
+
+        res.status(200).json({ msg: "La contraseña se ha actualizado exitosamente." });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ msg: "Error al cambiar la contraseña." });
+    }
+};
+
 // Registros de un nuevo admin 
 const RegistrarNuevoAdmin = async (req,res) =>{
     // Extraer los campos del cuerpo de la solicitud
@@ -1227,6 +1259,8 @@ const InformacionParaReporte = async (req, res) => {
     };
 };
 
+
+
 export {
     RegistroDeLosConductores,
     ActualizarRutasYSectoresId,
@@ -1244,5 +1278,6 @@ export {
     ListarConductoresConReemplazo, 
     BuscarConductoresConReemplazo, 
     CantidadReemplazosYActivacion, 
-    InformacionParaReporte
+    InformacionParaReporte,
+    CambiarPasswordPorEmail
 };

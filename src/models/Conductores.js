@@ -139,7 +139,11 @@ const paraElRegistroDeLosConductores= new Schema(
                 'No trabaja como conductor'
             ], 
             required: true
-        },                                                                         
+        },    
+        requiereCambioContrasenia:{
+            type: Boolean,
+            default: true
+        },                                                     
     }
 , { timestamps: true}
 );
@@ -234,7 +238,8 @@ paraElRegistroDeLosConductores.statics.ingresarConductorAdministrador = async fu
             fotografiaDelConductor: 'https://res.cloudinary.com/dwvqq3ugp/image/upload/v1739850955/imagen_prueba_01_zdvioa.jpg',
             email: process.env.ADMIN_EMAIL, 
             password: contraseniaQuemada, 
-            estado: 'Trabaja como conductor'
+            estado: 'Trabaja como conductor',
+            requiereCambioContrasenia: false,
         });
 
         //Encriptar la contraseña anteriormente quemada
