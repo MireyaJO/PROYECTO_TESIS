@@ -123,6 +123,10 @@ const paraElRegistroDeLosConductores= new Schema(
         tokenEmail:{
             type: String,
             default: null
+        },
+        emailTemporal:{
+            type: String,
+            default: null
         }, 
         tokenEmailExpiracion:{
             type: Date,

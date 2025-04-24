@@ -201,11 +201,12 @@ const ConfirmacionCorreoNuevo = async (req, res) => {
             // Verificar si el token ha expirado
             if (conductor.tokenEmailExpiracion <= Date.now()) {
                 return res.status(400).json({ msg: "Lo sentimos, el token ha expirado. Solicite un nuevo cambio de correo." });
-            }
+            }; 
 
             // Actualizar el email
-            conductor.email = conductor.tokenEmail;
+            conductor.email = conductor.emailTemporal;
             conductor.tokenEmail = null;
+            conductor.emailTemporal = null;
             conductor.tokenEmailExpiracion = null;
 
             // Guardar los cambios en la base de datos
@@ -222,8 +223,9 @@ const ConfirmacionCorreoNuevo = async (req, res) => {
             }
 
             // Actualizar el email
-            representante.email = representante.tokenEmail;
+            representante.email = representante.emailTemporal;
             representante.tokenEmail = null;
+            representante.emailTemporal = null;
             representante.tokenEmailExpiracion = null;
 
             // Guardar los cambios en la base de datos

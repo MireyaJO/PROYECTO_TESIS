@@ -61,6 +61,14 @@ const paraElRegistroDeLosRepresentantes = new Schema(
             type: String,
             default: null
         }, 
+        emailTemporal:{
+            type: String,
+            default: null
+        }, 
+        tokenEmailExpiracion:{
+            type: Date,
+            default: null
+        },
         cedulaRepresentado: [{
             type: Number, 
             required: true, 
@@ -90,13 +98,7 @@ paraElRegistroDeLosRepresentantes.methods.encrypPassword = async function(passwo
 paraElRegistroDeLosRepresentantes.methods.matchPassword = async function(passwordIngresada){
     const response = await bcrypt.compare(passwordIngresada,this.password)
     return response
-}
-
-// Método para crear un token 
-paraElRegistroDeLosRepresentantes.methods.crearToken = function(){
-    const tokenGenerado = this.token = Math.random().toString(36).slice(2)
-    return tokenGenerado
-}
+}; 
 
 // Método para la eliminación de un estudiante de la lista de estudiantes
 paraElRegistroDeLosRepresentantes.methods.eliminarEstudiante = function(cedulaEstudiante){
@@ -104,5 +106,20 @@ paraElRegistroDeLosRepresentantes.methods.eliminarEstudiante = function(cedulaEs
     this.cedulaRepresentado.pull(cedulaEstudiante);
     return this.save()
 };
+
+// Método para crear un token 
+paraElRegistroDeLosRepresentantes.methods.crearToken = function(tipo){
+    const tokenGenerado = this.token = Math.random().toString(36).slice(2); 
+    if(tipo === 'recuperacion'){
+        this.token = tokenGenerado; 
+        //Tiempo en el token es válido
+        this.tokenExpiracion = Date.now() + 3600000;
+    }else if(tipo === 'confirmacionCorreo'){
+        this.tokenEmail = tokenGenerado; 
+        //Tiempo en el token es válido
+        this.tokenEmailExpiracion = Date.now() + 86400000;
+    };
+    return tokenGenerado;
+}
 
 export default model('Representantes',paraElRegistroDeLosRepresentantes)
