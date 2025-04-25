@@ -380,20 +380,31 @@ const validacionesActualizarPerfilAdmin = [
 
 //Validaciones en la que el conductor logeado cambia su contrasenia
 const validarContraseniaNueva = [
-    check(["passwordAnterior", "passwordActual", "passwordActualConfirm"])
+    check("passwordAnterior")
     .exists()
-        .withMessage('Los campos "passwordAnterior", "passwordActual" y/o "passwordActualConfirm" son obligatorios')
+        .withMessage('Los campos "passwordAnterior" son obligatorios')
     .notEmpty()
-        .withMessage('Los campos "passwordAnterior", "passwordActual" y/o "passwordActualConfirm" no pueden estar vacíos')
+        .withMessage('Los campos "passwordAnterior"  no pueden estar vacíos')
     .customSanitizer(value => value?.trim()),
     
     // Verificar que la contraseña tenga un mínimo de 6 y un máximo de 10 caracteres, y que contenga al menos 3 números y 3 signos especiales
     check("passwordActual")
-        .isLength({ min: 6, max: 10 })
+    .exists()
+        .withMessage('El campo "passwordActual" es obligatorio')
+    .notEmpty()
+        .withMessage('El campo "passwordActual" no puede estar vacío') 
+    .isLength({ min: 6, max: 10 })
         .withMessage('La contraseña debe tener entre 6 y 10 caracteres')
-        .matches(/^(?=.*[A-Za-z])(?=(?:.*\d){3})(?=(?:.*[!@#$%^&*()\-_=+{};:,<.>]){3})/)
+    .matches(/^(?=.*[A-Za-z])(?=(?:.*\d){3})(?=(?:.*[!@#$%^&*()\-_=+{};:,<.>]){3})/)
         .withMessage('La contraseña debe contener letras, al menos 3 números y 3 signos especiales')
-        .customSanitizer(value => value?.trim()),
+    .customSanitizer(value => value?.trim()),
+
+    check("passwordActualConfirm")
+    .exists()
+        .withMessage('El campo "passwordActual" es obligatorio')
+    .notEmpty()
+        .withMessage('El campo "passwordActual" no puede estar vacío') 
+    .customSanitizer(value => value?.trim()),
 
     (req,res,next)=>{
         const errors = validationResult(req);
