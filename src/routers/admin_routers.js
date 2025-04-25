@@ -16,7 +16,7 @@ router.patch('/actualizar/conductor/:id', verificacionToken, verificacionAdminRo
 router.patch('/actualizar/informacion/admin', verificacionToken, verificacionAdminRol, validacionesActualizarPerfilAdmin, ActualizarInformacionAdmin);
 router.patch('/asignar/privilegios/admin/:idAsignacion', verificacionToken, verificacionAdminRol, AsignarPrivilegiosDeAdmin);
 router.patch('/actualizar/contrasenia/admin', verificacionToken, verificacionAdminRol, validarContraseniaNueva, ActualizarPassword); 
-router.patch('/reemplazo/temporal/:idAntiguo/:idReemplazor', verificacionToken, verificacionAdminRol, ReemplazoTemporal);
+router.patch('/reemplazo/temporal/:idAntiguo/:idReemplazo', verificacionToken, verificacionAdminRol, ReemplazoTemporal);
 router.patch('/reemplazo/permanente/:idAntiguo/:idReemplazo', verificacionToken, verificacionAdminRol, ReemplazoPermanente);
 router.patch('/activar/conductor/original/:idConductor', verificacionToken, verificacionAdminRol, ActivarConductorOriginal);
 router.get('/listar/conductores', verificacionToken, verificacionAdminRol, ListarConductor);

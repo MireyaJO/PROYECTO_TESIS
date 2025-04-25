@@ -744,26 +744,22 @@ const ReemplazoTemporal = async (req, res) => {
     const {idAntiguo, idReemplazo} = req.params;
 
     //Id del coordinador de rutas
-    const {idCoordinador} = req.user;
+    const {id} = req.user;
 
     try{
+        //Consultar el conductor logeado
+        const conductorCoordinador = await Conductores.findById(id);
+
         //Verificar si los conductores existen 
         const conductorAntiguo = await Conductores.findById({_id: idAntiguo, estado: { $in: ["Activo", "Trabaja como conductor"] }});
         const conductorReemplazo = await Conductores.findById({_id: idReemplazo, estado: 'Disponible'});
-        //El conductor antiguo no existe 
-        if(!conductorAntiguo) return res.status(400).json({msg_reemplazo:`El conductor ${conductorAntiguo.nombre} ${conductorAntiguo.apellido} no se encuentra registrado`});
-
-        //El conductor de reemplazo no existe
-        if(!conductorReemplazo) return res.status(400).json({msg_reemplazo:`El conductor ${conductorReemplazo.nombre} ${conductorReemplazo.apellido} no se encuentra registrado como reemplazo`});
-
-        //El conductor de reemplazo ya tiene estudiantes asignados
-        if(conductorReemplazo.numeroEstudiantes > 0) return res.status(400).json({msg_reemplazo:`El conductor ${conductorReemplazo.nombre} ${conductorReemplazo.apellido} ya tiene estudiantes asignados no puede ser reemplazo`});
-
+        
         //El conductor antiguo no tiene estudiantes asignados
         if(conductorAntiguo.numeroEstudiantes === 0) return res.status(400).json({msg_reemplazo:`El conductor ${conductorAntiguo.nombre} ${conductorAntiguo.apellido} no tiene estudiantes asignados por lo que no se puede realizar el reemplazo`});
 
         //Realizar el reemplazo de los estudiantes
         const estudiantesConductorAntiguo = await Estudiantes.find({conductor: idAntiguo});
+
         for(const estudianteId of estudiantesConductorAntiguo){
             //Actualizar el conductor de los estudiantes
             await Estudiantes.findByIdAndUpdate(estudianteId._id, { conductor: conductorReemplazo._id });
@@ -772,15 +768,16 @@ const ReemplazoTemporal = async (req, res) => {
             for(const representanteId of estudianteId.representantes){
                 const representante = await Representantes.findById(representanteId); 
                 if(representante){
-                    await cambioConductor(representante.email, representante.nombre, representante.apellido, conductorReemplazo.rutaAsignada, conductorReemplazo.nombre, conductorReemplazo.apellido, conductorAntiguo.nombre, conductorAntiguo.apellido, conductorReemplazo.telefono, idCoordinador.apellido, idCoordinador.nombre, "Temporal");            
+                    await cambioConductor(representante.email, representante.nombre, representante.apellido, conductorReemplazo.rutaAsignada, conductorReemplazo.nombre, conductorReemplazo.apellido, conductorAntiguo.nombre, conductorAntiguo.apellido, conductorReemplazo.telefono, conductorCoordinador.apellido, conductorCoordinador.nombre, "Temporal");            
                 };
             };
         };
 
-        //Actualizar información del conductor reemplazo
-        const cantidadEstudiantes = estudiantesConductorAntiguo.length;
+
         //Actualizar el número de estudiantes del conductor de reemplazo
-        conductorReemplazo.numeroEstudiantes = cantidadEstudiantes;
+        conductorReemplazo.numeroEstudiantes = conductorAntiguo.numeroEstudiantes;
+        //Cantidad de estudiantes
+        const cantidadEstudiantes = conductorAntiguo.numeroEstudiantes;
         //Actualizar la ruta y sectores del conductor de reemplazo
         conductorReemplazo.rutaAsignada = conductorAntiguo.rutaAsignada;
         conductorReemplazo.sectoresRuta = conductorAntiguo.sectoresRuta;
@@ -802,11 +799,11 @@ const ReemplazoTemporal = async (req, res) => {
 
         if (conductorAntiguo.roles.includes("conductor") && conductorAntiguo.roles.length === 1){
             //Envio del correo al conductor inactivo solo si es un conductor normal  
-            await conductorDesactivado (conductorAntiguo.email, conductorAntiguo.nombre, conductorAntiguo.apellido, conductorReemplazo.nombre, conductorReemplazo.apellido, conductorReemplazo.rutaAsignada, conductorReemplazo.sectoresRuta, idCoordinador.nombre, idCoordinador.apellido); 
+            await conductorDesactivado (conductorAntiguo.email, conductorAntiguo.nombre, conductorAntiguo.apellido, conductorReemplazo.nombre, conductorReemplazo.apellido, conductorReemplazo.rutaAsignada, conductorReemplazo.sectoresRuta, conductorCoordinador.nombre, conductorCoordinador.apellido); 
         };
 
         //Enviar correo al conductor de reemplazo
-        await designacionDeReemplazo(conductorReemplazo.email, conductorReemplazo.nombre, conductorReemplazo.apellido, conductorReemplazo.rutaAsignada, conductorReemplazo.sectoresRuta, conductorAntiguo.nombre, conductorAntiguo.apellido, 'Temporal', idCoordinador.nombre, idCoordinador.apellido);
+        await designacionDeReemplazo(conductorReemplazo.email, conductorReemplazo.nombre, conductorReemplazo.apellido, conductorReemplazo.rutaAsignada, conductorReemplazo.sectoresRuta, conductorAntiguo.nombre, conductorAntiguo.apellido, 'Temporal', conductorCoordinador.nombre, conductorCoordinador.apellido);
 
         //Guardar la acción que se realiza en el historial para el reporte del fronted 
         const historial = new Historial({
@@ -814,7 +811,7 @@ const ReemplazoTemporal = async (req, res) => {
             nombreConductor: conductorAntiguo.nombre,
             apellidoConductor: conductorAntiguo.apellido,
             accion: "Reemplazo",
-            rutaAsignada: conductorAntiguo.rutaAsignada,
+            rutaHaCubrir: conductorAntiguo.rutaAsignada,
             tipoReemplazo: "Temporal",
             conductorReemplazo: conductorReemplazo._id,
             nombreConductorReemplazo: conductorReemplazo.nombre,
