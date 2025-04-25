@@ -401,9 +401,9 @@ const validarContraseniaNueva = [
 
     check("passwordActualConfirm")
     .exists()
-        .withMessage('El campo "passwordActual" es obligatorio')
+        .withMessage('El campo "passwordActualConfirm" es obligatorio')
     .notEmpty()
-        .withMessage('El campo "passwordActual" no puede estar vacío') 
+        .withMessage('El campo "passwordActualConfirm" no puede estar vacío') 
     .customSanitizer(value => value?.trim()),
 
     (req,res,next)=>{
