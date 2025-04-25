@@ -167,7 +167,7 @@ paraElRegistroDeLosConductores.methods.matchPassword = async function(passwordIn
 
 // Método para crear un token 
 paraElRegistroDeLosConductores.methods.crearToken = function(tipo){
-    const tokenGenerado = this.token = Math.random().toString(36).slice(2)
+    const tokenGenerado = Math.random().toString(36).slice(2)
     if(tipo === 'recuperacion'){
         this.token = tokenGenerado; 
         //Tiempo en el token es válido
