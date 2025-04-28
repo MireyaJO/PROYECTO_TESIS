@@ -1172,13 +1172,28 @@ const CantidadReemplazosYActivacion = async (req, res) => {
         //Cantidad de reemplazos permanentes
         const cantidadReemplazosPermanentes = reemplazosPermanentes.length;
 
+        //Cantidad de estudiantes registrados que asisten en la mañana 
+        const estudiantesRegistradosMañana = await Estudiantes.find({turno: 'Mañana'});
+        const cantidadEstudiantesRegistradosMañana = estudiantesRegistradosMañana.length;
+
+        //Cantidad de estudiantes registrados que asisten en la tarde
+        const estudiantesRegistradosTarde = await Estudiantes.find({turno: 'Tarde'});
+        const cantidadEstudiantesRegistradosTarde = estudiantesRegistradosTarde.length;
+
+        //Cantidad de estudiantes registrados que asisten en la mañana y tarde (recorrido completo)
+        const estudiantesRegistradosCompleto = await Estudiantes.find({turno: 'Completo'});
+        const cantidadEstudiantesRegistradosCompleto = estudiantesRegistradosCompleto.length;
+
         //Mensaje de exito 
         res.status(200).json({
             msg_historial_reemplazo:"El historial de reemplazos y activación de conductores se ha encontrado exitosamente", 
             reemplazoActivo: cantidadReemplazosActivos, 
             reemplazoTerminado: cantidadReemplazosTerminados, 
             reemplazosTemporales: cantidadReemplazosTemporales, 
-            reemplazosPermanentes: cantidadReemplazosPermanentes
+            reemplazosPermanentes: cantidadReemplazosPermanentes, 
+            estudiantesRegistradosMañana: cantidadEstudiantesRegistradosMañana,
+            estudiantesRegistradosTarde: cantidadEstudiantesRegistradosTarde,
+            estudiantesRegistradosCompleto: cantidadEstudiantesRegistradosCompleto
         });
 
 
