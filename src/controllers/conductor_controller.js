@@ -815,39 +815,6 @@ const ListarAsistenciasTarde = async (req, res) => {
     }; 
 };
 
-// Para el primer inicio de sesión
-const CambiarPasswordPorEmail = async (req, res) => {
-    const { email, passwordActual, passwordActualConfirm } = req.body;
-
-    try {
-        // Buscar al conductor por email
-        const conductor = await Conductores.findOne({ email:email });
-        if (!conductor) {
-            return res.status(404).json({ msg_cambio_contrasenia: "Usuario no encontrado" });
-        }
-
-        // Verificar que las contraseñas coincidan
-        if (passwordActual !== passwordActualConfirm) {
-            return res.status(400).json({ msg_cambio_contrasenia: "Las contraseñas no coinciden" });
-        }
-
-        // Encriptar la nueva contraseña
-        conductor.password = await conductor.encrypPassword(passwordActual);
-
-        // Restablecer el campo `requiereCambioContrasenia`
-        conductor.requiereCambioContrasenia = false;
-
-        // Guardar los cambios en la base de datos
-        await conductor.save();
-
-        res.status(200).json({ msg_cambio_contrasenia: "La contraseña se ha actualizado exitosamente." });
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ msg_cambio_contrasenia: "Error al cambiar la contraseña." });
-    }
-};
-
-
 export {
     RegistroDeLosEstudiantes, 
     ActualizarPassword, 
@@ -866,6 +833,5 @@ export {
     TomarLista,
     BuscarLista,
     EliminarLista, 
-    ActualizarLista, 
-    CambiarPasswordPorEmail
+    ActualizarLista
 }
