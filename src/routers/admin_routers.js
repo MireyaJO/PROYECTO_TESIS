@@ -2,7 +2,7 @@ import {Router} from 'express';
 import {RegistroDeLosConductores, ActualizarRutasYSectoresId, BuscarConductorRuta,  ListarConductor, VisualizarPerfil,
     ActualizarInformacionAdmin, AsignarPrivilegiosDeAdmin, RegistrarNuevoAdmin, ActualizarPassword, ReemplazoTemporal, 
     ReemplazoPermanente, ActivarConductorOriginal, ListarReemplazoDisponibles, ListarConductoresConReemplazo, BuscarConductoresConReemplazo,
-    CantidadReemplazosYActivacion, InformacionParaReporte, CambiarPasswordPorEmail
+    CantidadReemplazosYActivacion, InformacionParaReporte
 } from '../controllers/admin_controller.js'
 import {verificacionAdminRol, verificacionToken} from '../middlewares/autho.js'
 import {validacionesConductor, validacionesActualizarConductorNormal, validacionesActualizarPerfilAdmin, validacionesAdmin, validarContraseniaNueva, validacionesRecuperacion} from '../middlewares/validaciones.js'
@@ -12,7 +12,7 @@ const router = Router()
 router.post('/registro/conductores', verificacionToken, verificacionAdminRol, validacionesConductor, RegistroDeLosConductores);
 router.post('/registro/nuevo/admin', verificacionToken, verificacionAdminRol, validacionesAdmin, RegistrarNuevoAdmin);
 router.post('/info/completa/reemplazos', verificacionToken, verificacionAdminRol, InformacionParaReporte);
-router.patch('/actualizar/conductor/:id', verificacionToken, verificacionAdminRol, validacionesActualizarConductorNormal, ActualizarRutasYSectoresId);
+router.patch('/actualizar/conductor/:idConductor', verificacionToken, verificacionAdminRol, validacionesActualizarConductorNormal, ActualizarRutasYSectoresId);
 router.patch('/actualizar/informacion/admin', verificacionToken, verificacionAdminRol, validacionesActualizarPerfilAdmin, ActualizarInformacionAdmin);
 router.patch('/asignar/privilegios/admin/:idAsignacion', verificacionToken, verificacionAdminRol, AsignarPrivilegiosDeAdmin);
 router.patch('/actualizar/contrasenia/admin', verificacionToken, verificacionAdminRol, validarContraseniaNueva, ActualizarPassword); 
@@ -26,6 +26,5 @@ router.get('/listar/conductores/conreemplazo', verificacionToken, verificacionAd
 router.get('/buscar/conductor/conreemplazo/ruta/:rutaAsignada', verificacionToken, verificacionAdminRol, BuscarConductoresConReemplazo);
 router.get('/info/cantidades', verificacionToken, verificacionAdminRol, CantidadReemplazosYActivacion); 
 router.get('/visualizar/perfil/admin', verificacionToken, verificacionAdminRol, VisualizarPerfil);
-router.patch('/cambiar/contrasenia/primer/inicio', validacionesRecuperacion, CambiarPasswordPorEmail);
 
 export default router

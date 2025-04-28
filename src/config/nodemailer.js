@@ -86,7 +86,43 @@ const enviarCorreoConductor = (email, password, ruta, sectores, nombreConductor,
 }; 
 
 //Correos enviados en el registro de conductores con privilegios de admin 
-const nuevoAdministrador = async (email, nombreConductor, apellidoConductor, passwordConductor, rutaConductor, sectoresConductor, apellidoAntiguoAdmin, nombreAntiguoAdmin) => {
+const nuevoAdministrador = async (email, trabajaOno, nombreConductor, apellidoConductor, passwordConductor, rutaConductor, sectoresConductor, apellidoAntiguoAdmin, nombreAntiguoAdmin) => {
+    let noSeTrabajaComoConductor = "";
+    if(trabajaOno === "Sí"){
+        noSeTrabajaComoConductor = `
+            <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
+                <tr>
+                    <td style="padding: 8px; border: 1px solid #ddd;"><strong>Ruta:</strong></td>
+                    <td style="padding: 8px; border: 1px solid #ddd;">${rutaConductor}</td>
+                </tr>
+                <tr>
+                    <td style="padding: 8px; border: 1px solid #ddd;"><strong>Sectores:</strong></td>
+                    <td style="padding: 8px; border: 1px solid #ddd;">${sectoresConductor}</td>
+                </tr>
+                <tr>
+                    <td style="padding: 8px; border: 1px solid #ddd;"><strong>Email:</strong></td>
+                    <td style="padding: 8px; border: 1px solid #ddd;">${email}</td>
+                </tr>
+                <tr>
+                    <td style="padding: 8px; border: 1px solid #ddd;"><strong>Contraseña:</strong></td>
+                    <td style="padding: 8px; border: 1px solid #ddd;">${passwordConductor}</td>
+                </tr>
+            </table>
+        `; 
+    } else if(trabajaOno === "No"){
+        noSeTrabajaComoConductor = `
+            <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
+                <tr>
+                    <td style="padding: 8px; border: 1px solid #ddd;"><strong>Email:</strong></td>
+                    <td style="padding: 8px; border: 1px solid #ddd;">${email}</td>
+                </tr>
+                <tr>
+                    <td style="padding: 8px; border: 1px solid #ddd;"><strong>Contraseña:</strong></td>
+                    <td style="padding: 8px; border: 1px solid #ddd;">${passwordConductor}</td>
+                </tr>
+            </table>
+        `;
+    }
     //Creación de la estuctura que tendrá el correo 
     let estructuraEmail = {
         from: process.env.EMAIL_USER,
@@ -96,25 +132,8 @@ const nuevoAdministrador = async (email, nombreConductor, apellidoConductor, pas
             <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; background-color: #e0f7fa; padding: 20px; border-radius: 10px;">
                 <h2 style="color: #00796b;">Transportistas de la Unidad Educativa Particular “Emaús</h2>
                 <p>Estimado(a) ${nombreConductor} ${apellidoConductor},</p>
-                <p>Usted ha sido registrado como conductor administrador de los transportistas de la Unidad Educativa Particular “Emaús. A continuación, encontrará los detalles de su ruta y sus credenciales para acceder a la aplicación:</p>
-                <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
-                    <tr>
-                        <td style="padding: 8px; border: 1px solid #ddd;"><strong>Ruta:</strong></td>
-                        <td style="padding: 8px; border: 1px solid #ddd;">${rutaConductor}</td>
-                    </tr>
-                    <tr>
-                        <td style="padding: 8px; border: 1px solid #ddd;"><strong>Sectores:</strong></td>
-                        <td style="padding: 8px; border: 1px solid #ddd;">${sectoresConductor}</td>
-                    </tr>
-                    <tr>
-                        <td style="padding: 8px; border: 1px solid #ddd;"><strong>Email:</strong></td>
-                        <td style="padding: 8px; border: 1px solid #ddd;">${email}</td>
-                    </tr>
-                    <tr>
-                        <td style="padding: 8px; border: 1px solid #ddd;"><strong>Contraseña:</strong></td>
-                        <td style="padding: 8px; border: 1px solid #ddd;">${passwordConductor}</td>
-                    </tr>
-                </table>
+                <p>Usted ha sido registrado como conductor administrador de los transportistas de la Unidad Educativa Particular “Emaús. A continuación, encontrará los detalles acceder al sistema:</p>
+                ${noSeTrabajaComoConductor}
                 <p style="margin-top: 20px;">Por favor, asegúrese de cambiar su contraseña después de iniciar sesión por primera vez.</p>
                 <p>Atentamente,</p>
                 <p>${nombreAntiguoAdmin} ${apellidoAntiguoAdmin}</p>
@@ -177,7 +196,7 @@ const cambioConductor = async (email, nombresRepresentante, apellidosRepresentan
     });
 };
 
-const cambioAdmin = async (nombreConductorNuevo, apellidoConductorNuevo, email, nombreConductor, apellidoConductor, coordinadorApellido, coordinadorNombre  )=>{
+const cambioAdmin = async (nombreConductorNuevo, apellidoConductorNuevo, email, nombreConductor, apellidoConductor, coordinadorAntiguoApellido, coordinadorAntiguoNombre  )=>{
     //Creación de la estuctura que tendrá el correo 
     let estructuraEmail = {
         from: process.env.EMAIL_USER,
@@ -189,9 +208,9 @@ const cambioAdmin = async (nombreConductorNuevo, apellidoConductorNuevo, email, 
                 <p>Estimado(a) ${nombreConductor} ${apellidoConductor}</p>
                 <p>Se informa que existe un nuevo coordinador de rutas en nuestra institución. El nuevo coordinador es: ${nombreConductorNuevo} ${apellidoConductorNuevo}.</p>
                 <p>Por favor, póngase en contacto con el nuevo coordinador para cualquier consulta o coordinación relacionada con su ruta.</p>
-                 <p><b>Atentamente,</b></p>
-                <p>${coordinadorApellido} ${coordinadorNombre}</p>
-                <p><strong><b>Coordinador de rutas</b></strong></p>
+                <p><b>Atentamente,</b></p>
+                <p>${coordinadorAntiguoApellido} ${coordinadorAntiguoNombre}</p>
+                <p><strong><b>Coordinador de rutas saliente</b></strong></p>
             </div>
         `   
     };
@@ -304,8 +323,9 @@ const asignacionAdministrador = async (email, nombre, apellido, ruta, sectores, 
                 </tr>
             </table>
             <p style="margin-top: 20px;">Su contraseña no ha cambiado. Si desea cambiar su contraseña, por favor utilice la opción de restablecimiento de contraseña en el sistema.</p>
-            <p>Atentamente,</p>
-            <p><strong>${nombreAntiguoAdmin} ${apellidoAntiguoAdmin} (Ex Coordinador de rutas)</strong></p>
+            <p><b>Atentamente,</b></p>
+            <p> ${apellidoAntiguoAdmin} ${nombreAntiguoAdmin}</p>
+            <p><strong><b>Coordinador de rutas</b></strong></p>
         </div>
         `
     };
