@@ -1149,7 +1149,7 @@ const BuscarConductoresConReemplazo = async (req, res) => {
 const CantidadReemplazosYActivacion = async (req, res) => {
     try{
         //Consultar los reemplazos que se encuentran activos 
-        const reemplazoActivo = await Estudiantes.find({estado: 'Ocupado', esReemplazo: 'Sí'});
+        const reemplazoActivo = await Conductores.find({estado: 'Ocupado', esReemplazo: 'Sí'});
 
         //Cantidad de reemplazos activos
         const cantidadReemplazosActivos = reemplazoActivo.length;
