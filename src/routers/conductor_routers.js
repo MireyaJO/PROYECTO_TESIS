@@ -1,9 +1,9 @@
 import {Router} from 'express';
 import { RegistroDeLosEstudiantes, ActualizarPassword, BuscarEstudianteCedula, 
     ActualizarEstudiante, EliminarEstudiante, ManejoActualizacionUbicacion, CalcularDistanciaYTiempo, TodosLosEstudiantes, ListarEstudiantesManiana, ListarEstudiantesTarde,
-    ListarAsistenciasTarde, ListarAsistenciasManiana, VisuallizarPerfil, ActualizarPerfil, TomarLista, BuscarLista, EliminarLista, ActualizarLista, CambiarPasswordPorEmail} from '../controllers/conductor_controller.js';
+    ListarAsistenciasTarde, ListarAsistenciasManiana, VisuallizarPerfil, ActualizarPerfil, TomarLista, BuscarLista, EliminarLista, ActualizarLista} from '../controllers/conductor_controller.js';
 import {verificacionConductorRol, verificacionToken} from '../middlewares/autho.js'
-import { validacionesActualizarPerfilConductor, validacionesActualizarEstudiante, validarContraseniaNueva, validacionesEstudiantes, validacionesRecuperacion} from '../middlewares/validaciones.js';
+import { validacionesActualizarPerfilConductor, validacionesActualizarEstudiante, validarContraseniaNueva, validacionesEstudiantes} from '../middlewares/validaciones.js';
 const router = Router();
 
 //Rutas Privadas
@@ -15,7 +15,6 @@ router.patch('/actualizar/estudiante/:id', verificacionToken, verificacionConduc
 router.patch('/actualizar/ubicacion', verificacionToken, verificacionConductorRol, ManejoActualizacionUbicacion);
 router.patch('/actualizar/perfil/conductor', verificacionToken, verificacionConductorRol, validacionesActualizarPerfilConductor, ActualizarPerfil);
 router.patch('/actualizar/asistencia/:listaId', verificacionToken, verificacionConductorRol, ActualizarLista);
-router.patch('/cambiar/contrasenia/primer/inicio', validacionesRecuperacion, CambiarPasswordPorEmail);
 router.delete('/eliminar/estudiante/:id', verificacionToken, verificacionConductorRol, EliminarEstudiante);
 router.delete('/eliminar/asistencia/id/:listaId', verificacionToken, verificacionConductorRol, EliminarLista);
 router.get('/lista/estudiantes', verificacionToken, verificacionConductorRol, TodosLosEstudiantes);
