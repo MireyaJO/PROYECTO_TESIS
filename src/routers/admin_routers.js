@@ -2,7 +2,7 @@ import {Router} from 'express';
 import {RegistroDeLosConductores, ActualizarRutasYSectoresId, BuscarConductorRuta,  ListarConductor, VisualizarPerfil,
     ActualizarInformacionAdmin, AsignarPrivilegiosDeAdmin, RegistrarNuevoAdmin, ActualizarPassword, ReemplazoTemporal, 
     ReemplazoPermanente, ActivarConductorOriginal, ListarReemplazoDisponibles, ListarConductoresConReemplazo, BuscarConductoresConReemplazo,
-    CantidadReemplazosYActivacion, InformacionParaReporte
+    CantidadReemplazosYActivacion, InformacionParaReporte, EliminarReemplazosDisponibles, AumentarPrivilegiosDeConductor
 } from '../controllers/admin_controller.js'
 import {verificacionAdminRol, verificacionToken} from '../middlewares/autho.js'
 import {validacionesConductor, validacionesActualizarConductorNormal, validacionesActualizarPerfilAdmin, validacionesAdmin, validarContraseniaNueva, validacionesRecuperacion} from '../middlewares/validaciones.js'
@@ -19,6 +19,7 @@ router.patch('/actualizar/contrasenia/admin', verificacionToken, verificacionAdm
 router.patch('/reemplazo/temporal/:idAntiguo/:idReemplazo', verificacionToken, verificacionAdminRol, ReemplazoTemporal);
 router.patch('/reemplazo/permanente/:idAntiguo/:idReemplazo', verificacionToken, verificacionAdminRol, ReemplazoPermanente);
 router.patch('/activar/conductor/original/:idConductor', verificacionToken, verificacionAdminRol, ActivarConductorOriginal);
+router.patch('/aumentar/privilegios/conductor', verificacionToken, verificacionAdminRol, AumentarPrivilegiosDeConductor);
 router.get('/listar/conductores', verificacionToken, verificacionAdminRol, ListarConductor);
 router.get('/listar/reemplazo/disponibles', verificacionToken, verificacionAdminRol, ListarReemplazoDisponibles);
 router.get('/buscar/conductor/ruta/:rutaAsignada', verificacionToken, BuscarConductorRuta);
@@ -26,5 +27,6 @@ router.get('/listar/conductores/conreemplazo', verificacionToken, verificacionAd
 router.get('/buscar/conductor/conreemplazo/ruta/:rutaAsignada', verificacionToken, verificacionAdminRol, BuscarConductoresConReemplazo);
 router.get('/info/cantidades', verificacionToken, verificacionAdminRol, CantidadReemplazosYActivacion); 
 router.get('/visualizar/perfil/admin', verificacionToken, verificacionAdminRol, VisualizarPerfil);
+router.delete('/eliminar/reemplazos/disponible/:idReemplazo', verificacionToken, verificacionAdminRol, EliminarReemplazosDisponibles);
 
 export default router

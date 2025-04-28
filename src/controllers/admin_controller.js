@@ -1256,7 +1256,56 @@ const InformacionParaReporte = async (req, res) => {
     };
 };
 
+const EliminarReemplazosDisponibles = async (req, res) => {
+    const { id } = req.user;
+    const {idReemplazo} = req.params;
+    try {
+        const coordinador = await Conductores.findById(id);
+        const conductorReemplazo = await Conductores.findById(idReemplazo);
 
+        // Guardar temporalmente la información del conductor de reemplazo
+        const { email, nombre, apellido } = conductorReemplazo;
+        
+        //Eliminacion del reemplazo
+        await Conductores.findOneAndDelete({_id: idReemplazo});
+
+        //Envió del correo al conductor de reemplazo emiliminado
+        await eliminacionDelConductor(email, nombre, apellido, coordinador.apellido, coordinador.nombre);
+        
+        return res.status(200).json({ msg_eliminar_reemplazo: "Reemplazos disponibles eliminados exitosamente" });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ msg_eliminar_reemplazo: "Error al eliminar los reemplazos disponibles" });
+    }
+}; 
+
+//Si el conductor admin desea tener privilegiod de conductor
+const AumentarPrivilegiosDeConductor = async (req, res) => {
+    const { id } = req.user;
+    try {
+        //Consultar el conductor logeado
+        const conductor = await Conductores.findById(id);
+
+        //Verificar si el conductor tiene privilegios de admin y conductor
+        if (conductor.roles.includes("conductor") || conductor.roles.length === 2) {
+            return res.status(400).json({ msg_ceder_privilegios: "El admin ya tiene privilegios de conductor" });
+        }
+
+        //Añadir el rol de conductor al conductor logeado
+        conductor.roles.push("conductor");
+
+        //Actualizar el estado del conductor a "Trabaja como conductor"
+        conductor.estado = 'Trabaja como conductor';
+
+        //Guardar los cambios en la base de datos de conductores
+        await conductor.save();
+
+        res.status(200).json({ msg_añadir_privilegios: "Los privilegios de conductor se han aumentado exitosamente" });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ msg_añadir_privilegios: "Error al ceder los privilegios de admin" });
+    }
+}; 
 
 export {
     RegistroDeLosConductores,
@@ -1275,5 +1324,7 @@ export {
     ListarConductoresConReemplazo, 
     BuscarConductoresConReemplazo, 
     CantidadReemplazosYActivacion, 
-    InformacionParaReporte
+    InformacionParaReporte,
+    EliminarReemplazosDisponibles, 
+    AumentarPrivilegiosDeConductor
 };

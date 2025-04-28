@@ -1,6 +1,6 @@
 import {Router} from 'express';
 import {Login, RecuperacionDeContrasenia, ComprobarTokenPassword, NuevaPassword, ConfirmacionCorreoNuevo, CambiarPasswordPorEmail} from '../controllers/para_todos_los_roles.js'
-import {validacionesRecuperacion, validacionesRecuperacion} from '../middlewares/validaciones.js'
+import {validacionesRecuperacion} from '../middlewares/validaciones.js'
 const router = Router()
 //Rutas publicas
 router.post("/login", Login);
