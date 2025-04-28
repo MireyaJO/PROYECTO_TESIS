@@ -208,7 +208,7 @@ const ActualizarEstudiante = async (req, res) => {
 
         // Actualización de los datos del estudiante
         const estudianteActualizado = await Estudiantes.findByIdAndUpdate(
-            id,
+            {_id:id},
             {
                 nivelEscolar,
                 paralelo,
