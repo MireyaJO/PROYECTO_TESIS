@@ -39,7 +39,7 @@ const Login = async (req, res) => {
                     });
                 };
                 const token = createToken({ id: conductor._id, email: conductor.email, role: role });
-                return res.status(200).json({ token, msg_login_conductor: `Bienvenido ${role} ${conductor.nombre} ${conductor.apellido}`, rol: role, conductor: conductor });
+                return res.status(200).json({ token, msg_login_conductor: `Bienvenido ${role} ${conductor.nombre} ${conductor.apellido}`, rol: role /*, conductor: conductor*/ });
             } else {
                 return res.status(400).json({ msg: "Contraseña incorrecta" });
             }
