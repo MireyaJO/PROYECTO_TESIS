@@ -649,19 +649,28 @@ const AsignarPrivilegiosDeAdmin = async (req, res) => {
         //Id del conductor logeado
         const conductorAdmin = await Conductores.findById(id);
         
-        //Verificación de la existencia del conductor
-        if (!conductorAdmin) return res.status(404).json({ msg: "Lo sentimos, el conductor no se encuentra registrado" });
-        
         //Verificación de que el conductor sea un administrador
-        if (!conductorAdmin.roles.includes("admin")) return res.status(400).json({ msg: "Lo sentimos, el conductor no posee privilegios de administrador" });
-        
-        //Quitar los privilegios de administrador
-        const index = conductorAdmin.roles.indexOf("admin");
-        
-        //Eliminar el rol de administrador
-        if (index > -1) {
-            conductorAdmin.roles.splice(index, 1);
-        };
+        if (conductorAdmin.roles.includes("conductor") && conductorAdmin.roles.length === 2){
+            //Quitar los privilegios de administrador al conductor que realizó la acción
+            const index = conductorAdmin.roles.indexOf("admin");
+            //Eliminar el rol de administrador
+            if (index > -1) {
+                conductorAdmin.roles.splice(index, 1);
+            };
+        } else if (conductorAdmin.roles.includes("admin") && conductorAdmin.roles.length === 1){
+            // Eliminar al administrador original
+            const publicId = `conductores/${conductorAdmin.nombre}_${conductorAdmin.apellido}`;
+            try {
+                // Eliminar la imagen del administrador en Cloudinary
+                await cloudinary.v2.uploader.destroy(publicId);
+            } catch (error) {
+                console.error("Error al eliminar la imagen en Cloudinary");
+                return res.status(500).json({ msg: "Error al eliminar la imagen del administrador" });
+            }
+
+            // Eliminar al administrador de la base de datos
+            await Conductores.findByIdAndDelete(id);
+        }
 
         //Envio del correo a los conductores que no poseen privilegios de administrador
         const conductores = await Conductores.find({roles: 'conductor'});
