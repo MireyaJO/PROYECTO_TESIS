@@ -26,8 +26,8 @@ const RegistroDeLosEstudiantes = async (req, res) => {
         const conductor = await Conductores.findById(req.user.id);
 
         //Verificación de que el conductor exista
-        if(!conductor){
-            return res.status(404).json({ msg_conductor_logeado: "Conductor no encontrado" });
+        if(conductor.esReemplazo === 'Sí') {
+            return res.status(404).json({ msg_conductor_logeado: "El conductor es un reemplazo por lo que no puede realizar esta acción." });
         }
 
         // Inicializar el array de estudiantes registrados si no está definido
@@ -250,8 +250,8 @@ const EliminarEstudiante = async (req, res) => {
         const conductor = await Conductores.findById(req.user.id);
 
         //Validación de que exista el conductor y que no sea un reemplazo
-        if (!conductor || conductor.esReemplazo === 'Sí') {
-            return res.status(400).json({ msg_eliminacion_estudiante: "Lo sentimos, no puedes eliminar el estudiante ya que eres un reemplazo" });
+        if (conductor.esReemplazo === 'Sí') {
+            return res.status(400).json({ msg_eliminacion_estudiante: "Lo sentimos, no puede eliminar al estudiante ya que eres un reemplazo" });
         }; 
 
         //Verificación la existencia del estudiante (se comprueba que este vinculado al conductor logeado)
