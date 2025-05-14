@@ -1300,7 +1300,12 @@ const EliminarReemplazosDisponibles = async (req, res) => {
     const {idReemplazo} = req.params;
     try {
         const coordinador = await Conductores.findById(id);
-        const conductorReemplazo = await Conductores.findById(idReemplazo);
+        const conductorReemplazo = await Conductores.findOne({ _id: idReemplazo, estado: "Disponible" });
+
+        // Validar existencia
+        if (!conductorReemplazo) {
+            return res.status(404).json({ msg_eliminar_reemplazo: "No se encontró el conductor de reemplazo disponible" });
+        }
 
         // Guardar temporalmente la información del conductor de reemplazo
         const { email, nombre, apellido } = conductorReemplazo;
