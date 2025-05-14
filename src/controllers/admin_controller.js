@@ -631,6 +631,8 @@ const ActualizarInformacionAdmin = async (req, res) => {
 const AsignarPrivilegiosDeAdmin = async (req, res) => {
     //Obtener el id del conductor que se desea convertir en administrador
     const {idAsignacion} = req.params;
+    //Campo que se ocupará solo cuando el admin poseea privilegios de admin
+    const {eliminacionAdminSaliente} = req.body;
     const {id} = req.user;
     try{
         //Verificación de la existencia del conductor
@@ -649,27 +651,39 @@ const AsignarPrivilegiosDeAdmin = async (req, res) => {
         //Id del conductor logeado
         const conductorAdmin = await Conductores.findById(id);
         
-        //Verificación de que el conductor sea un administrador
-        if (conductorAdmin.roles.includes("conductor") && conductorAdmin.roles.length === 2){
-            //Quitar los privilegios de administrador al conductor que realizó la acción
+        // Si el admin actual tiene solo el rol admin
+        if (conductorAdmin.roles.includes("admin") && conductorAdmin.roles.length === 1) {
+            if (eliminacionAdminSaliente === 'Sí') {
+                // Eliminar imagen en Cloudinary
+                const publicId = `conductores/${conductorAdmin.nombre}_${conductorAdmin.apellido}`;
+                try {
+                    await cloudinary.v2.uploader.destroy(publicId);
+                } catch (error) {
+                    console.error("Error al eliminar la imagen en Cloudinary");
+                    return res.status(500).json({ msg: "Error al eliminar la imagen del administrador" });
+                }
+                // Eliminar documento del admin actual
+                await Conductores.findByIdAndDelete(id);
+            } else if (eliminacionAdminSaliente === 'No') {
+                // Quitar el rol admin y añadir rol conductor
+                const index = conductorAdmin.roles.indexOf("admin");
+                if (index > -1) {
+                    conductorAdmin.roles.splice(index, 1);
+                }
+                if (!conductorAdmin.roles.includes("conductor")) {
+                    conductorAdmin.roles.push("conductor");
+                }
+                await conductorAdmin.save();
+            } else {
+                return res.status(400).json({ msg: "Debe indicar si desea eliminar el documento del admin saliente ('Sí' o 'No')" });
+            }
+        } else if (conductorAdmin.roles.includes("conductor") && conductorAdmin.roles.length === 2) {
+            // Si el admin actual también es conductor, solo se quita el rol admin
             const index = conductorAdmin.roles.indexOf("admin");
-            //Eliminar el rol de administrador
             if (index > -1) {
                 conductorAdmin.roles.splice(index, 1);
-            };
-        } else if (conductorAdmin.roles.includes("admin") && conductorAdmin.roles.length === 1){
-            // Eliminar al administrador original
-            const publicId = `conductores/${conductorAdmin.nombre}_${conductorAdmin.apellido}`;
-            try {
-                // Eliminar la imagen del administrador en Cloudinary
-                await cloudinary.v2.uploader.destroy(publicId);
-            } catch (error) {
-                console.error("Error al eliminar la imagen en Cloudinary");
-                return res.status(500).json({ msg: "Error al eliminar la imagen del administrador" });
             }
-
-            // Eliminar al administrador de la base de datos
-            await Conductores.findByIdAndDelete(id);
+            await conductorAdmin.save();
         }
 
         //Envio del correo a los conductores que no poseen privilegios de administrador
