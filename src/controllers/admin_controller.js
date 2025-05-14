@@ -1230,7 +1230,7 @@ const CantidadReemplazosYActivacion = async (req, res) => {
 const InformacionParaReporte = async (req, res) => {
     try{
         //Parametros obtenidos desde la petición
-        const {informacionHaVisualizar} = req.body;
+        const {informacionHaVisualizar, rutaABuscar} = req.body;
 
         if(informacionHaVisualizar === 'Reemplazo temporal'){
             //Consultar reemplazos temporales en la base dedatos 
@@ -1269,7 +1269,23 @@ const InformacionParaReporte = async (req, res) => {
             //Respuesta exitosa con la información de los reemplazos activos
             res.status(200).json({msg_historial_reemplazo:"El historial de reemplazos activos", infoReemplazosActivos: reemplazoActivo});
 
-        } else{
+        } else if (informacionHaVisualizar === "Listado de estudiantes de un conductor"){
+            if (!rutaABuscar) {
+                return res.status(400).json({
+                    msg_historial_reemplazo: "El campo ruta a buscar es obligatorio cuando se desea visualizar el listado de estudiantes de un conductor"
+                });
+            };
+            //Consultar estudiantes por ruta
+            const conductor = await Conductores.findOne({rutaAsignada: rutaABuscar, esReemplazo: 'No', estado: { $in: ["Activo", "Trabaja como conductor"] }});
+            if (!conductor) {
+                return res.status(400).json({msg_historial_reemplazo:"No se encontró un conductor activo con esa ruta"});
+            }
+            const estudiantes = await Estudiantes.find({conductor: conductor._id}).select("-updatedAt -createdAt -__v");
+            //Validación de que existan estudiantes
+            if(estudiantes.length === 0) return res.status(400).json({msg_historial_reemplazo:"No se han encontrado estudiantes en la ruta"});
+            //Respuesta exitosa con la información de los estudiantes
+            res.status(200).json({msg_historial_reemplazo:"El historial de estudiantes por ruta", infoEstudiantes: estudiantes});
+        }else{
             return res.status(400).json({msg_historial_reemplazo:"Lo sentimos,solo se puede visualizar el historial de reemplazos temporales, permanentes, activaciones de conductores originales y los reemplazos que siguen activos"});
         }
 
