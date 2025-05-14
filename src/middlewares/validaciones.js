@@ -586,10 +586,17 @@ const validacionesActualizarEstudiante = [
 
 const validacionesActualizarPerfilConductor = [
     // Verificar que no hayan campos vacíos 
-    check(["telefono","placaAutomovil", "email", "cooperativa"])
+    check(["telefono","placaAutomovil", "email", "cooperativa", "cedula"])
     .notEmpty()
         .withMessage('Se necesita campos para actualizar')
     .customSanitizer(value => value?.trim()),
+    // Verificar que el número de cédula tenga 10 dígitos
+    check("cedula")
+    .isLength({ min: 10, max: 10 })
+        .withMessage('La cedula debe ser de 10 digitos')
+    .isNumeric()
+        .withMessage('El campo "cedula" debe contener solo números')
+    .customSanitizer(value => value?.trim()),  
 
     // Verificar que el numero de telefono sea de 10 digitos
     check("telefono")
