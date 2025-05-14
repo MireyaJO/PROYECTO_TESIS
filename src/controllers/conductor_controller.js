@@ -28,6 +28,14 @@ const RegistroDeLosEstudiantes = async (req, res) => {
         //Verificación de que el conductor exista
         if(conductor.esReemplazo === 'Sí') {
             return res.status(404).json({ msg_conductor_logeado: "El conductor es un reemplazo por lo que no puede realizar esta acción." });
+        };
+
+        // Validar que el enlace sea de Google Maps (acepta enlaces largos y cortos)
+        const esEnlaceGoogleMaps = ubicacionDomicilio &&
+            (ubicacionDomicilio.includes("google.com/maps") || ubicacionDomicilio.includes("maps.app.goo.gl"));
+
+        if (!esEnlaceGoogleMaps) {
+            return res.status(400).json({ msg_registro_estudiantes: "El enlace de ubicación debe ser un enlace válido de Google Maps (largo o corto)." });
         }
 
         // Inicializar el array de estudiantes registrados si no está definido
