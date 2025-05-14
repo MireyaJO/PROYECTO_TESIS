@@ -458,7 +458,7 @@ const VisuallizarPerfil = async (req, res) => {
 
 const ActualizarPerfil = async (req, res) => {
     //Obtención de datos de lo escrito por el conductor
-    const {placaAutomovil, telefono, email, cooperativa} = req.body;
+    const {placaAutomovil, telefono, email, cooperativa, cedula} = req.body;
     //Obtención del id del conductor logeado
     const {id} = req.user;
 
@@ -467,6 +467,12 @@ const ActualizarPerfil = async (req, res) => {
         const conductor = await Conductores.findById(id);
         if (!conductor) return res.status(404).json({ msg_actualizacion_perfil: "Lo sentimos, el conductor no se encuentra registrado" });
         
+        // Comprobar si la cédula ya está registrada
+        const verificarCedulaBDD = await Conductores.findOne({ cedula, _id: { $ne: id } });
+        if (verificarCedulaBDD) {
+            return res.status(400).json({ msg_registro_conductor: "Lo sentimos, la cédula ya se encuentra registrada en los conductores" });
+        };
+
         // Comprobar si el telefono ya está registrado
         const verificarTelefonoBDD = await Conductores.findOne({telefono, _id: { $ne: id } });
         if (verificarTelefonoBDD) {
@@ -537,6 +543,7 @@ const ActualizarPerfil = async (req, res) => {
         conductor.placaAutomovil = placaAutomovil;
         conductor.telefono = telefono;
         conductor.cooperativa = cooperativa;
+        conductor.cedula = cedula; 
 
         // Guardar los cambios en la base de datos
         await conductor.save();
