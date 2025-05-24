@@ -1,4 +1,4 @@
-import mongoose, { Schema, model } from 'mongoose';
+/*import mongoose, { Schema, model } from 'mongoose';
 
 // Definición de la estructura en la base de datos 
 // Esquema para el registro de asistencias
@@ -50,4 +50,4 @@ paraElRegistroDeAsistencias.pre('save', function (next) {
     next();
 });
 
-export default model('Asistencias', paraElRegistroDeAsistencias);
+export default model('Asistencias', paraElRegistroDeAsistencias);*/

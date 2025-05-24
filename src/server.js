@@ -58,6 +58,10 @@ app.use(express.json())
 app.get('/',(req,res)=>{
     res.send("El servidor del sistema de recorridos para la alerta de la llegada del bus escolar Cooperativa Ciudad de Quito de la Unidad Educativa Particular EMAÚS")
 })
+
+//Rutas publicas
+app.use('/api', RutasPublicas)
+
 //Rutas de los Administradores
 app.use('/api', Adminrouter)
 
@@ -65,10 +69,7 @@ app.use('/api', Adminrouter)
 app.use('/api', Conductoresrouter)
 
 //Rutas de los Representantes
-app.use('/api', RepresentantesRouter)
-
-//Rutas publicas
-app.use('/api', RutasPublicas)
+/*app.use('/api', RepresentantesRouter)*/
 
 // Exportar la instancia de express por medio de app
 export default app;

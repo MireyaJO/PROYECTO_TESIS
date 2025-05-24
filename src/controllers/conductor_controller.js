@@ -1,12 +1,12 @@
 import Conductores from '../models/Conductores.js';
 import Estudiantes from '../models/Estudiantes.js';
-import Representantes from '../models/Representantes.js';
-import Asistencias from '../models/Asistencias.js';
-import {directionsService} from '../config/mapbox.js';
 import {confirmacionDeCorreoConductorCambio, eliminacionDelRepresentante} from "../config/nodemailer.js"; 
 import axios from 'axios';
 import cloudinary from 'cloudinary';
 import fs from 'fs-extra';
+/*import Asistencias from '../models/Asistencias.js';
+import Representantes from '../models/Representantes.js';
+import {directionsService} from '../config/mapbox.js';*/
 
 //Registro de los estudiantes
 const RegistroDeLosEstudiantes = async (req, res) => {
@@ -149,25 +149,6 @@ const TodosLosEstudiantes = async (req, res) => {
     }
 }
 
-//Todos los estudiantes de la ruta del conductor logeado que asistirán en la tarde
-const ListarEstudiantesTarde = async (req, res) => {
-    try{
-        //Información del conductor logeado 
-        const conductor = await Conductores.findById(req.user.id);
-
-        //Enlistar a los estudiantes de la ruta del conductor logeado y son solamente de la tarde o ambos
-        const estudiantes = await Estudiantes.find({ruta: conductor.rutaAsignada, turno: {$in: ["Tarde", "Completo"]}}).where('conductor').equals(conductor._id).select("-conductor -createdAt -updatedAt -__v");
-
-        //Verificación de la existencia de los estudiantes 
-        if(estudiantes.length === 0) return res.status(404).json({msg_lista_estudiantes:"Lo sentimos, no se han encontrado estudiantes registrados en su ruta"});
-
-        return res.status(200).json({msg_lista_estudiantes:`Los estudiantes registrados en la jornada vespertina del conductor ${conductor.nombre} ${conductor.apellido}`, listaTarde: estudiantes});
-    } catch (error) {
-        console.error(error);
-        return res.status(500).json({msg_lista_estudiantes:"Error al listar los estudiantes en la tarde"});
-    }
-}
-
 //Buscar un estudiante por su cedula
 const BuscarEstudianteCedula = async (req, res) => {
    try {
@@ -267,10 +248,10 @@ const EliminarEstudiante = async (req, res) => {
         if(!estudiante) return res.status(404).json({msg_eliminacion_estudiante:"Lo sentimos, el estudiante no se encuentra o no pertenece a la ruta"});
         
         //Datos del estudiante 
-        const {nombre, apellido, cedula} = estudiante;
+        const {nombre, apellido /*,cedula*/} = estudiante;
 
         //Eliminacion de la cedula del estudiante en el array del representante
-        const representantes = await Representantes.find({ cedulaRepresentado: cedula });
+        /*const representantes = await Representantes.find({ cedulaRepresentado: cedula });
 
         // Variable para almacenar el mensaje de advertencia
         let datosParaNotificar = []; 
@@ -305,7 +286,7 @@ const EliminarEstudiante = async (req, res) => {
             datosParaNotificar.push({
                 mensaje: "Se elimino el estudiante pero no se encontraron representantes asociados" 
             }); 
-        }; 
+        }; */
 
         //Eliminación del estudiante
         await Estudiantes.findOneAndDelete({_id:id});
@@ -319,7 +300,7 @@ const EliminarEstudiante = async (req, res) => {
         //Mensaje de exito
         return res.status(200).json({
             msg_eliminacion_estudiante:`Los datos del estudiante ${nombre} ${apellido} han eliminado exitosamente`, 
-            msg_eliminacion_representante: datosParaNotificar
+            /*msg_eliminacion_representante: datosParaNotificar*/
         });
     } catch(error){
         console.error(error);
@@ -371,76 +352,6 @@ const ExtraerCoordenadasLinkGoogleMaps = async (url) => {
         return { msg_extracion_coordenadas_estudiantes: "Error al resolver el enlace de Google Maps" };
     };
 };
-
-//Funcion para calcular la distancia y el tiempo entre dos ubicaciones
-const CalcularDistanciaYTiempo = async (req,res) => {
-    // Obtener las coordenadas del conductor y del estudiante desde el cuerpo de la solicitud
-    const { latitudOrigen, longitudOrigen, latitudDestino, longitudDestino } = req.body;
-
-    try {
-        // Las coordenadas deben ser números
-        const latOrigen = parseFloat(latitudOrigen);
-        const lonOrigen = parseFloat(longitudOrigen);
-        const latDestino = parseFloat(latitudDestino);
-        const lonDestino = parseFloat(longitudDestino);
-
-        console.log("Destino: ", latDestino, lonDestino);
-        console.log("Origen", latOrigen, lonOrigen);
-
-        // Verificar que las coordenadas sean válidas
-        if (isNaN(latOrigen) || isNaN(lonOrigen) || isNaN(latDestino) || isNaN(lonDestino)) {
-            return res.status(400).json({ msg_calculo_distancia_tiempo: "Error: Las coordenadas proporcionadas no son válidas" });
-        }
-        const respuesta = await directionsService.getDirections({
-            profile: 'driving-traffic',
-            waypoints: [
-                // Coordenadas de origen
-                { coordinates: [lonOrigen, latOrigen] },
-                // Coordenadas de destino
-                { coordinates: [lonDestino, latDestino] }
-            ],
-        }).send();
-
-        console.log(respuesta.body);
-        // Extraer la información de la distancia y el tiempo
-        // Conversión de metros a kilómetros
-        const distancia = parseFloat(respuesta.body.routes[0].distance / 1000).toFixed(2);
-        // Conversión de segundos a minutos
-        const tiempo =  parseFloat(respuesta.body.routes[0].duration / 60).toFixed(2);
-
-        // Enviar la distancia y el tiempo al cliente
-        return res.status(200).json({
-            msg_calculo_distancia_tiempo: "Cálculo realizado exitosamente",
-            distancia: `${distancia} km`,
-            tiempo: `${tiempo} minutos`
-        });
-    } catch (error) {
-        console.error(error);
-        return res.status(500).json({ msg_calculo_distancia_tiempo: "Error al calcular la distancia y el tiempo" });
-    }
-}
-
-const ManejoActualizacionUbicacion = async (req, res) => {
-    const {latitud, longitud } = req.body;
-    const {id} = req.user;
-    try {
-        // Usar lean() para obtener un objeto simple
-        const conductor = await Conductores.findById(id); 
-        if (!conductor) {
-            return res.status(404).json({ msg_actualizacion_ubicacion: "Conductor no encontrado" });
-        }
-        
-        // Actualizar la latitud y longitud del conductor
-        conductor.latitud = latitud;
-        conductor.longitud = longitud;
-        await conductor.save(); 
-
-        return res.status(200).json({ msg_actualizacion_ubicacion: "Ubicación actualizada correctamente"});
-    } catch (error) {
-        console.error(error);
-        return res.status(500).json({ msg_actualizacion_ubicacion: "Error al actualizar la ubicación" });
-    }
-}
 
 const VisuallizarPerfil = async (req, res) => {
     try {
@@ -554,8 +465,97 @@ const ActualizarPerfil = async (req, res) => {
     }
 }
 
+//Todos los estudiantes de la ruta del conductor logeado que asistirán en la tarde
+/*const ListarEstudiantesTarde = async (req, res) => {
+    try{
+        //Información del conductor logeado 
+        const conductor = await Conductores.findById(req.user.id);
+
+        //Enlistar a los estudiantes de la ruta del conductor logeado y son solamente de la tarde o ambos
+        const estudiantes = await Estudiantes.find({ruta: conductor.rutaAsignada, turno: {$in: ["Tarde", "Completo"]}}).where('conductor').equals(conductor._id).select("-conductor -createdAt -updatedAt -__v");
+
+        //Verificación de la existencia de los estudiantes 
+        if(estudiantes.length === 0) return res.status(404).json({msg_lista_estudiantes:"Lo sentimos, no se han encontrado estudiantes registrados en su ruta"});
+
+        return res.status(200).json({msg_lista_estudiantes:`Los estudiantes registrados en la jornada vespertina del conductor ${conductor.nombre} ${conductor.apellido}`, listaTarde: estudiantes});
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({msg_lista_estudiantes:"Error al listar los estudiantes en la tarde"});
+    }
+}*/
+
+//Funcion para calcular la distancia y el tiempo entre dos ubicaciones
+/*const CalcularDistanciaYTiempo = async (req,res) => {
+    // Obtener las coordenadas del conductor y del estudiante desde el cuerpo de la solicitud
+    const { latitudOrigen, longitudOrigen, latitudDestino, longitudDestino } = req.body;
+
+    try {
+        // Las coordenadas deben ser números
+        const latOrigen = parseFloat(latitudOrigen);
+        const lonOrigen = parseFloat(longitudOrigen);
+        const latDestino = parseFloat(latitudDestino);
+        const lonDestino = parseFloat(longitudDestino);
+
+        console.log("Destino: ", latDestino, lonDestino);
+        console.log("Origen", latOrigen, lonOrigen);
+
+        // Verificar que las coordenadas sean válidas
+        if (isNaN(latOrigen) || isNaN(lonOrigen) || isNaN(latDestino) || isNaN(lonDestino)) {
+            return res.status(400).json({ msg_calculo_distancia_tiempo: "Error: Las coordenadas proporcionadas no son válidas" });
+        }
+        const respuesta = await directionsService.getDirections({
+            profile: 'driving-traffic',
+            waypoints: [
+                // Coordenadas de origen
+                { coordinates: [lonOrigen, latOrigen] },
+                // Coordenadas de destino
+                { coordinates: [lonDestino, latDestino] }
+            ],
+        }).send();
+
+        console.log(respuesta.body);
+        // Extraer la información de la distancia y el tiempo
+        // Conversión de metros a kilómetros
+        const distancia = parseFloat(respuesta.body.routes[0].distance / 1000).toFixed(2);
+        // Conversión de segundos a minutos
+        const tiempo =  parseFloat(respuesta.body.routes[0].duration / 60).toFixed(2);
+
+        // Enviar la distancia y el tiempo al cliente
+        return res.status(200).json({
+            msg_calculo_distancia_tiempo: "Cálculo realizado exitosamente",
+            distancia: `${distancia} km`,
+            tiempo: `${tiempo} minutos`
+        });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ msg_calculo_distancia_tiempo: "Error al calcular la distancia y el tiempo" });
+    }
+}
+
+const ManejoActualizacionUbicacion = async (req, res) => {
+    const {latitud, longitud } = req.body;
+    const {id} = req.user;
+    try {
+        // Usar lean() para obtener un objeto simple
+        const conductor = await Conductores.findById(id); 
+        if (!conductor) {
+            return res.status(404).json({ msg_actualizacion_ubicacion: "Conductor no encontrado" });
+        }
+        
+        // Actualizar la latitud y longitud del conductor
+        conductor.latitud = latitud;
+        conductor.longitud = longitud;
+        await conductor.save(); 
+
+        return res.status(200).json({ msg_actualizacion_ubicacion: "Ubicación actualizada correctamente"});
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ msg_actualizacion_ubicacion: "Error al actualizar la ubicación" });
+    }
+}*/
+
 // Tomar lista en la tarde
-const TomarLista = async (req, res) => {
+/*const TomarLista = async (req, res) => {
     // ID del conductor logeado
     const { id } = req.user; 
     // Recepción de los datos de la lista
@@ -828,25 +828,25 @@ const ListarAsistenciasTarde = async (req, res) => {
         console.error(error);
         return res.status(500).json({msg_lista_asistencias:"Error al listar las asistencias en la tarde"});
     }; 
-};
+};*/
 
 export {
     RegistroDeLosEstudiantes, 
     ActualizarPassword, 
-    ListarEstudiantesManiana,
-    ListarEstudiantesTarde,
-    ListarAsistenciasManiana, 
-    ListarAsistenciasTarde,
     TodosLosEstudiantes, 
     BuscarEstudianteCedula, 
     ActualizarEstudiante, 
     EliminarEstudiante, 
-    ManejoActualizacionUbicacion, 
-    CalcularDistanciaYTiempo, 
     VisuallizarPerfil, 
     ActualizarPerfil, 
+    /*ManejoActualizacionUbicacion, 
+    CalcularDistanciaYTiempo, 
+    ListarEstudiantesManiana,
+    ListarEstudiantesTarde,
+    ListarAsistenciasManiana, 
+    ListarAsistenciasTarde,
     TomarLista,
     BuscarLista,
     EliminarLista, 
-    ActualizarLista
+    ActualizarLista*/
 }

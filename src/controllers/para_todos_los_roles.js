@@ -1,8 +1,8 @@
 import Conductores from '../models/Conductores.js';
-import Representantes from '../models/Representantes.js';
 import { createToken } from '../middlewares/autho.js';
 import {recuperacionContrasenia} from "../config/nodemailer.js"; 
-import {recuperacionContraseniaRepresentante} from '../config/nodemailer.js';
+/*import Representantes from '../models/Representantes.js';
+import {recuperacionContraseniaRepresentante} from '../config/nodemailer.js';*/
 
 // Logeo de todos los roles
 const Login = async (req, res) => {
@@ -46,7 +46,7 @@ const Login = async (req, res) => {
         }
 
         // Verificación en la base de datos del representante
-        const representante = await Representantes.findOne({ email: email }).select("-createdAt -updatedAt -__v");
+        /*const representante = await Representantes.findOne({ email: email }).select("-createdAt -updatedAt -__v");
         if (representante) {
             // Verificación de la contraseña
             const verificacionContrasenia = await representante.matchPassword(password);
@@ -57,7 +57,7 @@ const Login = async (req, res) => {
             } else {
                 return res.status(400).json({ msg: "Contraseña incorrecta" });
             }
-        }
+        }*/
 
         // Si no se encuentra el usuario
         return res.status(400).json({ msg: "El usuario no se encuentra registrado" });
@@ -90,7 +90,7 @@ const RecuperacionDeContrasenia = async (req, res) => {
         }
 
         // Verificación en la base de datos del representante
-        const representante = await Representantes.findOne({ email });
+        /*const representante = await Representantes.findOne({ email });
         if(representante){
             //Creación del token para la recuperación de la contraseña
             const token = representante.crearToken('recuperacion');
@@ -98,7 +98,7 @@ const RecuperacionDeContrasenia = async (req, res) => {
             //Envío del correo de recuperación de la contraseña
             await recuperacionContraseniaRepresentante(representante.email, representante.nombre, representante.apellido, token, admin.apellido, admin.nombre);
             return res.status(200).json({ msg_recuperacion_contrasenia:"Correo de recuperación de contraseña enviado satisfactoriamente"})
-        }
+        }*/
         return res.status(404).json({msg_recuperacion_contrasenia:"El usuario no se encuentra registrado"});
     }catch(error){
         console.error(error);
@@ -127,7 +127,7 @@ const ComprobarTokenPassword = async (req, res) => {
         }
 
         // Verificar si el token pertenece a un representante
-        const representante = await Representantes.findOne({ token: tokenURL });
+        /*const representante = await Representantes.findOne({ token: tokenURL });
         if (representante) {
             // Verificar si el token ha expirado
             if (representante.tokenExpiracion <= Date.now()) {
@@ -136,7 +136,7 @@ const ComprobarTokenPassword = async (req, res) => {
 
             // Si el token es válido
             return res.status(200).json({ msg_recuperacion_contrasenia: "Token confirmado, ya puedes crear tu nuevo password" });
-        }
+        }*/
         return res.status(400).json({msg_recuperacion_contrasenia:"Lo sentimos, el token no coincide con ningún usuario"});
     }catch(error){
         console.error(error);
@@ -173,14 +173,14 @@ const NuevaPassword= async (req, res) => {
         };
         
         //Verificación de que exista un representante con el token 
-        const representante = await Representantes.findOne({token: tokenURL});
+        /*const representante = await Representantes.findOne({token: tokenURL});
         if(representante) {
             representante.password = await representante.encrypPassword(passwordActual);
             //Eliminar el token de la base de datos para que no se pueda volver a usar 
             representante.token = null;
             await representante.save();
             return res.status(200).json({msg_recuperacion_contrasenia: "La contraseña se ha actualizado satisfactoriamente, por favor vuelva a logearse"});
-        } 
+        }*/
         return res.status(400).json({msg_recuperacion_contrasenia:"Lo sentimos, el token no coincide con ningún usuario, por lo que no se ha actualizado la contrasenia"});
 
     }catch(error){
@@ -215,7 +215,7 @@ const ConfirmacionCorreoNuevo = async (req, res) => {
         }
 
         // Buscar representante por token
-        const representante = await Representantes.findOne({ tokenEmail: token });
+        /*const representante = await Representantes.findOne({ tokenEmail: token });
         if (representante) {
             // Verificar si el token ha expirado
             if (representante.tokenEmailExpiracion <= Date.now()) {
@@ -231,7 +231,7 @@ const ConfirmacionCorreoNuevo = async (req, res) => {
             // Guardar los cambios en la base de datos
             await representante.save();
             return res.status(200).json({ msg: "Correo electrónico actualizado exitosamente, puede logearse con su nuevo email" });
-        }
+        }*/
 
         return res.status(400).json({ msg: "El token no coincide con ningún usuario" }); 
     }catch(error){

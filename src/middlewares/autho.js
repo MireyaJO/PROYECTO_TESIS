@@ -43,17 +43,17 @@ const verificacionAdminRol = (req, res, next) => {
 }
 
 //Middleware para verificar el rol de representante
-const verificacionRepresentanteRol = (req, res, next) => {
+/*const verificacionRepresentanteRol = (req, res, next) => {
     if (req.user.role !== 'representante') {
         return res.status(403).json({ message: "Acceso denegado. Solo los representantes pueden acceder a esta ruta." });
     }
     next();
-}
+}*/
 
 export {
   createToken, 
   verificacionToken, 
   verificacionConductorRol,
   verificacionAdminRol, 
-  verificacionRepresentanteRol
+  //verificacionRepresentanteRol
 }

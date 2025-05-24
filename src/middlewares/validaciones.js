@@ -632,7 +632,7 @@ const validacionesActualizarPerfilConductor = [
     }
 ]
 
-const validacionesRepresentantes = [
+/*const validacionesRepresentantes = [
     // Verificar que se encuentren los campos obligatorios y no estén vacíos
      check(["nombre","apellido","telefono","cedula", "institucion", "email", "password", "cedulaRepresentado"
     ])
@@ -743,18 +743,18 @@ const validacionesActualizarPerfilRepresentante = [
             return res.status(400).send({ error: Error});
         }
     }
-]
+]*/
 
 export {
     validacionesAdmin,
     validacionesConductor, 
-    validacionesRepresentantes, 
     validacionesActualizarConductorNormal, 
     validacionesActualizarPerfilConductor, 
     validacionesEstudiantes,
-    validacionesActualizarPerfilRepresentante,
     validacionesActualizarEstudiante, 
     validarContraseniaNueva, 
     validacionesRecuperacion,
-    validacionesActualizarPerfilAdmin
+    validacionesActualizarPerfilAdmin, 
+    /*validacionesRepresentantes,
+    validacionesActualizarPerfilRepresentante*/
 }

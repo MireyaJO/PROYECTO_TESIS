@@ -1,4 +1,4 @@
-import {Router} from 'express';
+/*import {Router} from 'express';
 import {verificacionRepresentanteRol, verificacionToken} from '../middlewares/autho.js'
 import {RegistroDeRepresentantes, ConfirmacionCorreo, ActualizarPasswordRepresentante, ConductorInfo, VisuallizarPerfil, EliminarCuentaRepresentante, ActualizarPerfilRepresentante} from '../controllers/representantes_controller.js'
 import {validacionesRepresentantes, validacionesActualizarPerfilRepresentante, validarContraseniaNueva} from '../middlewares/validaciones.js'
@@ -14,4 +14,4 @@ router.delete("/eliminar/cuenta/representante", verificacionToken, verificacionR
 router.get("/info/conductor", verificacionToken, verificacionRepresentanteRol, ConductorInfo);
 router.get("/perfil/representante", verificacionToken, verificacionRepresentanteRol, VisuallizarPerfil);
 
-export default router
+export default router*/

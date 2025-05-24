@@ -1,5 +1,5 @@
 // Importar los módulos de Mapbox
-import mbxClient from '@mapbox/mapbox-sdk/index.js';
+/*import mbxClient from '@mapbox/mapbox-sdk/index.js';
 import mbxDirections from '@mapbox/mapbox-sdk/services/directions.js';
 import mbxStyles from '@mapbox/mapbox-sdk/services/styles.js';
 import mbxTilesets from '@mapbox/mapbox-sdk/services/tilesets.js';
@@ -20,4 +20,4 @@ export {
     directionsService,
     stylesService,
     tilesetsService
-};
+};*/

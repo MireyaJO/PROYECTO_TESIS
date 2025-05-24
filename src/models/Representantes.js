@@ -1,4 +1,4 @@
-import mongoose, {Schema, model} from 'mongoose'
+/*import mongoose, {Schema, model} from 'mongoose'
 import bcrypt from 'bcryptjs'
 
 //Definición de la estructura en la base de datos 
@@ -122,4 +122,4 @@ paraElRegistroDeLosRepresentantes.methods.crearToken = function(tipo){
     return tokenGenerado;
 }
 
-export default model('Representantes',paraElRegistroDeLosRepresentantes)
+export default model('Representantes',paraElRegistroDeLosRepresentantes)*/

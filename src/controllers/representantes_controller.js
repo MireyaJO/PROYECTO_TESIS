@@ -1,4 +1,4 @@
-import cloudinary from 'cloudinary';
+/*import cloudinary from 'cloudinary';
 import fs from 'fs-extra';
 import Conductores from '../models/Conductores.js';
 import Estudiantes from '../models/Estudiantes.js';
@@ -376,4 +376,4 @@ export {
     VisuallizarPerfil, 
     EliminarCuentaRepresentante, 
     ActualizarPerfilRepresentante
-}
+}*/
