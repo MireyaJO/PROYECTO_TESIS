@@ -293,7 +293,7 @@ const asignacionAdministrador = async (emailCoordinador, email, nombre, apellido
     });
 }
 
-const conductorDesactivado = async (emailCoordinador, nombreConductorNormal, apellidoConductorNormal, nombreReemplazo, apellidoReemplazo, ruta, sectores, coordinadorNombre, coordinadorApellido) => {
+const conductorDesactivado = async (emailCoordinador, email, nombreConductorNormal, apellidoConductorNormal, nombreReemplazo, apellidoReemplazo, ruta, sectores, coordinadorNombre, coordinadorApellido) => {
     let estructuraEmail = {
         from: `"${emailCoordinador} (Administrador)" <${process.env.EMAIL_USER}>`,
         to: email,
