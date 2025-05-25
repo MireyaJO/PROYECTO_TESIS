@@ -1049,7 +1049,7 @@ const ActivarConductorOriginal = async (req, res) => {
         await historial.save();
         
         res.status(200).json({
-            msg_reemplazo: `$El conductor ${conductorOriginal.nombre} ${conductorOriginal.apellido} se ha activado.`,
+            msg_reemplazo: `El conductor ${conductorOriginal.nombre} ${conductorOriginal.apellido} se ha activado.`,
         });
 
     }catch(error){
@@ -1143,14 +1143,32 @@ const ListarConductoresConReemplazo = async (req, res) => {
                 { estado: 'No trabaja como conductor', roles: ['conductor', 'admin'] }
             ]
         }).select("-password -updatedAt -createdAt -__v");
-    
+
         // Validar si no se encontraron conductores
         if (conductores.length === 0) {
             return res.status(404).json({ msg: "No se encontraron conductores con reemplazos activos" });
-        }
+        };
+
+        // Para cada conductor, buscar su reemplazo activo
+        const resultado = [];
+        //Se recorre cada conductor para buscar su reemplazo activo
+        for (const conductor of conductores) {
+            // Buscar el reemplazo activo del conductor (en el reemplazo temporal se coloca la misma ruta asignada, por ello, se la coloca como parámetro de busqueda)
+            const reemplazo = await Conductores.findOne({
+                esReemplazo: 'Sí',
+                estado: 'Ocupado',
+                rutaAsignada: conductor.rutaAsignada
+            }).select("-password -updatedAt -createdAt -__v");
+
+            // Se agrega el conductor y su reemplazo al array que funciona como resultado
+            resultado.push({
+                conductorOriginal: conductor,
+                reemplazo: reemplazo || null
+            });
+        };
     
         // Respuesta exitosa
-        res.status(200).json({ msg: "Conductores con reemplazos activos encontrados", conductoresConReemplazo: conductores });
+        res.status(200).json({ msg: "Conductores con reemplazos activos encontrados", conductoresConReemplazo: resultado});
     } catch (error) {
         console.error(error);
         res.status(500).json({ msg: "Error al listar conductores con reemplazos activos", error: error.message });
