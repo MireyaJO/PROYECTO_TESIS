@@ -128,6 +128,10 @@ const  RegistroDeLosConductores = async (req, res) => {
         // Verificar si se envió un archivo de imagen
         if (req.files && req.files.fotografiaDelConductor) {
             const file = req.files.fotografiaDelConductor;
+            console.log("Archivo recibido:");
+            console.log("Nombre:", file.name);
+            console.log("Mimetype:", file.mimetype);
+            console.log("Tamaño:", file.size);
             // Validar que el archivo sea una imagen
             const formatosPermitidos = ["image/jpeg", "image/png", "image/jpg"];
             if (!formatosPermitidos.includes(file.mimetype)) {
