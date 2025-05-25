@@ -480,6 +480,13 @@ const ActualizarRutasYSectoresId = async (req, res) => {
         });
         if (!conductor) return res.status(400).json({ msg_actualizacion_conductor: "Lo sentimos, el conductor ha actualizar no se ha encontrado" });
 
+        //Verificación de que el conductor a actualizar haya cambiado la contraseña en el primer inicio de sesión 
+        if (conductor.requiereCambioContrasenia == "true") {
+            return res.status(400).json({
+                msg_actualizacion_conductor: "Lo sentimos, el conductor debe cambiar su contraseña antes de actualizar su información"
+            });
+        }
+
         // Verificar si el conductor tiene un reemplazo activo, esta validación se la deja por si ocurre algún error, pero realmente no es necesaria
         const reemplazoActivo = await Conductores.findOne({
             rutaAsignada: conductor.rutaAsignada,
@@ -654,6 +661,13 @@ const AsignarPrivilegiosDeAdmin = async (req, res) => {
         const conductor = await Conductores.findById(idAsignacion);
         if (!conductor) return res.status(404).json({ msg: "Lo sentimos, el conductor no se encuentra registrado" });
 
+        //Verificación de que el conductor a actualizar haya cambiado la contraseña en el primer inicio de sesión 
+        if (conductor.requiereCambioContrasenia == "true") {
+            return res.status(400).json({
+                msg_actualizacion_conductor: "Lo sentimos, el conductor debe cambiar su contraseña antes de otorgarle los privilegios de administrador"
+            });
+        }
+
         //Verificación de que el conductor no sea un administrador
         if (conductor.roles.includes("admin")) return res.status(400).json({ msg: "Lo sentimos, el conductor ya posee privilegios de administrador" });
         
@@ -769,6 +783,18 @@ const ReemplazoTemporal = async (req, res) => {
         //El conductor antiguo no tiene estudiantes asignados
         if(conductorAntiguo.numeroEstudiantes === 0) return res.status(400).json({msg_reemplazo:`El conductor ${conductorAntiguo.nombre} ${conductorAntiguo.apellido} no tiene estudiantes asignados por lo que no se puede realizar el reemplazo`});
 
+        //Verificación de que el conductornormal y el de reemplazo hayan cmabiado en el primer inicio de sesión la contraseña 
+        if (conductorAntiguo.requiereCambioContrasenia == "true") {
+            return res.status(400).json({
+                msg_actualizacion_conductor: "Lo sentimos, el conductor al que se desea reemplazar debe cambiar su contraseña antes de actualizar su información"
+            });
+        };
+        if (conductorReemplazo.requiereCambioContrasenia == "true") {
+            return res.status(400).json({
+                msg_actualizacion_conductor: "Lo sentimos, el conductor reemplazo debe cambiar su contraseña antes de actualizar su información"
+            });
+        };
+
         //Realizar el reemplazo de los estudiantes
         const estudiantesConductorAntiguo = await Estudiantes.find({conductor: idAntiguo});
 
@@ -868,11 +894,20 @@ const ReemplazoPermanente = async (req, res) => {
         //El conductor de reemplazo existe
         if(!conductorReemplazo) return res.status(400).json({msg_reemplazo:`El conductor ${conductorReemplazo.nombre} ${conductorReemplazo.apellido} no se encuentra registrado o esta inactivo`});
 
-        //El conductor de reemplazo ya tiene estudiantes asignados
-        if(conductorReemplazo.numeroEstudiantes > 0) return res.status(400).json({msg_reemplazo:`El conductor ${conductorReemplazo.nombre} ${conductorReemplazo.apellido} ya tiene estudiantes asignados no puede ser reemplazo`});
-
         //El conductor antiguo no tiene estudiantes asignados
         if(conductorAntiguo.numeroEstudiantes === 0) return res.status(400).json({msg_reemplazo:`El conductor ${conductorAntiguo.nombre} ${conductorAntiguo.apellido} no tiene estudiantes asignados por lo que no se puede realizar el reemplazo`});
+
+         //Verificación de que el conductornormal y el de reemplazo hayan cmabiado en el primer inicio de sesión la contraseña 
+        if (conductorAntiguo.requiereCambioContrasenia == "true") {
+            return res.status(400).json({
+                msg_actualizacion_conductor: "Lo sentimos, el conductor al que se desea reemplazar debe cambiar su contraseña antes de actualizar su información"
+            });
+        };
+        if (conductorReemplazo.requiereCambioContrasenia == "true") {
+            return res.status(400).json({
+                msg_actualizacion_conductor: "Lo sentimos, el conductor reemplazo debe cambiar su contraseña antes de actualizar su información"
+            });
+        };
 
         //Realizar el reemplazo de los estudiantes
         const estudiantesConductorAntiguo = await Estudiantes.find({conductor: idAntiguo});
@@ -1339,6 +1374,14 @@ const EliminarReemplazosDisponibles = async (req, res) => {
         if (!conductorReemplazo) {
             return res.status(404).json({ msg_eliminar_reemplazo: "No se encontró el conductor de reemplazo disponible" });
         }
+
+         //Verificación de que el conductor normal y el de reemplazo hayan cmabiado en el primer inicio de sesión la contraseña 
+        if (conductorReemplazo.requiereCambioContrasenia == "true") {
+            return res.status(400).json({
+                msg_actualizacion_conductor: "Lo sentimos, el conductor reemplazo debe cambiar su contraseña antes de actualizar su información"
+            });
+        };
+
 
         // Guardar temporalmente la información del conductor de reemplazo
         const { email, nombre, apellido } = conductorReemplazo;
