@@ -46,7 +46,6 @@ const RegistroDeLosEstudiantes = async (req, res) => {
         //Validación de que la cedula no este registrada en otro estudiante
         const cedulaExistente = await Estudiantes.findOne({ cedula });
         const cedulaExistenteConductor = await Conductores.findOne({ cedula });
-        const cedulaExistenteRepresentante = await Representantes.findOne({ cedula });
         //Verificación de que la cedula no esté registrada en otro estudiante, conductor o representante
         if (cedulaExistente) {
             return res.status(400).json({ msg_registro_estudiantes: "Lo sentimos, la cédula ya está registrada en otro estudiante" });
@@ -54,9 +53,11 @@ const RegistroDeLosEstudiantes = async (req, res) => {
         if (cedulaExistenteConductor) {
             return res.status(400).json({ msg_registro_estudiantes: "Lo sentimos, la cédula ya está registrada como conductor" });
         };
+
+        /*const cedulaExistenteRepresentante = await Representantes.findOne({ cedula });
         if (cedulaExistenteRepresentante) {
             return res.status(400).json({ msg_registro_estudiantes: "Lo sentimos, la cédula ya está registrada como representante" });
-        };
+        };*/
 
         //Extraer las coordenadas de la direccion del estudiante
         const coordenadas = await ExtraerCoordenadasLinkGoogleMaps(ubicacionDomicilio);
