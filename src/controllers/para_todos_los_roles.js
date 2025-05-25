@@ -85,7 +85,7 @@ const RecuperacionDeContrasenia = async (req, res) => {
             const token = conductor.crearToken('recuperacion');
             await conductor.save();
             //Envío del correo de recuperación de la contraseña
-            await recuperacionContrasenia(conductor.email, conductor.nombre, conductor.apellido, token, admin.apellido, admin.nombre);
+            await recuperacionContrasenia(admin.email, conductor.email, conductor.nombre, conductor.apellido, token, admin.apellido, admin.nombre);
             return res.status(200).json({ msg_recuperacion_contrasenia:"Correo de recuperación de contraseña enviado satisfactoriamente"})
         }
 

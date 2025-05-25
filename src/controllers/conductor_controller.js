@@ -374,6 +374,9 @@ const ActualizarPerfil = async (req, res) => {
     const {id} = req.user;
 
     try{
+        // Conductor administrador
+        const conductorAdmin = await Conductores.findOne({ roles: { $in: ['admin'] } });
+
         // Verificación de la existencia del conductor
         const conductor = await Conductores.findById(id);
         if (!conductor) return res.status(404).json({ msg_actualizacion_perfil: "Lo sentimos, el conductor no se encuentra registrado" });
@@ -444,7 +447,7 @@ const ActualizarPerfil = async (req, res) => {
             await conductor.save();
 
             // Enviar un email de confirmación al nuevo correo electrónico
-            await confirmacionDeCorreoConductorCambio(email, conductor.nombre, conductor.apellido, token);
+            await confirmacionDeCorreoConductorCambio(conductorAdmin.email, email, conductor.nombre, conductor.apellido, token);
 
             // Enviar una respuesta al cliente indicando que se ha enviado un enlace de confirmación
             return res.status(200).json({ msg_actualizacion_perfil: "Se ha enviado un enlace de confirmación al nuevo correo electrónico" });

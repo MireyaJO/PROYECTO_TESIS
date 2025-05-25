@@ -16,7 +16,7 @@ let transportador = nodemailer.createTransport({
 });
 
 // Correos para el admin
-const enviarCorreoConductor = (email, password, ruta, sectores, nombreConductor, apellidoConductor, coordinadorApellido, coordinadorNombre) =>{
+const enviarCorreoConductor = (emailCoordinador, email, password, ruta, sectores, nombreConductor, apellidoConductor, coordinadorApellido, coordinadorNombre) =>{
     let cambiosReemplazo = "";
 
     if (ruta === undefined || sectores === undefined) {
@@ -58,7 +58,7 @@ const enviarCorreoConductor = (email, password, ruta, sectores, nombreConductor,
 
     //Creación de la estuctura que tendrá el correo 
     let estructuraEmail = {
-        from: process.env.EMAIL_USER,
+        from: `"${emailCoordinador} (Administrador)" <${process.env.EMAIL_USER}>`,
         to: email,  
         subject: "Credenciales de acceso para el sistema de los transportistas escolares de la Unidad Educativa Particular Emaús",
         html: `
@@ -86,7 +86,7 @@ const enviarCorreoConductor = (email, password, ruta, sectores, nombreConductor,
 }; 
 
 //Correos enviados en el registro de conductores con privilegios de admin 
-const nuevoAdministrador = async (email, trabajaOno, nombreConductor, apellidoConductor, passwordConductor, rutaConductor, sectoresConductor, apellidoAntiguoAdmin, nombreAntiguoAdmin) => {
+const nuevoAdministrador = async (emailCoordinador, email, trabajaOno, nombreConductor, apellidoConductor, passwordConductor, rutaConductor, sectoresConductor, apellidoAntiguoAdmin, nombreAntiguoAdmin) => {
     let noSeTrabajaComoConductor = "";
     if(trabajaOno === "Sí"){
         noSeTrabajaComoConductor = `
@@ -125,7 +125,7 @@ const nuevoAdministrador = async (email, trabajaOno, nombreConductor, apellidoCo
     }
     //Creación de la estuctura que tendrá el correo 
     let estructuraEmail = {
-        from: process.env.EMAIL_USER,
+        from: `"${emailCoordinador} (Administrador)" <${process.env.EMAIL_USER}>`,
         to: email,  
         subject: "Credenciales de acceso a la aplicación para el nuevo Coordinador de rutas de la Unidad Educativa Particular Emaús",
         html: `
@@ -152,54 +152,10 @@ const nuevoAdministrador = async (email, trabajaOno, nombreConductor, apellidoCo
     });
 }
 
-const cambioConductor = async (email, nombresRepresentante, apellidosRepresentante, ruta, nombresNuevoConductor, apellidosNuevoConductor, nombresConductorAnterior, apellidosConductorAnterior, telefonoConductorAnterior, coordinadorApellido, coordinadorNombre, tipoDeReemplazo) => {
-    let datoPorTipoDeReemplazo = "";
-    
-    if (tipoDeReemplazo === 'Temporal') {
-        datoPorTipoDeReemplazo = `
-        <p>Este cambio es temporal. Cuando el conductor original, <strong>${nombresConductorAnterior} ${apellidosConductorAnterior}</strong>, regrese a sus funciones, se le notificará con anticipación.</p>
-        <p><b>Contacto del nuevo conductor asignado: </b> <strong>${telefonoConductorAnterior}</strong>. Cabe recalcar que la información del conductor también se encuentra en la aplicación móvil.</p>
-        `;
-    } else if (tipoDeReemplazo === 'Permanente') {
-        datoPorTipoDeReemplazo = `
-        <p>Este cambio es permanente. El conductor original, <strong>${nombresConductorAnterior} ${apellidosConductorAnterior}</strong>, ya no estará a cargo de la ruta <strong>${ruta}</strong>.</p>
-        <p><b>Contacto del nuevo conductor asignado: </b> <strong>${telefonoConductorAnterior}</strong>. Cabe recalcar que la información del conductor también se encuentra en la aplicación móvil.</p>
-        `;
-    }
-
-    let estructuraEmail = {
-        from: process.env.EMAIL_USER,
-        to: email,
-        subject: "Cambio de Conductor de la Unidad Educativa Particular Emaús",
-        html: `
-        <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; background-color: #e0f7fa; padding: 20px; border-radius: 10px;">
-            <h2 style="color: #00796b;">Unidad Educativa Particular “Emaús”</h2>
-            <p>Estimado(a) ${nombresRepresentante} ${apellidosRepresentante},</p>
-            <p>Le informamos que el conductor de la ruta <strong>${ruta}</strong> de sus representados ha sido cambiado. El nuevo conductor asignado es <strong>${nombresNuevoConductor} ${apellidosNuevoConductor}</strong>.</p>
-            <p>Este cambio será de tipo: <strong>${tipoDeReemplazo}</strong>.</p>
-            ${datoPorTipoDeReemplazo}
-            <p>Por favor, no dude en ponerse en contacto con el nuevo conductor para coordinar los detalles del transporte.</p>
-            <p><b>Atentamente,</b></p>
-            <p>${coordinadorNombre} ${coordinadorApellido}</p>
-            <p><strong>Coordinador de Rutas</strong></p>
-        </div>
-        `
-    };
-
-    //Creación del transportador universal con el email y el password del conductor ingresado por el administrador
-    transportador.sendMail(estructuraEmail, (error, info) => {
-        if(error){
-            console.error(error);
-        } else {
-            console.log('Correo enviado: ' + info.response);
-        }
-    });
-};
-
-const cambioAdmin = async (nombreConductorNuevo, apellidoConductorNuevo, email, nombreConductor, apellidoConductor, coordinadorAntiguoApellido, coordinadorAntiguoNombre  )=>{
+const cambioAdmin = async (emailCoordinador, nombreConductorNuevo, apellidoConductorNuevo, email, nombreConductor, apellidoConductor, coordinadorAntiguoApellido, coordinadorAntiguoNombre)=>{
     //Creación de la estuctura que tendrá el correo 
     let estructuraEmail = {
-        from: process.env.EMAIL_USER,
+        from: `"${emailCoordinador} (Administrador)" <${process.env.EMAIL_USER}>`,
         to: email,  
         subject: "Nuevo Coordinador de Rutas en la Unidad Educativa Particular Emaús",
         html: `
@@ -225,10 +181,10 @@ const cambioAdmin = async (nombreConductorNuevo, apellidoConductorNuevo, email, 
 }; 
 
 //El envío del correo al conductor para la actualización de la ruta y sectores
-const actualizacionDeConductor = (email, apellidoConductor, nombreConductor, ruta, sectores, coordinadorApellido, coordinadorNombre) =>{
+const actualizacionDeConductor = (emailCoordinador, email, apellidoConductor, nombreConductor, ruta, sectores, coordinadorApellido, coordinadorNombre) =>{
     //Creación de la estuctura que tendrá el correo 
     let estructuraEmail = {
-        from: process.env.EMAIL_USER,
+        from: `"${emailCoordinador} (Administrador)" <${process.env.EMAIL_USER}>`,
         to: email,  
         subject: "Actualización de la ruta y sectores de los conductores de la Unidad Educativa Particular Emaús",
         html: 
@@ -293,10 +249,10 @@ const confirmacionDeCorreoConductorCambio = async (emailCoordinador, email, nomb
     });
 }; 
 
-const asignacionAdministrador = async (email, nombre, apellido, ruta, sectores, nombreAntiguoAdmin, apellidoAntiguoAdmin) => {
+const asignacionAdministrador = async (emailCoordinador, email, nombre, apellido, ruta, sectores, nombreAntiguoAdmin, apellidoAntiguoAdmin) => {
     //Creación de la estuctura que tendrá el correo 
     let estructuraEmail = {
-        from: process.env.EMAIL_USER,
+        from: `"${emailCoordinador} (Administrador)" <${process.env.EMAIL_USER}>`,
         to: email,  
         subject: "Nuevo Administrador del Sistema de Transporte Escolar de la Unidad Educativa Particular Emaús",
         html: `
@@ -337,9 +293,9 @@ const asignacionAdministrador = async (email, nombre, apellido, ruta, sectores, 
     });
 }
 
-const conductorDesactivado = async (email, nombreConductorNormal, apellidoConductorNormal, nombreReemplazo, apellidoReemplazo, ruta, sectores, coordinadorNombre, coordinadorApellido) => {
+const conductorDesactivado = async (emailCoordinador, nombreConductorNormal, apellidoConductorNormal, nombreReemplazo, apellidoReemplazo, ruta, sectores, coordinadorNombre, coordinadorApellido) => {
     let estructuraEmail = {
-        from: process.env.EMAIL_USER,
+        from: `"${emailCoordinador} (Administrador)" <${process.env.EMAIL_USER}>`,
         to: email,
         subject: "Ha comenzado su periodo de inactividad en el sistema de transportistas escolares de la Unidad Educativa Particular Emaús",
         html: `
@@ -367,7 +323,7 @@ const conductorDesactivado = async (email, nombreConductorNormal, apellidoConduc
     });
 };
 
-const designacionDeReemplazo = async (email, nombreReemplazo, apellidoReemplazo, ruta, sectores, nombreConductorReemplazado, apellidoConductorReemplazado, tipoDeReemplazo, coordinadorNombre, coordinadorApellido) => {
+const designacionDeReemplazo = async (emailCoordinador, email, nombreReemplazo, apellidoReemplazo, ruta, sectores, nombreConductorReemplazado, apellidoConductorReemplazado, tipoDeReemplazo, coordinadorNombre, coordinadorApellido) => {
     let datoPorTipoDeReemplazo = "";
 
     if (tipoDeReemplazo === 'Temporal') {
@@ -377,7 +333,7 @@ const designacionDeReemplazo = async (email, nombreReemplazo, apellidoReemplazo,
     }; 
 
     let estructuraEmail = {
-        from: process.env.EMAIL_USER,
+        from: `"${emailCoordinador} (Administrador)" <${process.env.EMAIL_USER}>`,
         to: email,
         subject: "Designación de reemplazo en el sistema de transportistas escolares de la Unidad Educativa Particular Emaús",
         html: `
@@ -424,10 +380,10 @@ const designacionDeReemplazo = async (email, nombreReemplazo, apellidoReemplazo,
     });
 }
 
-const eliminacionDelConductor = (email, nombresEliminado, apellidosEliminado, coordinadorApellido, coordinadorNombre) =>{
+const eliminacionDelConductor = (emailCoordinador, email, nombresEliminado, apellidosEliminado, coordinadorApellido, coordinadorNombre) =>{
     //Creación de la estuctura que tendrá el correo 
     let estructuraEmail = {
-        from: process.env.EMAIL_USER,
+        from: `"${emailCoordinador} (Administrador)" <${process.env.EMAIL_USER}>`,
         to: email,  
         subject: "Eliminación del conductor en el sistema de transportistas escolares de la Unidad Educativa Particular Emaúss",
         html: `
@@ -452,10 +408,10 @@ const eliminacionDelConductor = (email, nombresEliminado, apellidosEliminado, co
     });
 }; 
 
-const conductorReactivado = async (email, nombre, apellido, ruta, sectores, coordinadorNombre, coordinadorApellido) => {
+const conductorReactivado = async (emailCoordinador, nombre, apellido, ruta, sectores, coordinadorNombre, coordinadorApellido) => {
     //Creación de la estuctura que tendrá el correo 
     let estructuraEmail = {
-        from: process.env.EMAIL_USER,
+        from: `"${emailCoordinador} (Administrador)" <${process.env.EMAIL_USER}>`,
         to: email,
         subject: "Reactivación como Conductor en el sistema de transportistas escolares de la Unidad Educativa Particular Emaús",
         html: `
@@ -482,9 +438,9 @@ const conductorReactivado = async (email, nombre, apellido, ruta, sectores, coor
     });
 };
 
-const conductorDesocupado = async (email, nombre, apellido, ruta, sectores, coordinadorNombre, coordinadorApellido) => {
+const conductorDesocupado = async (emailCoordinador, email, nombre, apellido, ruta, sectores, coordinadorNombre, coordinadorApellido) => {
     let estructuraEmail = {
-        from: process.env.EMAIL_USER,
+        from: `"${emailCoordinador} (Administrador)" <${process.env.EMAIL_USER}>`,
         to: email,
         subject: "Finalización de Reemplazo en el sistema de transportistas escolares de la Unidad Educativa Particular Emaús",
         html: `
@@ -511,10 +467,10 @@ const conductorDesocupado = async (email, nombre, apellido, ruta, sectores, coor
     });
 };
 
-const recuperacionContrasenia = (email, nombres, apellidos, token, coordinadorApellido, coordinadorNombre) => {
+const recuperacionContrasenia = (emailCoordinador, email, nombres, apellidos, token, coordinadorApellido, coordinadorNombre) => {
     //Creación de la estuctura que tendrá el correo 
     let estructuraEmail = {
-        from: process.env.EMAIL_USER,
+        from: `"${emailCoordinador} (Administrador)" <${process.env.EMAIL_USER}>`,
         to: email,  
         subject: "Recuperación de contraseña de un transportista escolar de la Unidad Educativa Particular Emaús",
         html: `
@@ -542,7 +498,51 @@ const recuperacionContrasenia = (email, nombres, apellidos, token, coordinadorAp
     });
 }; 
 
-/*const recuperacionContraseniaRepresentante = async (email, nombre, apellido, token, coordinadorApellido, coordinadorNombre) => {
+/*const cambioConductor = async (email, nombresRepresentante, apellidosRepresentante, ruta, nombresNuevoConductor, apellidosNuevoConductor, nombresConductorAnterior, apellidosConductorAnterior, telefonoConductorAnterior, coordinadorApellido, coordinadorNombre, tipoDeReemplazo) => {
+    let datoPorTipoDeReemplazo = "";
+    
+    if (tipoDeReemplazo === 'Temporal') {
+        datoPorTipoDeReemplazo = `
+        <p>Este cambio es temporal. Cuando el conductor original, <strong>${nombresConductorAnterior} ${apellidosConductorAnterior}</strong>, regrese a sus funciones, se le notificará con anticipación.</p>
+        <p><b>Contacto del nuevo conductor asignado: </b> <strong>${telefonoConductorAnterior}</strong>. Cabe recalcar que la información del conductor también se encuentra en la aplicación móvil.</p>
+        `;
+    } else if (tipoDeReemplazo === 'Permanente') {
+        datoPorTipoDeReemplazo = `
+        <p>Este cambio es permanente. El conductor original, <strong>${nombresConductorAnterior} ${apellidosConductorAnterior}</strong>, ya no estará a cargo de la ruta <strong>${ruta}</strong>.</p>
+        <p><b>Contacto del nuevo conductor asignado: </b> <strong>${telefonoConductorAnterior}</strong>. Cabe recalcar que la información del conductor también se encuentra en la aplicación móvil.</p>
+        `;
+    }
+
+    let estructuraEmail = {
+        from: process.env.EMAIL_USER,
+        to: email,
+        subject: "Cambio de Conductor de la Unidad Educativa Particular Emaús",
+        html: `
+        <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; background-color: #e0f7fa; padding: 20px; border-radius: 10px;">
+            <h2 style="color: #00796b;">Unidad Educativa Particular “Emaús”</h2>
+            <p>Estimado(a) ${nombresRepresentante} ${apellidosRepresentante},</p>
+            <p>Le informamos que el conductor de la ruta <strong>${ruta}</strong> de sus representados ha sido cambiado. El nuevo conductor asignado es <strong>${nombresNuevoConductor} ${apellidosNuevoConductor}</strong>.</p>
+            <p>Este cambio será de tipo: <strong>${tipoDeReemplazo}</strong>.</p>
+            ${datoPorTipoDeReemplazo}
+            <p>Por favor, no dude en ponerse en contacto con el nuevo conductor para coordinar los detalles del transporte.</p>
+            <p><b>Atentamente,</b></p>
+            <p>${coordinadorNombre} ${coordinadorApellido}</p>
+            <p><strong>Coordinador de Rutas</strong></p>
+        </div>
+        `
+    };
+
+    //Creación del transportador universal con el email y el password del conductor ingresado por el administrador
+    transportador.sendMail(estructuraEmail, (error, info) => {
+        if(error){
+            console.error(error);
+        } else {
+            console.log('Correo enviado: ' + info.response);
+        }
+    });
+};
+
+const recuperacionContraseniaRepresentante = async (email, nombre, apellido, token, coordinadorApellido, coordinadorNombre) => {
     //Creación de la estuctura que tendrá el correo 
     let estructuraEmail = {
         from: process.env.EMAIL_USER,
@@ -667,7 +667,6 @@ const eliminacionDelRepresentante = async (email, nombresRepresentante, apellido
 export {
     enviarCorreoConductor,
     nuevoAdministrador, 
-    cambioConductor, 
     actualizacionDeConductor,
     recuperacionContrasenia,
     eliminacionDelConductor,  
@@ -678,7 +677,8 @@ export {
     designacionDeReemplazo, 
     conductorReactivado, 
     conductorDesocupado,
-    /*confirmacionDeCorreoRepresentante, 
+    /*cambioConductor,
+    confirmacionDeCorreoRepresentante, 
     recuperacionContraseniaRepresentante, 
     confirmacionDeCorreoRepresentanteCambio,
     eliminacionDelRepresentante*/
