@@ -130,7 +130,8 @@ const  RegistroDeLosConductores = async (req, res) => {
             const file = req.files.fotografiaDelConductor;
             // Validar que el archivo sea una imagen
             const formatosPermitidos = ["image/jpeg", "image/png", "image/jpg"];
-            if (!formatosPermitidos.includes(file.mimetype)) {
+            const mimetype = (file.mimetype || "").toLowerCase().trim();
+            if (!formatosPermitidos.includes(mimetype)) {
                 return res.status(400).json({ msg_registro_representante: "Solo se permiten archivos de imagen en formato JPG, JPEG o PNG" });
             };
             try {
