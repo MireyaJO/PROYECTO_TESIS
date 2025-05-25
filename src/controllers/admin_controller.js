@@ -2,7 +2,7 @@ import cloudinary from 'cloudinary';
 import fs from 'fs-extra';
 import Conductores from '../models/Conductores.js';
 import Estudiantes from '../models/Estudiantes.js'
-import Representantes from '../models/Representantes.js';
+//import Representantes from '../models/Representantes.js';
 import Historial from '../models/HistorialConductores.js';
 import {enviarCorreoConductor, actualizacionDeConductor, eliminacionDelConductor, cambioAdmin, cambioConductor, asignacionAdministrador, nuevoAdministrador,
     designacionDeReemplazo, conductorDesactivado, conductorReactivado, conductorDesocupado,confirmacionDeCorreoConductorCambio} from "../config/nodemailer.js"; 
@@ -543,33 +543,36 @@ const ActualizarInformacionAdmin = async (req, res) => {
         
         // Comprobar si el email ya está registrado
         const verificarEmailBDD = await Conductores.findOne({ email, _id: { $ne: id } });
-        const verificarRepresentateBDD = await Representantes.findOne({ email });
         if (verificarEmailBDD) {
             return res.status(400).json({ msg_registro_conductor: "Lo sentimos, el email ya se encuentra registrado como conductor" });
         };
+
+        /*const verificarRepresentateBDD = await Representantes.findOne({ email });
         if (verificarRepresentateBDD) {
             return res.status(400).json({ msg_registro_conductor: "Lo sentimos, el email ya se encuentra registrado como representante" });
-        };
+        };*/
 
         // Comprobar si la cédula ya está registrada
         const verificarCedulaBDD = await Conductores.findOne({ cedula, _id: { $ne: id } });
-        const verificarCedulaRepresentanteBDD = await Representantes.findOne({ cedula });
         if (verificarCedulaBDD) {
             return res.status(400).json({ msg_registro_conductor: "Lo sentimos, la cédula ya se encuentra registrada en los conductores" });
         };
+
+        /*const verificarRepresentateBDD = await Representantes.findOne({ email });
         if (verificarCedulaRepresentanteBDD) {
             return res.status(400).json({ msg_registro_conductor: "Lo sentimos, la cédula ya se encuentra registrada en los representantes" });
-        };
+        };*/
 
         // Comprobar si el teléfono ya está registrado
         const verificarTelefonoBDD = await Conductores.findOne({ telefono, _id: { $ne: id } });
-        const verificarTelefonoRepresentanteBDD = await Representantes.findOne({ telefono });
         if (verificarTelefonoBDD) {
             return res.status(400).json({ msg_registro_conductor: "Lo sentimos, el teléfono ya se encuentra registrado en los conductores" });
         };
+
+        /*const verificarTelefonoRepresentanteBDD = await Representantes.findOne({ telefono });
         if (verificarTelefonoRepresentanteBDD) {
             return res.status(400).json({ msg_registro_conductor: "Lo sentimos, el teléfono ya se encuentra registrado en los representantes" });
-        };
+        };*/
 
         // Comprobar si la placa ya está registrada
         const verificarPlacaBDD = await Conductores.findOne({ placaAutomovil, _id: { $ne: id } });
@@ -606,7 +609,7 @@ const ActualizarInformacionAdmin = async (req, res) => {
             await conductor.save();
 
             // Enviar un email de confirmación al nuevo correo electrónico
-            await confirmacionDeCorreoConductorCambio(email, conductor.nombre, conductor.apellido, token);
+            await confirmacionDeCorreoConductorCambio(conductor.email, email, conductor.nombre, conductor.apellido, token);
 
             // Enviar una respuesta al cliente indicando que se ha enviado un enlace de confirmación
             return res.status(200).json({ msg_actualizacion_perfil: "Se ha enviado un enlace de confirmación al nuevo correo electrónico" });

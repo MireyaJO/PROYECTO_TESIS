@@ -264,10 +264,10 @@ const actualizacionDeConductor = (email, apellidoConductor, nombreConductor, rut
     });
 }; 
 
-const confirmacionDeCorreoConductorCambio = async (email, nombre, apellido, token) => {
+const confirmacionDeCorreoConductorCambio = async (emailCoordinador, email, nombre, apellido, token) => {
     //Creación de la estuctura que tendrá el correo
     let estructuraEmail = {
-        from: process.env.EMAIL_USER,
+        from: `"${emailCoordinador} (Administrador)" <${process.env.EMAIL_USER}>`,
         to: email,  
         subject: "Confirmación del nuevo correo electrónico para el conductor de un estudiante de la Unidad Educativa Particular Emaús",
         html: `
@@ -279,8 +279,6 @@ const confirmacionDeCorreoConductorCambio = async (email, nombre, apellido, toke
                     <a href="${process.env.URL_BACKEND}cambio/email/${encodeURIComponent(token)}" style="background-color: #00796b; color: #fff; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Confirmar Correo Electrónico</a>
                 </p>
                 <p>Si no solicitó este cambio, por favor ignore este correo.</p>
-                <p>Atentamente,</p>
-                <p><strong>Un dirigente de la Cooperativa de Transporte Escolar y Turismo Ciudad de Quito</strong></p>
             </div>
         `
     };
@@ -293,7 +291,7 @@ const confirmacionDeCorreoConductorCambio = async (email, nombre, apellido, toke
             console.log('Correo enviado: ' + info.response);
         }
     });
-}
+}; 
 
 const asignacionAdministrador = async (email, nombre, apellido, ruta, sectores, nombreAntiguoAdmin, apellidoAntiguoAdmin) => {
     //Creación de la estuctura que tendrá el correo 

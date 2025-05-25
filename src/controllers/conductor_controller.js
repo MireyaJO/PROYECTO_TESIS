@@ -1,6 +1,6 @@
 import Conductores from '../models/Conductores.js';
 import Estudiantes from '../models/Estudiantes.js';
-import {confirmacionDeCorreoConductorCambio, eliminacionDelRepresentante} from "../config/nodemailer.js"; 
+import {confirmacionDeCorreoConductorCambio /*, eliminacionDelRepresentante*/} from "../config/nodemailer.js"; 
 import axios from 'axios';
 import cloudinary from 'cloudinary';
 import fs from 'fs-extra';
