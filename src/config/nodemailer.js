@@ -408,7 +408,7 @@ const eliminacionDelConductor = (emailCoordinador, email, nombresEliminado, apel
     });
 }; 
 
-const conductorReactivado = async (emailCoordinador, nombre, apellido, ruta, sectores, coordinadorNombre, coordinadorApellido) => {
+const conductorReactivado = async (emailCoordinador, email, nombre, apellido, ruta, sectores, coordinadorNombre, coordinadorApellido) => {
     //Creación de la estuctura que tendrá el correo 
     let estructuraEmail = {
         from: `"${emailCoordinador} (Administrador)" <${process.env.EMAIL_USER}>`,
