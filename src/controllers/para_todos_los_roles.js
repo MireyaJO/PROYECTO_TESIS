@@ -15,7 +15,7 @@ const Login = async (req, res) => {
         }
 
         // Verificación del rol
-        if (role !== 'conductor' && role !== 'representante' && role !== 'admin') {
+        if (role !== 'conductor' /*&& role !== 'representante'*/ && role !== 'admin') {
             return res.status(400).json({ msg_autenticacion: "Dicho rol no es una entidad participativa en el sistema" });
         };   
 
@@ -25,6 +25,18 @@ const Login = async (req, res) => {
             // Verificar el rol seleccionado
             if (!conductor.roles.includes(role)) {
                 return res.status(403).json({ msg: "No tiene permisos para acceder con este rol" });
+            };
+
+            // Validación de estado según roles
+            if (role === "conductor") {
+                // Solo conductor
+                if (conductor.roles.length === 1 && conductor.roles.includes("conductor") && conductor.estado === "Inactivo") {
+                    return res.status(403).json({ msg: "No tiene permitido el acceso porque se encuentra inactivo" });
+                }
+                // Conductor y admin
+                if (conductor.roles.length === 2 && conductor.roles.includes("admin") && conductor.estado === "No trabaja como conductor") {
+                    return res.status(403).json({ msg: "No tiene permitido el acceso porque como conductor se encuentra inactivo'" });
+                }
             }
 
             // Verificación de la contraseña
