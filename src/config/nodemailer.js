@@ -498,6 +498,38 @@ const recuperacionContrasenia = (emailCoordinador, email, nombres, apellidos, to
     });
 }; 
 
+const notificarBloqueoCuenta = (emailCoordinador, emailConductor, nombreConductor, apellidoConductor, token, coordinadorApellido, coordinadorNombre) => {
+    const estructuraEmail = {
+        from: `"${emailCoordinador} (Administrador)" <${process.env.EMAIL_USER}>`,
+        to: emailConductor,
+        subject: "Cuenta bloqueada por intentos fallidos - Unidad Educativa Particular Emaús",
+        html: `
+            <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; background-color: #ffe0e0; padding: 20px; border-radius: 10px;">
+                <h2 style="color: #c62828;">Transportistas de la Unidad Educativa Particular “Emaús”</h2>
+                <p>Estimado(a) ${nombreConductor} ${apellidoConductor},</p>
+                <p>Su cuenta ha sido <strong>bloqueada temporalmente</strong> debido a múltiples intentos fallidos de inicio de sesión.</p>
+                <p>Si usted realizó esos intentos y desea desbloquear su cuenta, por favor haga clic en el siguiente botón:</p>
+                <p style="text-align: center; margin: 20px 0;">
+                    <a href="${process.env.URL_BACKEND}besbloquear/token/${token}" style="background-color: #00796b; color: #fff; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Desbloquear la cuenta</a>
+                </p>
+                <p>Este enlace es válido por 1 hora. Si usted no intentó ingresar, ignore este correo.</p>
+                <p><b>Atentamente,</b></p>
+                <p>${coordinadorApellido} ${coordinadorNombre}</p>
+                <p><strong>Coordinador de Rutas</strong></p>
+            </div>
+        `
+    };
+
+    transportador.sendMail(estructuraEmail, (error, info) => {
+        if (error) {
+            console.error(error);
+        } else {
+            console.log('Correo enviado: ' + info.response);
+        }
+    });
+};
+
+
 /*const cambioConductor = async (email, nombresRepresentante, apellidosRepresentante, ruta, nombresNuevoConductor, apellidosNuevoConductor, nombresConductorAnterior, apellidosConductorAnterior, telefonoConductorAnterior, coordinadorApellido, coordinadorNombre, tipoDeReemplazo) => {
     let datoPorTipoDeReemplazo = "";
     
@@ -677,6 +709,7 @@ export {
     designacionDeReemplazo, 
     conductorReactivado, 
     conductorDesocupado,
+    notificarBloqueoCuenta
     /*cambioConductor,
     confirmacionDeCorreoRepresentante, 
     recuperacionContraseniaRepresentante, 

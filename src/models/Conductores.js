@@ -132,6 +132,14 @@ const paraElRegistroDeLosConductores= new Schema(
             type: Date,
             default: null
         },
+        tokenBloqueoCuenta:{
+            type: String,
+            default: null
+        },
+        tokenBloqueoCuentaExpiracion:{
+            type: Date,
+            default: null
+        },
         estado:{
             type: String, 
             enum: [
@@ -144,13 +152,33 @@ const paraElRegistroDeLosConductores= new Schema(
             ], 
             required: true
         },    
+        estadoDeAdmnistrador:{
+            type: String, 
+            enum: ['Admin activo', 'Admin inactivo'],
+            required: function () {
+                return this.roles.includes('admin');
+            },
+            default: 'Admin activo'
+        },
         requiereCambioContrasenia:{
             type: Boolean,
             default: true
-        },                                                     
+        },         
+        numeroDeIntentos:{
+            type: Number,
+            default: 0
+        }                                            
     }
 , { timestamps: true}
 );
+
+// Método para que el estado del administrador se elimine si el conductor no es administrador (solo es conductor)
+paraElRegistroDeLosConductores.pre('save', function(next) {
+    if (!this.roles.includes('admin')) {
+        this.estadoDeAdmnistrador = undefined;
+    }
+    next();
+});
 
 // Método para cifrar el password del conductor
 paraElRegistroDeLosConductores.methods.encrypPassword = async function(password){
@@ -176,6 +204,10 @@ paraElRegistroDeLosConductores.methods.crearToken = function(tipo){
         this.tokenEmail = tokenGenerado; 
         //Tiempo en el token es válido
         this.tokenEmailExpiracion = Date.now() + 86400000;
+    }else if(tipo === 'bloqueoDeCuenta'){
+        this.tokenBloqueoCuenta = tokenGenerado; 
+        //Tiempo en el token es válido
+        this.tokenBloqueoCuentaExpiracion = Date.now() + 3600000;
     };
     return tokenGenerado;
 }

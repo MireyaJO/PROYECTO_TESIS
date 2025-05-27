@@ -1,6 +1,6 @@
 import Conductores from '../models/Conductores.js';
 import { createToken } from '../middlewares/autho.js';
-import {recuperacionContrasenia} from "../config/nodemailer.js"; 
+import {recuperacionContrasenia, notificarBloqueoCuenta} from "../config/nodemailer.js"; 
 /*import Representantes from '../models/Representantes.js';
 import {recuperacionContraseniaRepresentante} from '../config/nodemailer.js';*/
 
@@ -8,6 +8,9 @@ import {recuperacionContraseniaRepresentante} from '../config/nodemailer.js';*/
 const Login = async (req, res) => {
     try {
         const { email, password, role } = req.body;
+
+        // Datos del coordinador 
+        const coordinador = await Conductores.findOne({ roles: { $in: ['admin'] } });
 
         // Verificación de los campos vacíos
         if (!email || !password ||  !role) {
@@ -32,29 +35,66 @@ const Login = async (req, res) => {
                 // Solo conductor
                 if (conductor.roles.length === 1 && conductor.roles.includes("conductor") && conductor.estado === "Inactivo") {
                     return res.status(403).json({ msg: "No tiene permitido el acceso porque se encuentra inactivo" });
-                }
+                };
                 // Conductor y admin
                 if (conductor.roles.length === 2 && conductor.roles.includes("admin") && conductor.estado === "No trabaja como conductor") {
                     return res.status(403).json({ msg: "No tiene permitido el acceso porque como conductor se encuentra inactivo'" });
-                }
+                };
+            } else if (role === "admin") {
+                // Solo admin
+                if (conductor.roles.length === 1 && conductor.roles.includes("admin") && conductor.estadoDeAdmnistrador === "Admin inactivo") {
+                    return res.status(403).json({ msg: "No tiene permitido el acceso porque se encuentra inactivo" });
+                };
             }
 
             // Verificación de la contraseña
             const verificacionContrasenia = await conductor.matchPassword(password);
             // Si la contraseña es correcta se crea el token JWT
             if (verificacionContrasenia) {
+                // Reinicia los intentos al logear correctamente
+                conductor.numeroDeIntentos = 0; 
+                // Guarda el reinicio
+                await conductor.save(); 
                 // Verificar si el conductor debe cambiar su contraseña
                 if (conductor.requiereCambioContrasenia === true) {
                     return res.status(403).json({ 
                         msg: "Debe cambiar su contraseña antes de continuar.", 
-                        redirigir: true 
                     });
                 };
                 const token = createToken({ id: conductor._id, email: conductor.email, role: role });
                 return res.status(200).json({ token, msg_login_conductor: `Bienvenido ${role} ${conductor.nombre} ${conductor.apellido}`, rol: role /*, conductor: conductor*/ });
             } else {
-                return res.status(400).json({ msg: "Contraseña incorrecta" });
-            }
+                // Incrementar el número de intentos fallidos
+                conductor.numeroDeIntentos += 1;
+                // Si el número de intentos supera 3, bloquear al usuario
+                if (conductor.numeroDeIntentos >= 3) {
+                    let estadoCambio, esConductor = false;
+
+                    if (role === "conductor" && conductor.roles.includes("admin")) {
+                        estadoCambio = "No trabaja como conductor";
+                        esConductor = true;
+                    } else if (role === "conductor" && conductor.roles.length === 1) {
+                        estadoCambio = "Inactivo";
+                        esConductor = true;
+                    } else if (role === "admin" && conductor.roles.length === 1) {
+                        conductor.estadoDeAdmnistrador = "Admin inactivo";
+                    };
+
+                    if (estadoCambio) {
+                        conductor.estado = estadoCambio;
+                    };
+
+                    const token = conductor.crearToken?.('bloqueoDeCuenta');
+                    await conductor.save();
+                    await notificarBloqueoCuenta(coordinador.email, conductor.email, conductor.nombre, conductor.apellido, token, coordinador.apellido, coordinador.nombre);
+
+                    return res.status(403).json({ msg: "Cuenta bloqueada por múltiples intentos fallidos" });
+                } else {
+                    // Guardar los cambios en la base de datos
+                    await conductor.save(); 
+                    return res.status(400).json({ msg: "Contraseña incorrecta" });
+                };
+            };
         }
 
         // Verificación en la base de datos del representante
@@ -283,4 +323,29 @@ const CambiarPasswordPorEmail = async (req, res) => {
         res.status(500).json({ msg_cambio_contrasenia: "Error al cambiar la contraseña." });
     }
 };
-export { Login, RecuperacionDeContrasenia, ComprobarTokenPassword, NuevaPassword, ConfirmacionCorreoNuevo, CambiarPasswordPorEmail};
+
+const  DesbloquearConsuctores = async (req, res) => {
+    //Recepcion del token proporcionado por la URL
+    const { token } = req.params;
+
+    // Buscar conductor por token
+    const conductor = await Conductores.findOne({ tokenBloqueoCuenta: token });
+    if (conductor) {
+        // Verificar si el token ha expirado
+        if (conductor.tokenBloqueoCuentaExpiracion <= Date.now()) {
+            return res.status(400).json({ msg: "Lo sentimos, el token ha expirado. Solicite un nuevo cambio de correo." });
+        }; 
+
+        // Actualizar el email
+        conductor.tokenBloqueoCuenta = null;
+        conductor.tokenBloqueoCuentaExpiracion = null;
+
+        // Guardar los cambios en la base de datos
+        await conductor.save();
+        return res.status(200).json({ msg_desbloque: `Se desbloqueó la cuenta del sr/a ${conductor.apellido} ${conductor.nombre}` });
+    }
+
+};
+
+// Desbloquear a los conductores que han sido bloqueados por múltiples intentos fallidos
+export { Login, RecuperacionDeContrasenia, ComprobarTokenPassword, NuevaPassword, ConfirmacionCorreoNuevo, CambiarPasswordPorEmail, DesbloquearConsuctores};
