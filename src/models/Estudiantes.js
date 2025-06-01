@@ -61,7 +61,7 @@ const paraElRegistroDeLosEstudiantes= new Schema(
         conductor:{
             type: mongoose.Schema.Types.ObjectId,
             ref: 'Conductores',
-            required: false
+            required: true
         }/*,     
         representantes:[{
             type: mongoose.Schema.Types.ObjectId,
