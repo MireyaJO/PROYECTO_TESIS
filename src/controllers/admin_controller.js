@@ -811,7 +811,6 @@ const ReemplazoTemporal = async (req, res) => {
             };*/
         };
 
-
         //Actualizar el número de estudiantes del conductor de reemplazo
         conductorReemplazo.numeroEstudiantes = conductorAntiguo.numeroEstudiantes;
         //Cantidad de estudiantes

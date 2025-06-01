@@ -38,7 +38,8 @@ const paraElRegistroDeLosConductores= new Schema(
             trim: true
         }, 
         generoConductor: {
-            type: String,  
+            type: String, 
+            enum: ["Femenino", "Masculino", "Prefiero no decirlo"], 
             trim: true
         }, 
         cedula:{
@@ -77,14 +78,15 @@ const paraElRegistroDeLosConductores= new Schema(
         }, 
         password: {
             type: String, 
+            required: true,
             trim: true 
         },   
-        latitud:{
+        /*latitud:{
             type: Number
         }, 
         longitud:{
             type: Number
-        },
+        },*/
         numeroEstudiantes: {
             type: Number, 
             default: 0
@@ -148,17 +150,10 @@ const paraElRegistroDeLosConductores= new Schema(
                 'Disponible',
                 'Ocupado',
                 'Trabaja como conductor', 
-                'No trabaja como conductor'
+                'No trabaja como conductor', 
+                'Bloqueado por intentos fallidos'
             ], 
             required: true
-        },    
-        estadoDeAdmnistrador:{
-            type: String, 
-            enum: ['Admin activo', 'Admin inactivo'],
-            required: function () {
-                return this.roles.includes('admin');
-            },
-            default: 'Admin activo'
         },
         requiereCambioContrasenia:{
             type: Boolean,
@@ -171,14 +166,6 @@ const paraElRegistroDeLosConductores= new Schema(
     }
 , { timestamps: true}
 );
-
-// Método para que el estado del administrador se elimine si el conductor no es administrador (solo es conductor)
-paraElRegistroDeLosConductores.pre('save', function(next) {
-    if (!this.roles.includes('admin')) {
-        this.estadoDeAdmnistrador = undefined;
-    }
-    next();
-});
 
 // Método para cifrar el password del conductor
 paraElRegistroDeLosConductores.methods.encrypPassword = async function(password){

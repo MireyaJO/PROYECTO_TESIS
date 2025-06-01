@@ -40,12 +40,12 @@ const Login = async (req, res) => {
                 if (conductor.roles.length === 2 && conductor.roles.includes("admin") && conductor.estado === "No trabaja como conductor") {
                     return res.status(403).json({ msg: "No tiene permitido el acceso porque como conductor se encuentra inactivo'" });
                 };
-            } else if (role === "admin") {
-                // Solo admin
-                if (conductor.roles.length === 1 && conductor.roles.includes("admin") && conductor.estadoDeAdmnistrador === "Admin inactivo") {
-                    return res.status(403).json({ msg: "No tiene permitido el acceso porque se encuentra inactivo" });
-                };
+            } else if (role === "admin" || role === "conductor") {
+                if(conductor.estado === "Bloqueado por intentos fallidos"){
+                    return res.status(403).json({ msg: "No tiene permitido el acceso porque se encuentra bloqueado por múltiples intentos fallidos" });
+                }
             }
+
 
             // Verificación de la contraseña
             const verificacionContrasenia = await conductor.matchPassword(password);
@@ -68,22 +68,11 @@ const Login = async (req, res) => {
                 conductor.numeroDeIntentos += 1;
                 // Si el número de intentos supera 3, bloquear al usuario
                 if (conductor.numeroDeIntentos >= 3) {
-                    let estadoCambio, esConductor = false;
-
-                    if (role === "conductor" && conductor.roles.includes("admin")) {
-                        estadoCambio = "No trabaja como conductor";
-                        esConductor = true;
-                    } else if (role === "conductor" && conductor.roles.length === 1) {
-                        estadoCambio = "Inactivo";
-                        esConductor = true;
-                    } else if (role === "admin" && conductor.roles.length === 1) {
-                        conductor.estadoDeAdmnistrador = "Admin inactivo";
-                    };
-
-                    if (estadoCambio) {
-                        conductor.estado = estadoCambio;
-                    };
-
+                    // Cambiar el estado del conductor a "Bloqueado por intentos fallidos"
+                    conductor.estado = "Bloqueado por intentos fallidos";
+                    // Reiniciar el número de intentos
+                    conductor.numeroDeIntentos = 0;
+                    // Crear un token para el bloqueo de la cuenta
                     const token = conductor.crearToken?.('bloqueoDeCuenta');
                     await conductor.save();
                     await notificarBloqueoCuenta(coordinador.email, conductor.email, conductor.nombre, conductor.apellido, token, coordinador.apellido, coordinador.nombre);
@@ -330,11 +319,29 @@ const  DesbloquearConsuctores = async (req, res) => {
 
     // Buscar conductor por token
     const conductor = await Conductores.findOne({ tokenBloqueoCuenta: token });
+
+    const conductorReemplazo = await Conductores.findOne({ rutaAsignada: conductor.rutaAsignada, esReemplazo: "No",  estado: { $in: ['Inactivo', 'No trabaja como conductor'] } });
     if (conductor) {
         // Verificar si el token ha expirado
         if (conductor.tokenBloqueoCuentaExpiracion <= Date.now()) {
             return res.status(400).json({ msg: "Lo sentimos, el token ha expirado. Solicite un nuevo cambio de correo." });
         }; 
+        if (conductor.roles.length === 1 && conductor.roles.includes("conductor")){
+            // Cambiar el estado del conductor a "Activo"
+            conductor.estado = "Activo";
+        } else if (conductor.roles.length === 2 && conductor.roles.includes("admin")) {
+            // Cambiar el estado del conductor a "No trabaja como conductor"
+            conductor.estado = "Trabaja como conductor";
+        } else if (conductor.roles.length === 1 && conductor.roles.includes("admin")) {
+            // Cambiar el estado del conductor a "Trabaja como conductor"
+            conductor.estado = "No trabaja como conductor";
+        } else if (conductor.esReemplazo === "Sí" && conductorReemplazo) {
+            // Cambiar el estado del conductor a "Trabaja como conductor"
+            conductor.estado = "Ocupado";
+        } else if (conductor.esReemplazo === "Sí" && !conductorReemplazo && conductor.numeroEstudiantes === 0) {
+            // Cambiar el estado del conductor a "No trabaja como conductor"
+            conductor.estado = "Disponible";
+        }
 
         // Actualizar el email
         conductor.tokenBloqueoCuenta = null;
