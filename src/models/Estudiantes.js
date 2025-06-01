@@ -57,14 +57,6 @@ const paraElRegistroDeLosEstudiantes= new Schema(
         }, 
         longitud:{
             type: Number
-        },
-        token: {
-            type: String,
-            default: null
-        },
-        tokenEmail:{
-            type: String,
-            default: null
         }, 
         conductor:{
             type: mongoose.Schema.Types.ObjectId,
