@@ -40,6 +40,7 @@ const paraElRegistroDeLosConductores= new Schema(
         generoConductor: {
             type: String, 
             enum: ["Femenino", "Masculino", "Prefiero no decirlo"], 
+            required: true,
             trim: true
         }, 
         cedula:{
@@ -91,7 +92,7 @@ const paraElRegistroDeLosConductores= new Schema(
             type: Number, 
             default: 0
         },
-        estudiantesRegistrados: [{
+        /*estudiantesRegistrados: [{
             _id:false,
             idEstudiante: {
                 type: mongoose.Schema.Types.ObjectId,
@@ -113,7 +114,7 @@ const paraElRegistroDeLosConductores= new Schema(
                 type: String
             }
 
-        }], 
+        }],*/ 
         token: {
             type: String,
             default: null
@@ -200,12 +201,12 @@ paraElRegistroDeLosConductores.methods.crearToken = function(tipo){
 }
 
 // Metodo para ingresar un estudiante
-paraElRegistroDeLosConductores.methods.ingresarEstudiante = function(estudianteId){
+/*paraElRegistroDeLosConductores.methods.ingresarEstudiante = function(estudianteId){
     this.estudiantesRegistrados.push(estudianteId)
-}
+}*/
 
 // Método para la actualización de la lista de estudiantes registrados del conductor 
-paraElRegistroDeLosConductores.methods.actualizarListaEstudiantes = function(estudianteActualizado, estudianteId){
+/*paraElRegistroDeLosConductores.methods.actualizarListaEstudiantes = function(estudianteActualizado, estudianteId){
     // Asegúrate de que estudianteId sea una cadena
     const estudianteIdStr = estudianteId.toString();
 
@@ -222,10 +223,10 @@ paraElRegistroDeLosConductores.methods.actualizarListaEstudiantes = function(est
     this.estudiantesRegistrados[index].paraleloEstudiante = estudianteActualizado.paraleloEstudiante;
     this.estudiantesRegistrados[index].nivelEscolarEstudiante = estudianteActualizado.nivelEscolarEstudiante;
     
-};
+};*/
 
 // Método para la eliminación de un estudiante de la lista de estudiantes registrados del conductor
-paraElRegistroDeLosConductores.methods.eliminarEstudiante = function(estudianteId){
+/*paraElRegistroDeLosConductores.methods.eliminarEstudiante = function(estudianteId){
     // Asegúrate de que estudianteId sea una cadena
     const estudianteIdStr = estudianteId.toString();
 
@@ -237,7 +238,7 @@ paraElRegistroDeLosConductores.methods.eliminarEstudiante = function(estudianteI
 
     // Elimina el estudiante de la lista
     this.estudiantesRegistrados.splice(index, 1);
-};
+};*/
 
 //Metodo para ingresar apenas inicie el servidor un conductor administrador que registrará a los demás conductores
 paraElRegistroDeLosConductores.statics.ingresarConductorAdministrador = async function(){

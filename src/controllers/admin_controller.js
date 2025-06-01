@@ -312,10 +312,10 @@ const RegistrarNuevoAdmin = async (req,res) =>{
             if(cantidadEstudiantes > 0){
                 for (const estudiante of estudiantes) {
                     await Estudiantes.findByIdAndUpdate(estudiante._id, { conductor: nuevoConductor._id });
-                    const estudianteRegistrado = {idEstudiante: estudiante._id, nombreEstudiante: estudiante.nombre, apellidoEstudiante: estudiante.apellido, nivelEscolarEstudiante: estudiante.nivelEscolar, paraleloEstudiante: estudiante.paralelo, cedulaEstudiante: estudiante.cedula} 
+                    /*const estudianteRegistrado = {idEstudiante: estudiante._id, nombreEstudiante: estudiante.nombre, apellidoEstudiante: estudiante.apellido, nivelEscolarEstudiante: estudiante.nivelEscolar, paraleloEstudiante: estudiante.paralelo, cedulaEstudiante: estudiante.cedula} 
                     nuevoConductor.estudiantesRegistrados.push(estudianteRegistrado); 
                     
-                    /*for (const representanteId of estudiante.representantes){
+                    for (const representanteId of estudiante.representantes){
                         const representante = await Representantes.findById(representanteId); 
                         if(representante){
                             await cambioConductor(representante.email, representante.nombre, representante.apellido, nuevoConductor.rutaAsignada, nuevoConductor.nombre, nuevoConductor.apellido, nuevoConductor.apellido, nuevoConductor.nombre, "Permanente");
@@ -915,10 +915,10 @@ const ReemplazoPermanente = async (req, res) => {
             await Estudiantes.findByIdAndUpdate({ _id:estudianteId._id }, { conductor: conductorReemplazo._id });
 
             //Objeto que contiene la información de cada estudiante que se encuentra vinculado al conductor antiguo
-            const estudianteRegistrado = {idEstudiante: estudianteId._id, nombreEstudiante: estudianteId.nombre, apellidoEstudiante: estudianteId.apellido, nivelEscolarEstudiante: estudianteId.nivelEscolar, 
-                paraleloEstudiante: estudianteId.paralelo, cedulaEstudiante: estudianteId.cedula}
+            /*const estudianteRegistrado = {idEstudiante: estudianteId._id, nombreEstudiante: estudianteId.nombre, apellidoEstudiante: estudianteId.apellido, nivelEscolarEstudiante: estudianteId.nivelEscolar, 
+                paraleloEstudiante: estudianteId.paralelo, cedulaEstudiante: estudianteId.cedula}*/
             //Actualizar el campo "estudiantesRegistrados" del conductor de reemplazo
-            conductorReemplazo.estudiantesRegistrados.push(estudianteRegistrado);
+            /*conductorReemplazo.estudiantesRegistrados.push(estudianteRegistrado);*/
 
             //Obtener los representantes de los estudiantes 
             /*for(const representanteId of estudianteId.representantes){

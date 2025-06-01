@@ -70,12 +70,12 @@ const paraElRegistroDeLosEstudiantes= new Schema(
             type: mongoose.Schema.Types.ObjectId,
             ref: 'Conductores',
             required: false
-        },     
+        }/*,     
         representantes:[{
             type: mongoose.Schema.Types.ObjectId,
             ref: 'Representantes',
             required: true
-        }]                                                       
+        }]*/                                               
     }
 , { timestamps: true}
 );

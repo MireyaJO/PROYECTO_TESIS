@@ -90,8 +90,8 @@ const RegistroDeLosEstudiantes = async (req, res) => {
         conductor.numeroEstudiantes += 1;
 
         // Actualizar el array de los estudiantes
-        const estudianteRegistrado = {idEstudiante: nuevoEstudiante._id, nombreEstudiante: nuevoEstudiante.nombre, apellidoEstudiante: nuevoEstudiante.apellido, nivelEscolarEstudiante: nuevoEstudiante.nivelEscolar, paraleloEstudiante: nuevoEstudiante.paralelo, cedulaEstudiante: nuevoEstudiante.cedula}     
-        conductor.ingresarEstudiante(estudianteRegistrado)
+        /*const estudianteRegistrado = {idEstudiante: nuevoEstudiante._id, nombreEstudiante: nuevoEstudiante.nombre, apellidoEstudiante: nuevoEstudiante.apellido, nivelEscolarEstudiante: nuevoEstudiante.nivelEscolar, paraleloEstudiante: nuevoEstudiante.paralelo, cedulaEstudiante: nuevoEstudiante.cedula}     
+        conductor.ingresarEstudiante(estudianteRegistrado)*/
 
         // Guardar los cambios en la base de datos
         await conductor.save();
@@ -197,7 +197,7 @@ const ActualizarEstudiante = async (req, res) => {
         if (coordenadas.msg_extracion_coordenadas_estudiantes) return res.status(400).json({ msg_actualizar_estudiantes: coordenadas.msg_extracion_coordenadas_estudiantes });
 
         // Actualización de los datos del estudiante
-        const estudianteActualizado = await Estudiantes.findByIdAndUpdate(
+        await Estudiantes.findByIdAndUpdate(
             {_id:id},
             {
                 nivelEscolar,
@@ -212,10 +212,10 @@ const ActualizarEstudiante = async (req, res) => {
         );
 
         // Actualización en el array del conductor
-        const estudianteParaListado = {nombreEstudiante: estudianteActualizado.nombre, apellidoEstudiante: estudianteActualizado.apellido, nivelEscolarEstudiante: estudianteActualizado.nivelEscolar, paraleloEstudiante: estudianteActualizado.paralelo, cedulaEstudiante: estudianteActualizado.cedula}
+        /*const estudianteParaListado = {nombreEstudiante: estudianteActualizado.nombre, apellidoEstudiante: estudianteActualizado.apellido, nivelEscolarEstudiante: estudianteActualizado.nivelEscolar, paraleloEstudiante: estudianteActualizado.paralelo, cedulaEstudiante: estudianteActualizado.cedula}
         const actualizar = await conductor.actualizarListaEstudiantes(estudianteParaListado, estudianteActualizado._id);
-        if (actualizar?.error) return res.status(400).json({ msg_actualizar_estudiantes: actualizar.error });
-        await conductor.save();
+        if (actualizar?.error) return res.status(400).json({ msg_actualizar_estudiantes: actualizar.error })
+        await conductor.save();*/
 
         return res.status(200).json({
             msg_actualizar_estudiantes: `Los datos del estudiante ${estudiante.nombre} ${estudiante.apellido} han sido actualizados exitosamente`
@@ -295,7 +295,7 @@ const EliminarEstudiante = async (req, res) => {
         //Actualización en el numero de estudiantes registrados por el conductor
         conductor.numeroEstudiantes -= 1;
         //Actualización del array de los estudiantes
-        conductor.eliminarEstudiante(id);
+        //conductor.eliminarEstudiante(id);
         await conductor.save();
 
         //Mensaje de exito
