@@ -447,7 +447,7 @@ const VisualizarPerfil = async (req, res)=>{
         res.status(200).json({
             msg_admin: "Perfil del administrador encontrado exitosamente",
             administrador: infoAdmin,
-            asignacionOno: conductor.roles.includes("conductor") ? "Sí" : "No"
+            esConductor: conductor.roles.includes("conductor") ? "Sí" : "No"
         });
     }catch(error){
         console.log(error); 
