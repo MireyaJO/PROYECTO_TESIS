@@ -479,7 +479,7 @@ const recuperacionContrasenia = (emailCoordinador, email, nombres, apellidos, to
                 <p>Estimado(a) ${nombres} ${apellidos},</p>
                 <p>Usted ha solicitado recuperar su contraseña. Para ello, por favor haga clic en el siguiente enlace:</p>
                 <p style="text-align: center; margin: 20px 0;">
-                    <a href="${process.env.URL_BACKEND}comprobar/token/${token}" style="background-color: #00796b; color: #fff; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Restablecer Contraseña</a>
+                    <a href="${process.env.URL_FRONTEND_RECUPERACION}/${token}" style="background-color: #00796b; color: #fff; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Restablecer Contraseña</a>
                 </p>
                 <p>Si no solicitó este cambio, por favor ignore este correo.</p>
                 <p><b>Atentamente,</b></p>
