@@ -232,7 +232,7 @@ const confirmacionDeCorreoConductorCambio = async (emailCoordinador, email, nomb
                 <p>Estimado(a) ${nombre} ${apellido},</p>
                 <p>Usted ha solicitado cambiar su correo electrónico. Para confirmar el cambio, haga clic en el siguiente enlace:</p>
                 <p style="text-align: center; margin: 20px 0;">
-                    <a href="${process.env.URL_FRONTEND_CORREO}/${token}" style="background-color: #00796b; color: #fff; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Confirmar Correo Electrónico</a>
+                    <a href="${process.env.URL_FRONTEND_CORREO}/${encodeURIComponent(token)}" style="background-color: #00796b; color: #fff; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Confirmar Correo Electrónico</a>
                 </p>
                 <p>Si no solicitó este cambio, por favor ignore este correo.</p>
             </div>
