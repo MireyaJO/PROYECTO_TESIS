@@ -614,6 +614,8 @@ const ActualizarInformacionAdmin = async (req, res) => {
                 console.error(error);
                 return res.status(500).json({ msg_actualizacion_perfil: "Error al subir la imagen" });
             }
+        } else if (typeof req.body.fotografiaDelConductor === "string" && req.body.fotografiaDelConductor.startsWith("http")) {
+            // Solo se envía la URL, no se hace nada, continúa con la actualización de otros campos
         } else {
             return res.status(400).json({ msg_actualizacion_perfil: "Lo sentimos, debes subir una imagen" });
         };
