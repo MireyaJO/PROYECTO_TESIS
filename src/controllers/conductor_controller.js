@@ -402,13 +402,14 @@ const ActualizarPerfil = async (req, res) => {
 
         //Verificar si el email ya está registrado
         const verificarEmailBDD = await Conductores.findOne({email, _id: { $ne: id } });
-        const verificacionRepresentante = await Representantes.findOne({email: email});
         if (verificarEmailBDD) {
             return res.status(400).json({ msg_actualizacion_perfil: "Lo sentimos, el email ya se encuentra registrado como conductor" });
         }
+
+        /*const verificacionRepresentante = await Representantes.findOne({email: email});
         if (verificacionRepresentante){
             return res.status(400).json({ msg_actualizacion_perfil: "Lo sentimos, el email ya se encuentra registrado como representante" });
-        }
+        }*/
 
         // Verificar si se envió un archivo de imagen
         if (req.files && req.files.fotografiaDelConductor) {
