@@ -1331,12 +1331,26 @@ const InformacionParaReporte = async (req, res) => {
         } else if (informacionHaVisualizar === 'Reemplazo Activos'){
             //Consultar reemplazos activos en la base dedatos 
             const reemplazoActivo = await Conductores.find({estado: 'Ocupado', esReemplazo: 'Sí'}).select("nombre apellido rutaAsignada estado");
+            const resultadoBusqueda = [];
+            for (const reemplazado of reemplazoActivo) {
+                const conductorOriginal = await Conductores.findOne({
+                    rutaAsignada: reemplazado.rutaAsignada,
+                    $or: [
+                        { estado: 'Inactivo', roles: ['conductor'] },
+                        { estado: 'No trabaja como conductor', roles: ['conductor', 'admin'] }
+                    ]
+                })
+                resultadoBusqueda.push({
+                    conductorOriginal: conductorOriginal, 
+                    reemplazo: reemplazado
+                });
+            }; 
 
             //Validación de que existan reemplazos permanentes
             if(reemplazoActivo.length === 0) return res.status(400).json({msg_historial_reemplazo:"No se han encontrado reemplazos activos"});
 
             //Respuesta exitosa con la información de los reemplazos activos
-            res.status(200).json({msg_historial_reemplazo:"El historial de reemplazos activos", infoReemplazosActivos: reemplazoActivo});
+            res.status(200).json({msg_historial_reemplazo:"El historial de reemplazos activos", infoReemplazosActivos: resultadoBusqueda});
 
         } else if (informacionHaVisualizar === "Listado de estudiantes de un conductor"){
             if (!rutaABuscar) {
