@@ -1303,7 +1303,7 @@ const InformacionParaReporte = async (req, res) => {
 
         if(informacionHaVisualizar === 'Reemplazo temporal'){
             //Consultar reemplazos temporales en la base dedatos 
-            const reemplazosTemporales = await Historial.find({tipoReemplazo: 'Temporal'}).select("-conductor -conductorReemplazo -updatedAt -createdAt -__v");
+            const reemplazosTemporales = await Historial.find({tipoReemplazo: 'Temporal'}).select("-conductor -conductorReemplazo -updatedAt -createdAt -__v").sort({ fecha: -1 });
             
             //Validación de que existan reemplazos temporales
             if(reemplazosTemporales.length === 0) return res.status(400).json({msg_historial_reemplazo:"No se han encontrado reemplazos temporales"});
@@ -1312,7 +1312,7 @@ const InformacionParaReporte = async (req, res) => {
             res.status(200).json({msg_historial_reemplazo:"El historial de reemplazos temporales", infoReemplazosTemporales: reemplazosTemporales});
         } else if(informacionHaVisualizar === 'Reemplazo permanente'){
             //Consultar reemplazos permanentes en la base dedatos 
-            const reemplazosPermanentes = await Historial.find({tipoReemplazo: 'Permanente'}).select("-conductor -conductorReemplazo -updatedAt -createdAt -__v");
+            const reemplazosPermanentes = await Historial.find({tipoReemplazo: 'Permanente'}).select("-conductor -conductorReemplazo -updatedAt -createdAt -__v").sort({ fecha: -1 });
 
             //Validación de que existan reemplazos permanentes
             if(reemplazosPermanentes.length === 0) return res.status(400).json({msg_historial_reemplazo:"No se han encontrado reemplazos permanentes"});
@@ -1321,7 +1321,7 @@ const InformacionParaReporte = async (req, res) => {
             res.status(200).json({msg_historial_reemplazo:"El historial de reemplazos permanentes", infoReemplazosPermanentes: reemplazosPermanentes});
         } else if (informacionHaVisualizar === 'Activación de conductores originales'){
             //Consultar activaciones en la base dedatos 
-            const activaciones = await Historial.find({accion: 'Activación'}).select("-conductor -conductorReemplazo -updatedAt -createdAt -__v");
+            const activaciones = await Historial.find({accion: 'Activación'}).select("-conductor -conductorReemplazo -updatedAt -createdAt -__v").sort({ fecha: -1 });
 
             //Validación de que existan activaciones, termino del reemplazo temporal
             if(activaciones.length === 0) return res.status(400).json({msg_historial_reemplazo:"No se han encontrado activaciones de conductores"});
@@ -1330,7 +1330,7 @@ const InformacionParaReporte = async (req, res) => {
             res.status(200).json({msg_historial_reemplazo:"El historial de activaciones", infoActivacion: activaciones});
         } else if (informacionHaVisualizar === 'Reemplazo Activos'){
             //Consultar reemplazos activos en la base dedatos 
-            const reemplazoActivo = await Conductores.find({estado: 'Ocupado', esReemplazo: 'Sí'}).select("nombre apellido rutaAsignada estado");
+            const reemplazoActivo = await Conductores.find({estado: 'Ocupado', esReemplazo: 'Sí'}).select("-password -updatedAt -createdAt -__v");
             const resultadoBusqueda = [];
             for (const reemplazado of reemplazoActivo) {
                 const conductorOriginal = await Conductores.findOne({
@@ -1339,7 +1339,7 @@ const InformacionParaReporte = async (req, res) => {
                         { estado: 'Inactivo', roles: ['conductor'] },
                         { estado: 'No trabaja como conductor', roles: ['conductor', 'admin'] }
                     ]
-                })
+                }).select("-password -updatedAt -createdAt -__v")
                 resultadoBusqueda.push({
                     conductorOriginal: conductorOriginal, 
                     reemplazo: reemplazado
