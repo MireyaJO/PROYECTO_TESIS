@@ -510,7 +510,7 @@ const notificarBloqueoCuenta = (emailCoordinador, emailConductor, nombreConducto
                 <p>Su cuenta ha sido <strong>bloqueada temporalmente</strong> debido a múltiples intentos fallidos de inicio de sesión.</p>
                 <p>Si usted realizó esos intentos y desea desbloquear su cuenta, por favor haga clic en el siguiente botón:</p>
                 <p style="text-align: center; margin: 20px 0;">
-                    <a href="${process.env.URL_BACKEND}besbloquear/token/${token}" style="background-color: #00796b; color: #fff; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Desbloquear la cuenta</a>
+                    <a href="${process.env.URL_FRONTEND_DESBLOQUEO}/${token}" style="background-color: #00796b; color: #fff; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Desbloquear la cuenta</a>
                 </p>
                 <p>Este enlace es válido por 1 hora. Si usted no intentó ingresar, ignore este correo.</p>
                 <p><b>Atentamente,</b></p>
