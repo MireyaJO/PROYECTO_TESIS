@@ -53,7 +53,7 @@ const validacionesConductor = [
         .withMessage('La cedula debe ser de 10 digitos')
     .isNumeric()
         .withMessage('El campo "cedula" debe contener solo números')
-    .customSanitizer(value => value?.trim())
+    .customSanitizer(value => value != null ? String(value).trim() : "")
     .custom(value => {
         // Algoritmo de validación de cédula ecuatoriana
         const cedula = String(value).trim();
@@ -209,7 +209,7 @@ const validacionesAdmin = [
         .withMessage('La cedula debe ser de 10 digitos')
     .isNumeric()
         .withMessage('El campo "teléfono" debe contener solo números')
-    .customSanitizer(value => String(value).trim())
+    .customSanitizer(value => value != null ? String(value).trim() : "")
     .custom(value => {
         // Algoritmo de validación de cédula ecuatoriana
         const cedula = String(value).trim();
@@ -349,22 +349,28 @@ const validacionesAdmin = [
 
 //Validaciones para la actualizacion de un conductor
 const validacionesActualizarConductorNormal = [
-    // Verificar que no hayan campos vacíos 
-    check(["nombre", "apellido", "cooperativa", "cedula", "placaAutomovil", "rutaAsignada", "sectoresRuta"])
-    .notEmpty()
-        .withMessage('Se necesita campos para actualizar')
-    .customSanitizer(value => value?.trim()),
-
     //Verificación de que el nombre no se encuentre vacío y sea un string
-    check(["nombre"])    
+    check(["nombre"])
+    .notEmpty()
+        .withMessage('El campo "nombre" no puede estar vacío')      
+    .notEmpty()
+        .withMessage('El campo "nombre" no puede estar vacío')  
     .matches(/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/)
         .withMessage('El campo debe ser un texto y puede contener espacios')
     .customSanitizer(value => value?.trim()),
 
     //Verificación de que el nombre no se encuentre vacío y sea un string
     check(["apellido"])    
+    .notEmpty()
+        .withMessage('El campo "apellido" no puede estar vacío') 
     .matches(/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/)
         .withMessage('El campo debe ser un texto y puede contener espacios')
+    .customSanitizer(value => value?.trim()),
+
+    //Verificación de que el nombre no se encuentre vacío y sea un string
+    check(["cooperativa"])    
+    .notEmpty()
+        .withMessage('El campo "cooperativa" no puede estar vacío') 
     .customSanitizer(value => value?.trim()),
 
     // Verificar que el número de cédula tenga 10 dígitos
@@ -373,7 +379,7 @@ const validacionesActualizarConductorNormal = [
         .withMessage('La cedula debe ser de 10 digitos')
     .isNumeric()
         .withMessage('El campo "teléfono" debe contener solo números')
-    .customSanitizer(value => value?.trim())
+    .customSanitizer(value => value != null ? String(value).trim() : "")
     .custom(value => {
         // Algoritmo de validación de cédula ecuatoriana
         const cedula = String(value).trim();
@@ -396,6 +402,8 @@ const validacionesActualizarConductorNormal = [
 
     // Verificar que el número de placa tenga 7 dígitos
     check("placaAutomovil")
+    .notEmpty()
+        .withMessage('El campo "placaAutomovil" no puede estar vacío') 
     .isLength({ min: 8, max: 8 })
         .withMessage('La placa debe tener exactamente 8 caracteres, incluyendo el guion')
     .matches(/^[A-Z]{3}-\d{4}$/i)
@@ -404,11 +412,19 @@ const validacionesActualizarConductorNormal = [
 
     // Verificar que la ruta sea un número y que solo existan 12 ruta
     check("rutaAsignada")
+    .notEmpty()
+        .withMessage('El campo "rutaAsignada" no puede estar vacío') 
     .isNumeric()
         .withMessage('La ruta debe ser un número, no se acepta otro tipo de dato')
     .isInt({ min: 1, max: 12 })
         .withMessage('Solo existen 12 rutas disponibles en la Unidad Educativa Particular Emaús')
     .customSanitizer(value => (typeof value === 'string' ? value.trim() : value)),
+
+    //Verificación de que el nombre no se encuentre vacío y sea un string
+    check(["sectoresRuta"])    
+    .notEmpty()
+        .withMessage('El campo "sectoresRuta" no puede estar vacío') 
+    .customSanitizer(value => value?.trim()),
 
     (req,res,next)=>{
         const errors = validationResult(req);
@@ -424,26 +440,26 @@ const validacionesActualizarConductorNormal = [
 
 //Validaciones para la actualizacion de un conductor admin
 const validacionesActualizarPerfilAdmin = [
-    // Verificar que no hayan campos vacíos 
-    check(["nombre", "apellido", "telefono",  "cedula", "cooperativa", "placaAutomovil", "email"])
-    .notEmpty()
-        .withMessage('Se necesita campos para actualizar')
-    .customSanitizer(value => value?.trim()),
-
-     //Verificación de que el nombre no se encuentre vacío y sea un string
+    //Verificación de que el nombre no se encuentre vacío y sea un string
     check(["nombre"])   
+    .notEmpty()
+        .withMessage('El campo "nombre" no puede estar vacío')  
     .matches(/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/)
         .withMessage('El campo debe ser un texto y puede contener espacios')
     .customSanitizer(value => value?.trim()),
 
     //Verificación de que el nombre no se encuentre vacío y sea un string
-    check(["apellido"])     
+    check(["apellido"]) 
+    .notEmpty()
+        .withMessage('El campo "apellido" no puede estar vacío')      
     .matches(/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/)
         .withMessage('El campo debe ser un texto y puede contener espacios')
     .customSanitizer(value => value?.trim()),
 
     // Verificar que el numero de telefono sea de 10 digitos
     check("telefono")
+    .notEmpty()
+        .withMessage('El campo "telefono" no puede estar vacío')  
     .isLength({ min: 10, max: 10 })
         .withMessage('El teléfono debe ser de 10 digitos')
     .matches(/^\d{10}$/)
@@ -455,8 +471,8 @@ const validacionesActualizarPerfilAdmin = [
     .isLength({ min: 10, max: 10 })
         .withMessage('La cedula debe ser de 10 digitos')
     .isNumeric()
-        .withMessage('El campo "teléfono" debe contener solo números')
-    .customSanitizer(value => value?.trim())
+        .withMessage('El campo "cedula" debe contener solo números')
+    .customSanitizer(value => value != null ? String(value).trim() : "")
     .custom(value => {
         // Algoritmo de validación de cédula ecuatoriana
         const cedula = String(value).trim();
@@ -477,8 +493,16 @@ const validacionesActualizarPerfilAdmin = [
     })
     .withMessage('La cédula no es válida para Ecuador'),
 
+    //Verificación de que el nombre no se encuentre vacío y sea un string
+    check(["cooperativa"])    
+    .notEmpty()
+        .withMessage('El campo "cooperativa" no puede estar vacío') 
+    .customSanitizer(value => value?.trim()),
+
     // Verificar que el número de placa tenga 7 dígitos
     check("placaAutomovil")
+    .notEmpty()
+        .withMessage('El campo "placaAutomovil" no puede estar vacío')  
     .isLength({ min: 8, max: 8 })
         .withMessage('La placa debe tener exactamente 8 caracteres, incluyendo el guion')
     .matches(/^[A-Z]{3}-\d{4}$/)
@@ -487,6 +511,8 @@ const validacionesActualizarPerfilAdmin = [
 
     // Verificar que el email se enceuntre bien escrito
     check("email")
+    .notEmpty()
+        .withMessage('El campo "email" no puede estar vacío')  
     .isEmail()
         .withMessage('El email debe ser un correo válido')
     .customSanitizer(value => value?.trim()),
