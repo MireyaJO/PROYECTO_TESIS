@@ -187,15 +187,15 @@ paraElRegistroDeLosConductores.methods.crearToken = function(tipo){
     if(tipo === 'recuperacion'){
         this.token = tokenGenerado; 
         //Tiempo en el token es válido
-        this.tokenExpiracion = Date.now() + 3600000;
+        this.tokenExpiracion = Date.now() + 1800000;
     }else if(tipo === 'confirmacionCorreo'){
         this.tokenEmail = tokenGenerado; 
         //Tiempo en el token es válido
-        this.tokenEmailExpiracion = Date.now() + 86400000;
+        this.tokenEmailExpiracion = Date.now() + 7200000;
     }else if(tipo === 'bloqueoDeCuenta'){
         this.tokenBloqueoCuenta = tokenGenerado; 
         //Tiempo en el token es válido
-        this.tokenBloqueoCuentaExpiracion = Date.now() + 3600000;
+        this.tokenBloqueoCuentaExpiracion = Date.now() + 7200000;
     };
     return tokenGenerado;
 }

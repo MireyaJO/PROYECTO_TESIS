@@ -181,28 +181,32 @@ const cambioAdmin = async (emailCoordinador, nombreConductorNuevo, apellidoCondu
 }; 
 
 //El envío del correo al conductor para la actualización de la ruta y sectores
-const actualizacionDeConductor = (emailCoordinador, email, apellidoConductor, nombreConductor, ruta, sectores, coordinadorApellido, coordinadorNombre) =>{
+const actualizacionDeConductor = (emailCoordinador, email, apellidoConductor, nombreConductor, nuevos, coordinadorApellido, coordinadorNombre) =>{
     //Creación de la estuctura que tendrá el correo 
+    let filas = '';
+    for (const [campo, valorNuevo] of Object.entries(nuevos)) {
+        filas += `
+            <tr>
+                <td style="padding: 8px; border: 1px solid #ddd;"><strong>${campo}:</strong></td>
+                <td style="padding: 8px; border: 1px solid #ddd;">${valorNuevo}</td>
+            </tr>
+        `;
+    }
+
     let estructuraEmail = {
         from: `"${emailCoordinador} (Administrador)" <${process.env.EMAIL_USER}>`,
         to: email,  
-        subject: "Actualización de la ruta y sectores de los conductores de la Unidad Educativa Particular Emaús",
+        subject: "Actualización de datos de un conductor de la Unidad Educativa Particular Emaús",
         html: 
         `
             <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; background-color: #e0f7fa; padding: 20px; border-radius: 10px;">
                 <h2 style="color: #00796b;">Transportistas de la Unidad Educativa Particular "Emaús"</h2>
                 <p>Estimado(a) ${nombreConductor} ${apellidoConductor},</p>
-                <p>Se ha realizado un cambio en la ruta y los sectores que cubrirá. A continuación, encontrará los detalles actualizados de su ruta y sectores:</p>
+                <p>Se han actualizado los siguientes datos en su perfil:</p>
                 <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
-                    <tr>
-                        <td style="padding: 8px; border: 1px solid #ddd;"><strong>Ruta:</strong></td>
-                        <td style="padding: 8px; border: 1px solid #ddd;">${ruta}</td>
-                    </tr>
-                    <tr>
-                        <td style="padding: 8px; border: 1px solid #ddd;"><strong>Sectores:</strong></td>
-                        <td style="padding: 8px; border: 1px solid #ddd;">${sectores}</td>
-                    </tr>
+                    ${filas}
                 </table>
+                <p style="margin-top: 20px;">Si usted no solicitó este cambio o tiene alguna duda, por favor comuníquese con el administrador.</p>
                 <p style="margin-top: 20px;">Por último, le recordamos que sus credenciales no se han modificado, siguen siendo las mismas.</p>
                 <p><b>Atentamente,</b></p>
                 <p> ${coordinadorApellido} ${coordinadorNombre}</p>
@@ -210,6 +214,7 @@ const actualizacionDeConductor = (emailCoordinador, email, apellidoConductor, no
             </div>
         `
     };
+
     //Creación del transportador universal con el email y el password del conductor ingresado por el administrador
     transportador.sendMail(estructuraEmail, (error, info) => {
         if(error){

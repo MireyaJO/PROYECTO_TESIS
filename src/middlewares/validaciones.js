@@ -1,4 +1,5 @@
 import { check, validationResult } from 'express-validator'
+
 //Validaciones para las rutas que manejsdel administrador
 //Validaciones para el registro del conductor 
 const validacionesConductor = [
@@ -52,7 +53,26 @@ const validacionesConductor = [
         .withMessage('La cedula debe ser de 10 digitos')
     .isNumeric()
         .withMessage('El campo "cedula" debe contener solo números')
-    .customSanitizer(value => value?.trim()), 
+    .customSanitizer(value => value?.trim())
+    .custom(value => {
+        // Algoritmo de validación de cédula ecuatoriana
+        const cedula = String(value).trim();
+        const digitos = cedula.split('').map(Number);
+        const provincia = parseInt(cedula.substring(0, 2), 10);
+        if (provincia < 1 || provincia > 24) return false;
+        let suma = 0;
+        for (let i = 0; i < 9; i++) {
+            let val = digitos[i];
+            if (i % 2 === 0) {
+                val *= 2;
+                if (val > 9) val -= 9;
+            }
+            suma += val;
+        }
+        const digitoVerificador = (10 - (suma % 10)) % 10;
+        return digitoVerificador === digitos[9];
+    })
+    .withMessage('La cédula no es válida para Ecuador'), 
     
     // Verificar que el número de placa tenga 7 dígitos
     check("placaAutomovil")
@@ -189,7 +209,26 @@ const validacionesAdmin = [
         .withMessage('La cedula debe ser de 10 digitos')
     .isNumeric()
         .withMessage('El campo "teléfono" debe contener solo números')
-    .customSanitizer(value => value?.trim()), 
+    .customSanitizer(value => String(value).trim())
+    .custom(value => {
+        // Algoritmo de validación de cédula ecuatoriana
+        const cedula = String(value).trim();
+        const digitos = cedula.split('').map(Number);
+        const provincia = parseInt(cedula.substring(0, 2), 10);
+        if (provincia < 1 || provincia > 24) return false;
+        let suma = 0;
+        for (let i = 0; i < 9; i++) {
+            let val = digitos[i];
+            if (i % 2 === 0) {
+                val *= 2;
+                if (val > 9) val -= 9;
+            }
+            suma += val;
+        }
+        const digitoVerificador = (10 - (suma % 10)) % 10;
+        return digitoVerificador === digitos[9];
+    })
+    .withMessage('La cédula no es válida para Ecuador'),
 
     // Verificar que la cooperativa no este vacío
     check("cooperativa")
@@ -310,25 +349,66 @@ const validacionesAdmin = [
 
 //Validaciones para la actualizacion de un conductor
 const validacionesActualizarConductorNormal = [
+    // Verificar que no hayan campos vacíos 
+    check(["nombre", "apellido", "cooperativa", "cedula", "placaAutomovil", "rutaAsignada", "sectoresRuta"])
+    .notEmpty()
+        .withMessage('Se necesita campos para actualizar')
+    .customSanitizer(value => value?.trim()),
+
+    //Verificación de que el nombre no se encuentre vacío y sea un string
+    check(["nombre"])    
+    .matches(/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/)
+        .withMessage('El campo debe ser un texto y puede contener espacios')
+    .customSanitizer(value => value?.trim()),
+
+    //Verificación de que el nombre no se encuentre vacío y sea un string
+    check(["apellido"])    
+    .matches(/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/)
+        .withMessage('El campo debe ser un texto y puede contener espacios')
+    .customSanitizer(value => value?.trim()),
+
+    // Verificar que el número de cédula tenga 10 dígitos
+    check("cedula")  
+    .isLength({ min: 10, max: 10 })
+        .withMessage('La cedula debe ser de 10 digitos')
+    .isNumeric()
+        .withMessage('El campo "teléfono" debe contener solo números')
+    .customSanitizer(value => value?.trim())
+    .custom(value => {
+        // Algoritmo de validación de cédula ecuatoriana
+        const cedula = String(value).trim();
+        const digitos = cedula.split('').map(Number);
+        const provincia = parseInt(cedula.substring(0, 2), 10);
+        if (provincia < 1 || provincia > 24) return false;
+        let suma = 0;
+        for (let i = 0; i < 9; i++) {
+            let val = digitos[i];
+            if (i % 2 === 0) {
+                val *= 2;
+                if (val > 9) val -= 9;
+            }
+            suma += val;
+        }
+        const digitoVerificador = (10 - (suma % 10)) % 10;
+        return digitoVerificador === digitos[9];
+    })
+    .withMessage('La cédula no es válida para Ecuador'),
+
+    // Verificar que el número de placa tenga 7 dígitos
+    check("placaAutomovil")
+    .isLength({ min: 8, max: 8 })
+        .withMessage('La placa debe tener exactamente 8 caracteres, incluyendo el guion')
+    .matches(/^[A-Z]{3}-\d{4}$/i)
+        .withMessage('El campo "placa" debe seguir el formato de tres letras, un guion y cuatro números,  Ejemplo: PUH-7869')
+    .customSanitizer(value => value?.trim()),
+
     // Verificar que la ruta sea un número y que solo existan 12 ruta
     check("rutaAsignada")
-    .exists()
-        .withMessage('El campo "rutaAsignada" es obligatorio')
-    .notEmpty()
-        .withMessage('El campo "rutaAsignada" no puede estar vacío') 
     .isNumeric()
         .withMessage('La ruta debe ser un número, no se acepta otro tipo de dato')
     .isInt({ min: 1, max: 12 })
         .withMessage('Solo existen 12 rutas disponibles en la Unidad Educativa Particular Emaús')
     .customSanitizer(value => (typeof value === 'string' ? value.trim() : value)),
-
-    // Verificar que se encuentren los campos obligatorios y no estén vacíos
-    check(["sectoresRuta"])
-    .exists()
-        .withMessage('El campo "sectoresRuta" es obligatorio')
-    .notEmpty()
-        .withMessage('El campo "sectoresRuta" no puede estar vacío') 
-    .customSanitizer(value => value?.trim()),
 
     (req,res,next)=>{
         const errors = validationResult(req);
@@ -344,6 +424,24 @@ const validacionesActualizarConductorNormal = [
 
 //Validaciones para la actualizacion de un conductor admin
 const validacionesActualizarPerfilAdmin = [
+    // Verificar que no hayan campos vacíos 
+    check(["nombre", "apellido", "telefono",  "cedula", "cooperativa", "placaAutomovil", "email"])
+    .notEmpty()
+        .withMessage('Se necesita campos para actualizar')
+    .customSanitizer(value => value?.trim()),
+
+     //Verificación de que el nombre no se encuentre vacío y sea un string
+    check(["nombre"])   
+    .matches(/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/)
+        .withMessage('El campo debe ser un texto y puede contener espacios')
+    .customSanitizer(value => value?.trim()),
+
+    //Verificación de que el nombre no se encuentre vacío y sea un string
+    check(["apellido"])     
+    .matches(/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/)
+        .withMessage('El campo debe ser un texto y puede contener espacios')
+    .customSanitizer(value => value?.trim()),
+
     // Verificar que el numero de telefono sea de 10 digitos
     check("telefono")
     .isLength({ min: 10, max: 10 })
@@ -351,6 +449,33 @@ const validacionesActualizarPerfilAdmin = [
     .matches(/^\d{10}$/)
         .withMessage('El campo "teléfono" debe contener solo números')
     .customSanitizer(value => value?.trim()), 
+
+    // Verificar que el número de cédula tenga 10 dígitos
+    check("cedula") 
+    .isLength({ min: 10, max: 10 })
+        .withMessage('La cedula debe ser de 10 digitos')
+    .isNumeric()
+        .withMessage('El campo "teléfono" debe contener solo números')
+    .customSanitizer(value => value?.trim())
+    .custom(value => {
+        // Algoritmo de validación de cédula ecuatoriana
+        const cedula = String(value).trim();
+        const digitos = cedula.split('').map(Number);
+        const provincia = parseInt(cedula.substring(0, 2), 10);
+        if (provincia < 1 || provincia > 24) return false;
+        let suma = 0;
+        for (let i = 0; i < 9; i++) {
+            let val = digitos[i];
+            if (i % 2 === 0) {
+                val *= 2;
+                if (val > 9) val -= 9;
+            }
+            suma += val;
+        }
+        const digitoVerificador = (10 - (suma % 10)) % 10;
+        return digitoVerificador === digitos[9];
+    })
+    .withMessage('La cédula no es válida para Ecuador'),
 
     // Verificar que el número de placa tenga 7 dígitos
     check("placaAutomovil")
@@ -395,7 +520,7 @@ const validarContraseniaNueva = [
         .withMessage('El campo "passwordActual" no puede estar vacío') 
     .isLength({ min: 6, max: 10 })
         .withMessage('La contraseña debe tener entre 6 y 10 caracteres')
-    .matches(/^(?=.*[A-Za-z])(?=(?:.*\d){3})(?=(?:.*[!@#$%^&*()\-_=+{};:,<.>]){3})/)
+    .matches(/^(?=.*[A-Za-z])(?=(?:.*\d){3})(?=(?:.*[^A-Za-z0-9]){3})/)        
         .withMessage('La contraseña debe contener letras, al menos 3 números y 3 signos especiales')
     .customSanitizer(value => value?.trim()),
 
@@ -431,7 +556,7 @@ const validacionesRecuperacion = [
     check("passwordActual")
         .isLength({ min: 8, max: 10 })
         .withMessage('La contraseña debe tener entre 6 y 10 caracteres')
-        .matches(/^(?=.*[A-Za-z])(?=(?:.*\d){3})(?=(?:.*[!@#$%^&*()\-_=+{};:,<.>]){3})/)
+        .matches(/^(?=.*[A-Za-z])(?=(?:.*\d){3})(?=(?:.*[^A-Za-z0-9]){3})/)        
         .withMessage('La contraseña debe contener letras, al menos 3 números y 3 signos especiales')
         .customSanitizer(value => value?.trim()),
 
@@ -586,17 +711,10 @@ const validacionesActualizarEstudiante = [
 
 const validacionesActualizarPerfilConductor = [
     // Verificar que no hayan campos vacíos 
-    check(["telefono","placaAutomovil", "email", "cooperativa", "cedula"])
+    check(["telefono", "email"])
     .notEmpty()
         .withMessage('Se necesita campos para actualizar')
     .customSanitizer(value => value?.trim()),
-    // Verificar que el número de cédula tenga 10 dígitos
-    check("cedula")
-    .isLength({ min: 10, max: 10 })
-        .withMessage('La cedula debe ser de 10 digitos')
-    .isNumeric()
-        .withMessage('El campo "cedula" debe contener solo números')
-    .customSanitizer(value => value?.trim()),  
 
     // Verificar que el numero de telefono sea de 10 digitos
     check("telefono")
@@ -604,14 +722,6 @@ const validacionesActualizarPerfilConductor = [
         .withMessage('El teléfono debe ser de 10 digitos')
     .matches(/^\d{10}$/)
         .withMessage('El campo "teléfono" debe contener solo números')
-    .customSanitizer(value => value?.trim()),
-
-    // Verificar que el número de placa tenga 7 dígitos
-    check("placaAutomovil")
-    .isLength({ min: 8, max: 8 })
-        .withMessage('La placa debe tener exactamente 8 caracteres, incluyendo el guion')
-    .matches(/^[A-Z]{3}-\d{4}$/i)
-        .withMessage('El campo "placa" debe seguir el formato de tres letras, un guion y cuatro números,  Ejemplo: PUH-7869')
     .customSanitizer(value => value?.trim()),
 
     // Verificar que el email se enceuntre bien escrito

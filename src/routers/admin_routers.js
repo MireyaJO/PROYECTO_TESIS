@@ -5,7 +5,7 @@ import {RegistroDeLosConductores, ActualizarRutasYSectoresId, BuscarConductorRut
     CantidadReemplazosYActivacion, InformacionParaReporte, EliminarReemplazosDisponibles, AumentarPrivilegiosDeConductor
 } from '../controllers/admin_controller.js'
 import {verificacionAdminRol, verificacionToken} from '../middlewares/autho.js'
-import {validacionesConductor, validacionesActualizarConductorNormal, validacionesActualizarPerfilAdmin, validacionesAdmin, validarContraseniaNueva, validacionesRecuperacion} from '../middlewares/validaciones.js'
+import {validacionesConductor, validacionesActualizarConductorNormal, validacionesActualizarPerfilAdmin, validacionesAdmin, validarContraseniaNueva} from '../middlewares/validaciones.js'
 const router = Router()
 
 //Rutas privadas

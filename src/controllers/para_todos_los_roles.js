@@ -292,6 +292,11 @@ const CambiarPasswordPorEmail = async (req, res) => {
             return res.status(404).json({ msg_cambio_contrasenia: "Usuario no encontrado" });
         }
 
+        // La contraseña nueva no puede ser la misma que esta en la base de datos 
+        if(await conductor.matchPassword(passwordActual)) {
+            return res.status(400).json({ msg_cambio_contrasenia: "La nueva contraseña no puede ser la misma que la anterior" });
+        }
+
         // Verificar que las contraseñas coincidan
         if (passwordActual !== passwordActualConfirm) {
             return res.status(400).json({ msg_cambio_contrasenia: "Las contraseñas no coinciden" });

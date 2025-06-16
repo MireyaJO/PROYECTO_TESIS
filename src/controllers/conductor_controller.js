@@ -116,6 +116,12 @@ const ActualizarPassword = async (req, res) => {
             return res.status(400).json({ msg_actualizacion_contrasenia: "Lo sentimos, la contraseña anterior no es la correcta" });
         }
 
+        // Verificar que la nueva contraseña no sea igual a la actual
+        const mismaPassword = await conductor.matchPassword(passwordActual);
+        if (mismaPassword) {
+            return res.status(400).json({ msg_actualizacion_contrasenia: "La nueva contraseña no puede ser igual a la actual" });
+        }
+
         // Verificación de la confirmación de la contrseña actual 
         if(passwordActual !== passwordActualConfirm){
             return res.status(400).json({ msg: "Lo sentimos, la contraseña nueva y su confirmación no coinciden" });
@@ -370,49 +376,24 @@ const VisuallizarPerfil = async (req, res) => {
 
 const ActualizarPerfil = async (req, res) => {
     //Obtención de datos de lo escrito por el conductor
-    const {placaAutomovil, telefono, email, cooperativa, cedula} = req.body;
+    const {telefono, email} = req.body;
     //Obtención del id del conductor logeado
     const {id} = req.user;
 
     try{
+        // Variable que ayuda a identificar que campos se van editar (solo los que hayan)
+        let cambiosActualizados = false;
+
         // Conductor administrador
         const conductorAdmin = await Conductores.findOne({ roles: { $in: ['admin'] } });
 
         // Verificación de la existencia del conductor
         const conductor = await Conductores.findById(id);
         if (!conductor) return res.status(404).json({ msg_actualizacion_perfil: "Lo sentimos, el conductor no se encuentra registrado" });
-        
-        // Comprobar si la cédula ya está registrada
-        const verificarCedulaBDD = await Conductores.findOne({ cedula, _id: { $ne: id } });
-        if (verificarCedulaBDD) {
-            return res.status(400).json({ msg_registro_conductor: "Lo sentimos, la cédula ya se encuentra registrada en los conductores" });
-        };
-
-        // Comprobar si el telefono ya está registrado
-        const verificarTelefonoBDD = await Conductores.findOne({telefono, _id: { $ne: id } });
-        if (verificarTelefonoBDD) {
-            return res.status(400).json({ msg_actualizacion_perfil: "Lo sentimos, el telefono ya se encuentra registrado" })
-        };
-        
-        // Comprobar si la placa ya está registrada
-        const verificarPlacaBDD = await Conductores.findOne({placaAutomovil, _id: { $ne: id } });
-        if (verificarPlacaBDD) {
-            return res.status(400).json({ msg_actualizacion_perfil: "Lo sentimos, la placa ya se encuentra registrada" })
-        };
-
-        //Verificar si el email ya está registrado
-        const verificarEmailBDD = await Conductores.findOne({email, _id: { $ne: id } });
-        if (verificarEmailBDD) {
-            return res.status(400).json({ msg_actualizacion_perfil: "Lo sentimos, el email ya se encuentra registrado como conductor" });
-        }
-
-        /*const verificacionRepresentante = await Representantes.findOne({email: email});
-        if (verificacionRepresentante){
-            return res.status(400).json({ msg_actualizacion_perfil: "Lo sentimos, el email ya se encuentra registrado como representante" });
-        }*/
 
         // Verificar si se envió un archivo de imagen
         if (req.files && req.files.fotografiaDelConductor) {
+            // Manejo de la imgen subida
             const file = req.files.fotografiaDelConductor;
             try {
                 // Definir el public_id para Cloudinary
@@ -431,6 +412,8 @@ const ActualizarPerfil = async (req, res) => {
                 conductor.fotografiaDelConductor = result.secure_url;
                 // Eliminar el archivo local después de subirlo
                 await fs.unlink(file.tempFilePath);
+                // Como si hay cambios la variable cambia
+                cambiosActualizados = true;
             } catch (error) {
                 console.error(error);
                 return res.status(500).json({ msg_actualizacion_perfil: "Error al subir la imagen" });
@@ -443,7 +426,18 @@ const ActualizarPerfil = async (req, res) => {
 
         // Si el email cambia, enviar un enlace de confirmación al nuevo correo
         if (email !== conductor.email) {
-            // Crear un token JWT con el ID del conductor y el nuevo email
+            //Verificar si el email ya está registrado
+            const verificarEmailBDD = await Conductores.findOne({email, _id: { $ne: id } });
+            if (verificarEmailBDD) {
+                return res.status(400).json({ msg_actualizacion_perfil: "Lo sentimos, el email ya se encuentra registrado como conductor" });
+            }
+
+            /*const verificacionRepresentante = await Representantes.findOne({email: email});
+            if (verificacionRepresentante){
+                return res.status(400).json({ msg_actualizacion_perfil: "Lo sentimos, el email ya se encuentra registrado como representante" });
+            }*/
+
+            // Crear un token con el ID del conductor y el nuevo email
             const token = conductor.crearToken('confirmacionCorreo');
             conductor.emailTemporal= email;
 
@@ -453,15 +447,33 @@ const ActualizarPerfil = async (req, res) => {
             // Enviar un email de confirmación al nuevo correo electrónico
             await confirmacionDeCorreoConductorCambio(conductorAdmin.email, email, conductor.nombre, conductor.apellido, token);
 
+            // Como si hay cambios la variable cambia
+            cambiosActualizados = true;
+
             // Enviar una respuesta al cliente indicando que se ha enviado un enlace de confirmación
             return res.status(200).json({ msg_actualizacion_perfil: "Se ha enviado un enlace de confirmación al nuevo correo electrónico" });
         }
 
-        // Actualización de los datos
-        conductor.placaAutomovil = placaAutomovil;
-        conductor.telefono = telefono;
-        conductor.cooperativa = cooperativa;
-        conductor.cedula = cedula; 
+        if(conductor.telefono !== telefono){
+            // Comprobar si el teléfono ya está registrado
+            const verificarTelefonoBDD = await Conductores.findOne({ telefono, _id: { $ne: id } });
+            if (verificarTelefonoBDD) {
+                 return res.status(400).json({ msg_registro_conductor: "Lo sentimos, el teléfono ya se encuentra registrado en los conductores" });
+            };
+            
+            /*const verificarTelefonoRepresentanteBDD = await Representantes.findOne({ telefono });
+            if (verificarTelefonoRepresentanteBDD) {
+                return res.status(400).json({ msg_registro_conductor: "Lo sentimos, el teléfono ya se encuentra registrado en los representantes" });
+            };*/
+
+            conductor.telefono = telefono;
+            cambiosActualizados = true;
+        }
+
+        // ¿Qué sucede si no se han realizado cambios y se intenta actualizar el perfil?
+        if (!cambiosActualizados) {
+            return res.status(400).json({ msg_actualizacion_perfil: "No se han realizado cambios en el perfil del conductor" });
+        }
 
         // Guardar los cambios en la base de datos
         await conductor.save();
