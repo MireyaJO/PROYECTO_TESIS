@@ -53,26 +53,7 @@ const validacionesConductor = [
         .withMessage('La cedula debe ser de 10 digitos')
     .isNumeric()
         .withMessage('El campo "cedula" debe contener solo números')
-    .customSanitizer(value => value != null ? String(value).trim() : "")
-    .custom(value => {
-        // Algoritmo de validación de cédula ecuatoriana
-        const cedula = String(value).trim();
-        const digitos = cedula.split('').map(Number);
-        const provincia = parseInt(cedula.substring(0, 2), 10);
-        if (provincia < 1 || provincia > 24) return false;
-        let suma = 0;
-        for (let i = 0; i < 9; i++) {
-            let val = digitos[i];
-            if (i % 2 === 0) {
-                val *= 2;
-                if (val > 9) val -= 9;
-            }
-            suma += val;
-        }
-        const digitoVerificador = (10 - (suma % 10)) % 10;
-        return digitoVerificador === digitos[9];
-    })
-    .withMessage('La cédula no es válida para Ecuador'), 
+    .customSanitizer(value => value != null ? String(value).trim() : ""),
     
     // Verificar que el número de placa tenga 7 dígitos
     check("placaAutomovil")
@@ -209,26 +190,7 @@ const validacionesAdmin = [
         .withMessage('La cedula debe ser de 10 digitos')
     .isNumeric()
         .withMessage('El campo "teléfono" debe contener solo números')
-    .customSanitizer(value => value != null ? String(value).trim() : "")
-    .custom(value => {
-        // Algoritmo de validación de cédula ecuatoriana
-        const cedula = String(value).trim();
-        const digitos = cedula.split('').map(Number);
-        const provincia = parseInt(cedula.substring(0, 2), 10);
-        if (provincia < 1 || provincia > 24) return false;
-        let suma = 0;
-        for (let i = 0; i < 9; i++) {
-            let val = digitos[i];
-            if (i % 2 === 0) {
-                val *= 2;
-                if (val > 9) val -= 9;
-            }
-            suma += val;
-        }
-        const digitoVerificador = (10 - (suma % 10)) % 10;
-        return digitoVerificador === digitos[9];
-    })
-    .withMessage('La cédula no es válida para Ecuador'),
+    .customSanitizer(value => value != null ? String(value).trim() : ""),
 
     // Verificar que la cooperativa no este vacío
     check("cooperativa")
@@ -379,26 +341,7 @@ const validacionesActualizarConductorNormal = [
         .withMessage('La cedula debe ser de 10 digitos')
     .isNumeric()
         .withMessage('El campo "teléfono" debe contener solo números')
-    .customSanitizer(value => value != null ? String(value).trim() : "")
-    .custom(value => {
-        // Algoritmo de validación de cédula ecuatoriana
-        const cedula = String(value).trim();
-        const digitos = cedula.split('').map(Number);
-        const provincia = parseInt(cedula.substring(0, 2), 10);
-        if (provincia < 1 || provincia > 24) return false;
-        let suma = 0;
-        for (let i = 0; i < 9; i++) {
-            let val = digitos[i];
-            if (i % 2 === 0) {
-                val *= 2;
-                if (val > 9) val -= 9;
-            }
-            suma += val;
-        }
-        const digitoVerificador = (10 - (suma % 10)) % 10;
-        return digitoVerificador === digitos[9];
-    })
-    .withMessage('La cédula no es válida para Ecuador'),
+    .customSanitizer(value => value != null ? String(value).trim() : ""),
 
     // Verificar que el número de placa tenga 7 dígitos
     check("placaAutomovil")
@@ -472,26 +415,7 @@ const validacionesActualizarPerfilAdmin = [
         .withMessage('La cedula debe ser de 10 digitos')
     .isNumeric()
         .withMessage('El campo "cedula" debe contener solo números')
-    .customSanitizer(value => value != null ? String(value).trim() : "")
-    .custom(value => {
-        // Algoritmo de validación de cédula ecuatoriana
-        const cedula = String(value).trim();
-        const digitos = cedula.split('').map(Number);
-        const provincia = parseInt(cedula.substring(0, 2), 10);
-        if (provincia < 1 || provincia > 24) return false;
-        let suma = 0;
-        for (let i = 0; i < 9; i++) {
-            let val = digitos[i];
-            if (i % 2 === 0) {
-                val *= 2;
-                if (val > 9) val -= 9;
-            }
-            suma += val;
-        }
-        const digitoVerificador = (10 - (suma % 10)) % 10;
-        return digitoVerificador === digitos[9];
-    })
-    .withMessage('La cédula no es válida para Ecuador'),
+    .customSanitizer(value => value != null ? String(value).trim() : ""),
 
     //Verificación de que el nombre no se encuentre vacío y sea un string
     check(["cooperativa"])    
