@@ -1481,15 +1481,7 @@ const EliminarReemplazosDisponibles = async (req, res) => {
         // Validar existencia
         if (!conductorReemplazo) {
             return res.status(404).json({ msg_eliminar_reemplazo: "No se encontró el conductor de reemplazo disponible" });
-        }
-
-         //Verificación de que el conductor normal y el de reemplazo hayan cmabiado en el primer inicio de sesión la contraseña 
-        if (conductorReemplazo.requiereCambioContrasenia == true) {
-            return res.status(400).json({
-                msg_actualizacion_conductor: "Lo sentimos, el conductor reemplazo debe cambiar su contraseña antes de actualizar su información"
-            });
         };
-
 
         // Guardar temporalmente la información del conductor de reemplazo
         const { email, nombre, apellido } = conductorReemplazo;
