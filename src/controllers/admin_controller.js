@@ -1264,44 +1264,41 @@ const ListarReemplazoDisponibles = async (req, res) => {
 //Listar conductores que no son reemplazo que poseen un reemplazo activo
 const ListarConductoresConReemplazo = async (req, res) => {
     try {
-        // Consultar los conductores que no son reemplazos y tienen un reemplazo activo
+        // Buscar todos los conductores originales (no reemplazo)
         const conductores = await Conductores.find({
-            esReemplazo: 'No',
-            $or: [
-                { estado: 'Inactivo', roles: ['conductor'] },
-                { estado: 'No trabaja como conductor', roles: ['conductor', 'admin'] }
-            ]
+            esReemplazo: 'No'
         }).select("-password -updatedAt -createdAt -__v");
-
-        // Validar si no se encontraron conductores
-        if (conductores.length === 0) {
-            return res.status(404).json({ msg: "No se encontraron conductores con reemplazos activos" });
-        };
-
-        // Para cada conductor, buscar su reemplazo activo
+        
+        // Array para almacenar los conductores con reemplazos activos
         const resultado = [];
-        //Se recorre cada conductor para buscar su reemplazo activo
+
+        // ¿El conductor reemplazo posee un conductor reemplazo activo?
         for (const conductor of conductores) {
-            // Buscar el reemplazo activo del conductor (en el reemplazo temporal se coloca la misma ruta asignada, por ello, se la coloca como parámetro de busqueda)
+            // Buscar reemplazo activo para la misma ruta
             const reemplazo = await Conductores.findOne({
                 esReemplazo: 'Sí',
                 estado: 'Ocupado',
                 rutaAsignada: conductor.rutaAsignada
             }).select("-password -updatedAt -createdAt -__v");
 
-            // Se agrega el conductor y su reemplazo al array que funciona como resultado
-            resultado.push({
-                conductorOriginal: conductor,
-                reemplazo: reemplazo || null
-            });
-        };
-    
-        // Respuesta exitosa
-        res.status(200).json({ msg: "Conductores con reemplazos activos encontrados", conductoresConReemplazo: resultado});
+            // Solo agregar si existe reemplazo activo
+            if (reemplazo) {
+                resultado.push({
+                    conductorOriginal: conductor,
+                    reemplazo: reemplazo
+                });
+            }
+        }
+
+        if (resultado.length === 0) {
+            return res.status(404).json({ msg: "No se encontraron conductores con reemplazos activos" });
+        }
+
+        res.status(200).json({ msg: "Conductores con reemplazos activos encontrados", conductoresConReemplazo: resultado });
     } catch (error) {
         console.error(error);
         res.status(500).json({ msg: "Error al listar conductores con reemplazos activos", error: error.message });
-    };
+    }
 };
 
 // Buscar un conductor en especifico por el nombre y apellido
