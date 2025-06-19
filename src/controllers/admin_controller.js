@@ -672,12 +672,20 @@ const ActualizarInformacionAdmin = async (req, res) => {
             cambiosActualizados = true;
         }
 
+        // Función para normalizar texto (fuera del if)
+        function normalizarTexto(texto) {
+            return texto
+                .normalize("NFD")
+                .replace(/[\u0300-\u036f]/g, "") // Quita tildes
+                .replace(/\s+/g, "_"); // Reemplaza espacios por guión bajo
+        }
+
         // Verificar si se envió un archivo de imagen
         if (req.files && req.files.fotografiaDelConductor) {
             const file = req.files.fotografiaDelConductor;
             try {
                 // Definir el public_id para Cloudinary
-                const publicId = `conductores/${conductor.nombre}_${conductor.apellido}`;
+                const publicId = `conductores/${normalizarTexto(nombreAntiguo)}_${normalizarTexto(apellidoAntiguo)}`;
 
                 // Eliminar la imagen anterior en Cloudinary
                 await cloudinary.v2.uploader.destroy(publicId);
@@ -689,11 +697,30 @@ const ActualizarInformacionAdmin = async (req, res) => {
                 console.error(error);
                 return res.status(500).json({ msg_actualizacion_perfil: "Error al subir la imagen" });
             }
-        } else if (typeof req.body.fotografiaDelConductor === "string" && req.body.fotografiaDelConductor.startsWith("http")) {
+        } else if (typeof req.body.fotografiaDelConductor === "string" && req.body.fotografiaDelConductor.startsWith("http") && req.body.fotografiaDelConductor.includes("res.cloudinary.com")) {
             // Solo se envía la URL, no se hace nada, continúa con la actualización de otros campos
+            if (conductor.nombre !== nombreAntiguo || conductor.apellido !== apellidoAntiguo) {
+                try {
+                    const anteriorPublicId = `conductores/${normalizarTexto(nombreAntiguo)}_${normalizarTexto(apellidoAntiguo)}`;
+                    const nuevoPublicId = `conductores/${normalizarTexto(conductor.nombre)}_${normalizarTexto(conductor.apellido)}`;
+
+                    console.log("oldPublicId:", anteriorPublicId);
+                    console.log("newPublicId:", nuevoPublicId);
+                    
+                    // Renombra la imagen en Cloudinary
+                    const result = await cloudinary.v2.uploader.rename(anteriorPublicId, nuevoPublicId);
+
+                    // Actualiza la URL en la base de datos
+                    conductor.fotografiaDelConductor = result.secure_url;
+                    cambiosActualizados = true;
+                } catch (error) {
+                    console.error("Error al renombrar imagen:", error);
+                    return res.status(500).json({ msg_actualizacion_perfil: "Error al actualizar la imagen del conductor" });
+                }
+            }
         } else {
             return res.status(400).json({ msg_actualizacion_perfil: "Lo sentimos, debes subir una imagen" });
-        };
+        }
 
         // Si el email cambia, enviar un enlace de confirmación al nuevo correo
         if (email !== conductor.email) {
