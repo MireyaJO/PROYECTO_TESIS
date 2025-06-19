@@ -615,6 +615,9 @@ const ActualizarInformacionAdmin = async (req, res) => {
         const conductor = await Conductores.findById(id);
         if (!conductor) return res.status(404).json({ msg_actualizacion_perfil: "Lo sentimos, el conductor logeado no se encuentra registrado" });
 
+        const nombreAntiguo = conductor.nombre;
+        const apellidoAntiguo = conductor.apellido;
+
         if (nombre !== conductor.nombre) {
             conductor.nombre = nombre;
             cambiosActualizados = true;
