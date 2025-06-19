@@ -259,7 +259,7 @@ paraElRegistroDeLosConductores.statics.ingresarConductorAdministrador = async fu
             rutaAsignada: 1,
             sectoresRuta: 'La Magdalena',
             institucion: 'Unidad Educativa Particular Emaús',
-            fotografiaDelConductor: 'https://res.cloudinary.com/dwvqq3ugp/image/upload/v1739850955/imagen_prueba_01_zdvioa.jpg',
+            fotografiaDelConductor: 'https://res.cloudinary.com/dwvqq3ugp/image/upload/v1750293989/admin_r2ikro.jpg',
             email: process.env.ADMIN_EMAIL, 
             password: contraseniaQuemada, 
             estado: 'Trabaja como conductor',
