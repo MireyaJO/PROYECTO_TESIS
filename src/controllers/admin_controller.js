@@ -684,6 +684,7 @@ const ActualizarInformacionAdmin = async (req, res) => {
 
                 // Guardar la URL de la imagen en la base de datos
                 conductor.fotografiaDelConductor = await SubirImagen(file, conductor.nombre, conductor.apellido);
+                cambiosActualizados = true; 
             } catch (error) {
                 console.error(error);
                 return res.status(500).json({ msg_actualizacion_perfil: "Error al subir la imagen" });
