@@ -51,9 +51,9 @@ const validacionesConductor = [
         .withMessage('El campo "cedula" no puede estar vacío')
     .isLength({ min: 10, max: 10 })
         .withMessage('La cedula debe ser de 10 digitos')
-    .isNumeric()
+    .matches(/^\d{10}$/)
         .withMessage('El campo "cedula" debe contener solo números')
-    .customSanitizer(value => value != null ? String(value).trim() : ""),
+    .customSanitizer(value => value?.trim()),
     
     // Verificar que el número de placa tenga 7 dígitos
     check("placaAutomovil")
@@ -188,9 +188,9 @@ const validacionesAdmin = [
         .withMessage('El campo "cedula" no puede estar vacío')  
     .isLength({ min: 10, max: 10 })
         .withMessage('La cedula debe ser de 10 digitos')
-    .isNumeric()
-        .withMessage('El campo "teléfono" debe contener solo números')
-    .customSanitizer(value => value != null ? String(value).trim() : ""),
+    .matches(/^\d{10}$/)
+        .withMessage('El campo "cedula" debe contener solo números')
+    .customSanitizer(value => value?.trim()),
 
     // Verificar que la cooperativa no este vacío
     check("cooperativa")
@@ -339,9 +339,9 @@ const validacionesActualizarConductorNormal = [
     check("cedula")  
     .isLength({ min: 10, max: 10 })
         .withMessage('La cedula debe ser de 10 digitos')
-    .isNumeric()
-        .withMessage('El campo "teléfono" debe contener solo números')
-    .customSanitizer(value => value != null ? String(value).trim() : ""),
+    .matches(/^\d{10}$/)
+        .withMessage('El campo "cedula" debe contener solo números')
+    .customSanitizer(value => value?.trim()),
 
     // Verificar que el número de placa tenga 7 dígitos
     check("placaAutomovil")
@@ -413,9 +413,9 @@ const validacionesActualizarPerfilAdmin = [
     check("cedula") 
     .isLength({ min: 10, max: 10 })
         .withMessage('La cedula debe ser de 10 digitos')
-    .isNumeric()
+    .matches(/^\d{10}$/)
         .withMessage('El campo "cedula" debe contener solo números')
-    .customSanitizer(value => value != null ? String(value).trim() : ""),
+    .customSanitizer(value => value?.trim()),
 
     //Verificación de que el nombre no se encuentre vacío y sea un string
     check(["cooperativa"])    
@@ -574,7 +574,7 @@ const validacionesEstudiantes = [
         .withMessage('El campo "cedula" no puede estar vacío')
     .isLength({ min: 10, max: 10 })
         .withMessage('La cedula debe ser de 10 digitos')
-    .isNumeric()
+    .matches(/^\d{10}$/)
         .withMessage('El campo "cedula" debe contener solo números')
     .customSanitizer(value => value?.trim()),  
 

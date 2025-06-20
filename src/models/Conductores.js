@@ -44,7 +44,7 @@ const paraElRegistroDeLosConductores= new Schema(
             trim: true
         }, 
         cedula:{
-            type: Number, 
+            type: String, 
             required: true, 
             unique: true,
             trim: true
