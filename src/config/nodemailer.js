@@ -332,9 +332,9 @@ const designacionDeReemplazo = async (emailCoordinador, email, nombreReemplazo, 
     let datoPorTipoDeReemplazo = "";
 
     if (tipoDeReemplazo === 'Temporal') {
-        datoPorTipoDeReemplazo = ` <p><strong>En la aplicacion móvil SOLO PUEDE AGREGAR ESTUDIANTES Y TOMAR ASISTENCIA</strong></p>`; 
+        datoPorTipoDeReemplazo = ` <p><strong>En el sistema SOLO PODRÁ VISUALIZAR LA INFORMACIÓN DE LOS ESTUDIANTES</strong></p>`; 
     } else if (tipoDeReemplazo === 'Permanente') {
-        datoPorTipoDeReemplazo = `<p><strong>En la aplicación móvil tiene la posibilidad de GESTIONAR POR COMPLETO A LOS ESTUDIANTES</strong></p>`;
+        datoPorTipoDeReemplazo = `<p><strong>En el sistema tiene la posibilidad de GESTIONAR POR COMPLETO A LOS ESTUDIANTES</strong></p>`;
     }; 
 
     let estructuraEmail = {
@@ -365,7 +365,6 @@ const designacionDeReemplazo = async (emailCoordinador, email, nombreReemplazo, 
                     <td style="padding: 8px; border: 1px solid #ddd;">${tipoDeReemplazo}</td>
                 </tr>
             </table>
-            <p>Por favor, asegúrese de coordinar con los representantes de los estudiantes asignados para garantizar un servicio eficiente.</p>
             <p>Si tiene alguna pregunta o necesita más información, no dude en ponerse en contacto con el coordinador de rutas.</p>
             ${datoPorTipoDeReemplazo}
             <p><b>Atentamente,</b></p>
