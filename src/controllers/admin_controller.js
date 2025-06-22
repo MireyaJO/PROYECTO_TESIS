@@ -1340,18 +1340,25 @@ const BuscarConductoresConReemplazo = async (req, res) => {
         //Buscar el conductor por nombre y apellido
         const conductor = await Conductores.findOne({
             rutaAsignada: rutaAsignada,
-            esReemplazo: 'No',
-            $or: [
-                { estado: 'Inactivo', roles: ['conductor'] },
-                { estado: 'No trabaja como conductor', roles: ['conductor', 'admin'] }
-            ]
+            esReemplazo: 'No'
         }).select("-password -updatedAt -createdAt -__v");
 
-        //Validación de que el conductor existe
-        if(!conductor) return res.status(400).json({msg_buscar_conductor_reemplazo:"El conductor no se encuentra registrado o no tiene un reemplazo activo"});
+        // Buscar el reemplazo activo para esa ruta
+        const reemplazo = await Conductores.findOne({
+            esReemplazo: 'Sí',
+            estado: 'Ocupado',
+            rutaAsignada: rutaAsignada
+        }).select("-password -updatedAt -createdAt -__v");
 
+        //¿Existe o no un reemplazo activo?
+        if (!reemplazo) {
+            return res.status(400).json({
+                msg_buscar_conductor_reemplazo: `No se encontró un conductor de reemplazo activo para la ruta ${rutaAsignada}`
+            });
+        }
+        
         //Mensaje de exito
-        res.status(200).json({msg_buscar_conductor_reemplazo:"El conductor se ha encontrado exitosamente", conductorConReemplazo: conductor});
+        res.status(200).json({msg_buscar_conductor_reemplazo:"El conductor se ha encontrado exitosamente", conductorOriginal: conductor, reemplazo: reemplazo});
     } catch(error){
         console.log(error);
         res.status(500).json({msg_buscar_conductor_reemplazo:"Error al buscar conductores de reemplazo por nombre o apellido", error: error.message});
