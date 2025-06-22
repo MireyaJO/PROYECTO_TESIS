@@ -1518,7 +1518,7 @@ const EliminarReemplazosDisponibles = async (req, res) => {
         await Conductores.findOneAndDelete({_id: idReemplazo});
 
         //Envió del correo al conductor de reemplazo emiliminado
-        await eliminacionDelConductor(email, nombre, apellido, coordinador.apellido, coordinador.nombre);
+        await eliminacionDelConductor(coordinador.email, email, nombre, apellido, coordinador.apellido, coordinador.nombre);
         
         return res.status(200).json({ msg_eliminar_reemplazo: `El conductor reemplazo ${nombre} ${apellido} eliminado exitosamente ` });
     } catch (error) {
