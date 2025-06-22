@@ -1258,7 +1258,7 @@ const BuscarConductorRuta = async (req, res) => {
         }).select("-password -updatedAt -createdAt -__v");
         
         if (!conductor) {
-            return res.status(400).json({ msg: "Lo sentimos, no se ha encontrado ningún conductor con esa ruta que se encuentre activo o el admin no tiene privilegios de conductor" });
+            return res.status(400).json({ msg_buscar_conductor_ruta: `Lo sentimos, no se ha encontrado un conductor con activo con la ruta ${rutaAsignada}` });
         }
 
         // Mensaje de éxito
