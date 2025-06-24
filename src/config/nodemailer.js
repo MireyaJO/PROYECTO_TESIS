@@ -127,7 +127,7 @@ const nuevoAdministrador = async (emailCoordinador, email, trabajaOno, nombreCon
     let estructuraEmail = {
         from: `"${emailCoordinador} (Administrador)" <${process.env.EMAIL_USER}>`,
         to: email,  
-        subject: "Credenciales de acceso a la aplicación para el nuevo Coordinador de rutas de la Unidad Educativa Particular Emaús",
+        subject: "Credenciales de acceso al sistema para el nuevo Coordinador de rutas de la Unidad Educativa Particular Emaús",
         html: `
             <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; background-color: #e0f7fa; padding: 20px; border-radius: 10px;">
                 <h2 style="color: #00796b;">Transportistas de la Unidad Educativa Particular “Emaús</h2>
@@ -135,7 +135,7 @@ const nuevoAdministrador = async (emailCoordinador, email, trabajaOno, nombreCon
                 <p>Usted ha sido registrado como conductor administrador de los transportistas de la Unidad Educativa Particular “Emaús. A continuación, encontrará los detalles acceder al sistema:</p>
                 ${noSeTrabajaComoConductor}
                 <p style="margin-top: 20px;">Por favor, asegúrese de cambiar su contraseña después de iniciar sesión por primera vez.</p>
-                <p>Atentamente,</p>
+                <p><b>Atentamente,</b></p>
                 <p>${nombreAntiguoAdmin} ${apellidoAntiguoAdmin}</p>
                 <p><strong>Ex coordinador de Rutas</strong></p>
             </div>
@@ -166,7 +166,7 @@ const cambioAdmin = async (emailCoordinador, nombreConductorNuevo, apellidoCondu
                 <p>Por favor, póngase en contacto con el nuevo coordinador para cualquier consulta o coordinación relacionada con su ruta.</p>
                 <p><b>Atentamente,</b></p>
                 <p>${coordinadorAntiguoApellido} ${coordinadorAntiguoNombre}</p>
-                <p><strong><b>Coordinador de rutas saliente</b></strong></p>
+                <p><strong><b>Ex coordinador de Rutas</b></strong></p>
             </div>
         `   
     };

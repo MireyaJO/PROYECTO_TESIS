@@ -393,17 +393,17 @@ const RegistrarNuevoAdmin = async (req,res) =>{
         };
 
         //Información a los conductores que se ha registrado un nuevo administrador
-        const conductores = await Conductores.find({roles: 'conductor'});
+        const conductores = await Conductores.find({roles: { $in: ['conductor'], $nin: ['admin'] }});
         for(const conductor of conductores){
             await cambioAdmin(datosConductorAdmin.email, nuevoConductor.nombre, nuevoConductor.apellido, conductor.email, conductor.nombre, conductor.apellido, 
                 datosConductorAdmin.apellido, datosConductorAdmin.nombre); 
         };
 
         //Aviso al nuevo coordinador de rutas
-        if(eliminacionAdminSaliente === 'Sí'){
+        if(trabajaraOno === 'Sí'){
             await nuevoAdministrador(datosConductorAdmin.email, nuevoConductor.email, "Sí", nuevoConductor.nombre, nuevoConductor.apellido, 
                 randomPassword, nuevoConductor.rutaAsignada, nuevoConductor.sectoresRuta, datosConductorAdmin.apellido, datosConductorAdmin.nombre);
-        } else if (eliminacionAdminSaliente === 'No'){
+        } else if (trabajaraOno === 'No'){
             await nuevoAdministrador(datosConductorAdmin.email, nuevoConductor.email, "No", nuevoConductor.nombre, nuevoConductor.apellido, 
                 randomPassword, nuevoConductor.rutaAsignada, nuevoConductor.sectoresRuta, datosConductorAdmin.apellido, datosConductorAdmin.nombre);
         };
