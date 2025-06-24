@@ -786,6 +786,21 @@ const AsignarPrivilegiosDeAdmin = async (req, res) => {
         const conductor = await Conductores.findById(idAsignacion);
         if (!conductor) return res.status(404).json({ msg: "Lo sentimos, el conductor no se encuentra registrado" });
 
+        //Verificación de que el conductor no sea el mismo que el admin logeado
+        if (String(idAsignacion) === String(id)) {
+            return res.status(400).json({ msg: "Lo sentimos, no puedes asignarte privilegios de administrador a ti mismo" });
+        }; 
+
+        //Verificación de que el conductor no sea un reemplazo
+        if (conductor.esReemplazo === 'Sí') {
+            return res.status(400).json({ msg: "Lo sentimos, el conductor no puede ser asignado como administrador, ya que es un reemplazo" });
+        }
+
+        //Verificación de que el conductor no se encuentre inactivo
+        if (conductor.estado === 'Inactivo'){
+            return res.status(400).json({ msg: "Lo sentimos, el conductor no puede ser asignado como administrador, ya que se encuentra inactivo" });
+        }
+
         //Verificación de que el conductor a actualizar haya cambiado la contraseña en el primer inicio de sesión 
         if (conductor.requiereCambioContrasenia == true) {
             return res.status(400).json({
