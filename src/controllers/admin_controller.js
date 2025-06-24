@@ -260,6 +260,11 @@ const RegistrarNuevoAdmin = async (req,res) =>{
             return res.status(400).json({ msg_registro_conductor: "Lo sentimos, no puedes eliminar al conductor administrador saliente, ya que, el nuevo administrador no trabajará como conductor y los estudiantes quedarán a la deriva" });
         };
 
+        // Quinta excepciones
+        if (conductorAdmin.roles.includes("admin") &&  asignacionOno === 'Sí' && conductorAdmin.roles.length === 1){
+            return res.status(400).json({ msg_registro_conductor: "Lo sentimos, no puedes asignar estudiantes, pues solo tiene privilegios de administrador, es decir, no tiene estudiantes para asignar" });
+        }
+
         // Crear un nuevo conductor con los datos proporcionados
         const nuevoConductor = new Conductores({
             nombre,
