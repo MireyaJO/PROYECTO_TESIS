@@ -243,6 +243,7 @@ const validacionesAdmin = [
     .customSanitizer(value => value?.trim()),
     
     check("asignacionOno")
+    .if(({ req }) => req.body.roles?.includes("admin"))
     .exists()
         .withMessage('El campo "asignacionOno" es obligatorio')
     .notEmpty()
