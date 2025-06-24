@@ -125,7 +125,7 @@ const nuevoAdministrador = async (emailCoordinador, email, trabajaOno, nombreCon
     }
     //Creación de la estuctura que tendrá el correo 
     let estructuraEmail = {
-        from: `"${emailCoordinador} (Administrador)" <${process.env.EMAIL_USER}>`,
+        from: `"${emailCoordinador} (Ex administrador)" <${process.env.EMAIL_USER}>`,
         to: email,  
         subject: "Credenciales de acceso al sistema para el nuevo Coordinador de rutas de la Unidad Educativa Particular Emaús",
         html: `
@@ -155,7 +155,7 @@ const nuevoAdministrador = async (emailCoordinador, email, trabajaOno, nombreCon
 const cambioAdmin = async (emailCoordinador, nombreConductorNuevo, apellidoConductorNuevo, email, nombreConductor, apellidoConductor, coordinadorAntiguoApellido, coordinadorAntiguoNombre)=>{
     //Creación de la estuctura que tendrá el correo 
     let estructuraEmail = {
-        from: `"${emailCoordinador} (Administrador)" <${process.env.EMAIL_USER}>`,
+        from: `"${emailCoordinador} (Ex administrador)" <${process.env.EMAIL_USER}>`,
         to: email,  
         subject: "Nuevo Coordinador de Rutas en la Unidad Educativa Particular Emaús",
         html: `
@@ -257,7 +257,7 @@ const confirmacionDeCorreoConductorCambio = async (emailCoordinador, email, nomb
 const asignacionAdministrador = async (emailCoordinador, email, nombre, apellido, ruta, sectores, nombreAntiguoAdmin, apellidoAntiguoAdmin) => {
     //Creación de la estuctura que tendrá el correo 
     let estructuraEmail = {
-        from: `"${emailCoordinador} (Administrador)" <${process.env.EMAIL_USER}>`,
+        from: `"${emailCoordinador} (Ex administrador)" <${process.env.EMAIL_USER}>`,
         to: email,  
         subject: "Nuevo Administrador del Sistema de Transporte Escolar de la Unidad Educativa Particular Emaús",
         html: `
@@ -284,7 +284,7 @@ const asignacionAdministrador = async (emailCoordinador, email, nombre, apellido
             <p style="margin-top: 20px;">Su contraseña no ha cambiado. Si desea cambiar su contraseña, por favor utilice la opción de restablecimiento de contraseña en el sistema.</p>
             <p><b>Atentamente,</b></p>
             <p> ${apellidoAntiguoAdmin} ${nombreAntiguoAdmin}</p>
-            <p><strong><b>Coordinador de rutas</b></strong></p>
+            <p><strong><b>Ex coordinador de Rutas</b></strong></p>
         </div>
         `
     };
