@@ -841,7 +841,7 @@ const AsignarPrivilegiosDeAdmin = async (req, res) => {
         }
 
         //Envio del correo a los conductores que no poseen privilegios de administrador
-        const conductores = await Conductores.find({roles: 'conductor'});
+        const conductores = await Conductores.find({roles: { $in: ['conductor'], $nin: ['admin'] }});
         for(const conductorNormal of conductores){
             await cambioAdmin(conductorAdmin.email, conductor.nombre, conductor.apellido, conductorNormal.email, conductorNormal.nombre, 
                 conductorNormal.apellido, conductorAdmin.apellido, conductorAdmin.nombre); 
