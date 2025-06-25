@@ -230,7 +230,7 @@ const confirmacionDeCorreoConductorCambio = async (emailCoordinador, email, nomb
     let estructuraEmail = {
         from: `"${emailCoordinador} (Administrador)" <${process.env.EMAIL_USER}>`,
         to: email,  
-        subject: "Confirmación del nuevo correo electrónico para el conductor de un estudiante de la Unidad Educativa Particular Emaús",
+        subject: "Confirmación del nuevo correo electrónico de un conductor de la Unidad Educativa Particular Emaús",
         html: `
             <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; background-color: #e0f7fa; padding: 20px; border-radius: 10px;">
                 <h2 style="color: #00796b;">Transportistas de la Unidad Educativa Particular “Emaús”</h2>
