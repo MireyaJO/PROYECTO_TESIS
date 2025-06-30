@@ -1342,7 +1342,7 @@ const ListarConductoresConReemplazo = async (req, res) => {
         }
 
         if (resultado.length === 0) {
-            return res.status(404).json({ msg: "No se encontraron conductores con reemplazos activos" });
+            return res.status(400).json({ msg: "No se encontraron conductores con reemplazos activos" });
         }
 
         res.status(200).json({ msg: "Conductores con reemplazos activos encontrados", conductoresConReemplazo: resultado });

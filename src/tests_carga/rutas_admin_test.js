@@ -101,9 +101,9 @@ export default function () {
     const idAntiguo = '685aa9e39c49844d86af9aaf';
 
     //Rutas a buscar 
-    //const rutas = [1,11,12];
+    const rutas = [1,11,12];
     //Selección de alguno de los 2 ids aleatoriamente
-    const rutaABuscar = 1//rutas[Math.floor(Math.random() * rutas.length)];
+    const rutaABuscar = rutas[Math.floor(Math.random() * rutas.length)];
 
     //Información a consultar en los reportes
     const informacionHaVisualizar = ['Reemplazo temporal', 'Reemplazo permanente', 'Activación de conductores originales', 'Reemplazo Activos', 'Listado de estudiantes de un conductor']; 
@@ -152,7 +152,7 @@ export default function () {
         r.json('msg_listar_conductores') !== undefined
     });
 
-    let buscarConductorPorRuta = http.get(`${BASE_URL}buscar/conductor/ruta/${rutaABuscar}`, null, {
+    let buscarConductorPorRuta = http.get(`${BASE_URL}buscar/conductor/ruta/${rutaABuscar}`,{
         headers: {
             Authorization: `Bearer ${token}`,
             'Content-Type': 'application/json'
