@@ -432,7 +432,7 @@ const VisualizarPerfil = async (req, res)=>{
         // Información del conductor logeado
         const conductor = await Conductores.findById(req.user.id).select("-password -createdAt -updatedAt -__v");
         // Verificación de la existencia del conductor
-        if (!conductor) return res.status(404).json({ msg_visualizar_conductor: "Conductor no encontrado" });
+        if (!conductor) return res.status(404).json({  msg_admin: "Conductor no encontrado" });
 
         //Objeto con la información necesaria para el administrador
         const infoAdmin = {
@@ -457,7 +457,7 @@ const VisualizarPerfil = async (req, res)=>{
     }catch(error){
         console.log(error); 
         res.status(500).json({
-            msg: "Error al visualizar el perfil del administrador",
+            msg_admin: "Error al visualizar el perfil del administrador",
             error: error.message
         });
     }
@@ -1045,12 +1045,12 @@ const ReemplazoPermanente = async (req, res) => {
          //Verificación de que el conductornormal y el de reemplazo hayan cmabiado en el primer inicio de sesión la contraseña 
         if (conductorAntiguo.requiereCambioContrasenia == true) {
             return res.status(400).json({
-                msg_actualizacion_conductor: "Lo sentimos, el conductor al que se desea reemplazar debe cambiar su contraseña antes de actualizar su información"
+                msg_reemplazo: "Lo sentimos, el conductor al que se desea reemplazar debe cambiar su contraseña antes de actualizar su información"
             });
         };
         if (conductorReemplazo.requiereCambioContrasenia == true) {
             return res.status(400).json({
-                msg_actualizacion_conductor: "Lo sentimos, el conductor reemplazo debe cambiar su contraseña antes de actualizar su información"
+                msg_reemplazo: "Lo sentimos, el conductor reemplazo debe cambiar su contraseña antes de actualizar su información"
             });
         };
 
