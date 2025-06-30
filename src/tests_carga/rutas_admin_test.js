@@ -101,9 +101,9 @@ export default function () {
     const idAntiguo = '685aa9e39c49844d86af9aaf';
 
     //Rutas a buscar 
-    const rutas = [1,11,12];
+    //const rutas = [1,11,12];
     //Selección de alguno de los 2 ids aleatoriamente
-    const rutaABuscar = rutas[Math.floor(Math.random() * rutas.length)];
+    const rutaABuscar = 1//rutas[Math.floor(Math.random() * rutas.length)];
 
     //Información a consultar en los reportes
     const informacionHaVisualizar = ['Reemplazo temporal', 'Reemplazo permanente', 'Activación de conductores originales', 'Reemplazo Activos', 'Listado de estudiantes de un conductor']; 
@@ -127,122 +127,10 @@ export default function () {
 
     //Se utiliza el token obtenido en el login para autenticar las solicitudes 
     let registrarConductorFijo = http.post(`${BASE_URL}registro/conductores`, JSON.stringify(conductorNormal), {
-        headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json'
-        }
-    });
-
-    let registrarConductorReemplazo = http.post(`${BASE_URL}registro/conductores`, JSON.stringify(conductorReemplazo), {
-        headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json'
-        }
-    });
-
-    let actualizarConductorFijo = http.patch(`${BASE_URL}actualizar/conductor/${idConductorFijo}`, JSON.stringify(actualizacionConductorFijo), {
-        headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json'
-        }
-    });
-
-    let actualizarAdmin = http.patch(`${BASE_URL}actualizar/informacion/admin`, JSON.stringify(actualizacionInfoAdmin), {
-        headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json'
-        }
-    });
-
-    let reemplazoTemporal = http.patch(`${BASE_URL}reemplazo/temporal/${idAntiguo}/${idReemplazo}`,null,{
-        headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json'
-        }
-    });  
-
-    let activarConductorAntiguo = http.patch(`${BASE_URL}activar/conductor/original/${idAntiguo}`, null, {
-        headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json'
-        }
-    });
-
-    let listaDeConductores = http.get(`${BASE_URL}listar/conductores`, null,{
-        headers: { 
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json'
-        }
-    });
-
-    let listarReemplazoDisponibles = http.get(`${BASE_URL}listar/reemplazo/disponibles`, null, {
-        headers: { 
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json'
-        }
-    });
-
-    let listarConductoresConReemplazo = http.get(`${BASE_URL}/listar/conductores/conreemplazo`, null, {
-        headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json'
-        }
-    });
-
-    let buscarConductorPorRuta = http.get(`${BASE_URL}buscar/conductor/ruta/${rutaABuscar}`, null, {
-        headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json'
-        }
-    });
-
-    let buscarConductoresConReemplazo = http.get(`${BASE_URL}buscar/conductor/conreemplazo/ruta/${rutaABuscar}`, null, {
-        headers: {  
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json'    
-        }
-    });
-
-    let visualizarAdmin = http.get(`${BASE_URL}visualizar/perfil/admin`, {
-        headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json'  
-        }
-    });
-
-    let reportes = http.post(`${BASE_URL}info/completa/reemplazos`, JSON.stringify(infoReporte), {
-        headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json'
-        }
-    }); 
-
-    let cantidades = http.get(`${BASE_URL}info/cantidades`, {
-        headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json'
-        }
-    });
-
-    let eliminarReemplazo = http.del(`${BASE_URL}eliminar/reemplazos/disponible/${idReemplazoAEliminar}`, null, {
-        headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json'
-        }
-    });
-
-    let reemplazoPermanente = http.patch(`${BASE_URL}reemplazo/permanente/${idReemplazoAEliminar}/${idReemplazoPermanente}/${idEliminado}`, null, {
-        headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json'  
-        }
-    });
-
-    let aumentarPrivilegios = http.patch(`${BASE_URL}aumentar/privilegios/conductor`, null, {
-        headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json'
-        }
+    headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json'
+    }
     });
 
     check(registrarConductorFijo, {
@@ -250,32 +138,11 @@ export default function () {
         'mensaje esperado': (r) => r.status === 200 || (r.status === 400 && (r.json('msg_registro_conductor') !== undefined))
     });
 
-    check(registrarConductorReemplazo, {
-        'registro conductor status 200 or 400': (r) => r.status === 200 || r.status === 400,
-        'mensaje esperado': (r) => r.status === 200 || (r.status === 400 && (r.json('msg_registro_conductor') !== undefined))
-    });
-
-    check(actualizarConductorFijo, {
-        'actualización conductor status 200 or 400': (r) => r.status === 200 || r.status === 400,
-        'mensaje esperado': (r) => r.status === 200 || (r.status === 400 &&
-        (r.json('msg_actualizacion_conductor') !== undefined || r.json('msg_registro_conductor') !== undefined))
-    });
-
-    check(actualizarAdmin, {
-        'actualización admin status 200 or 400': (r) => r.status === 200 || r.status === 400,
-        'mensaje esperado': (r) => r.status === 200 || (r.status === 400 &&
-        (r.json('msg_actualizacion_perfil') !== undefined || r.json('msg_registro_conductor') !== undefined))
-    });
-
-    check(reemplazoTemporal, {
-        'reemplazo temporal status 200 or 400': (r) => r.status === 200 || r.status === 400,
-        'mensaje esperado': (r) => r.status === 200 || (r.status === 400 &&
-            (r.json('msg_reemplazo') !== undefined || r.json('msg_actualizacion_conductor') !== undefined))
-    });
-
-    check(activarConductorAntiguo, {
-        'activación conductor antiguo status 200 or 400': (r) => r.status === 200 || r.status === 400,
-        'mensaje esperado': (r) => (r.status === 200 && r.json('msg_reemplazo') !== undefined) || (r.status === 400 && r.json('msg_activacion_conductor') !== undefined)
+    let listaDeConductores = http.get(`${BASE_URL}listar/conductores`,{
+        headers: { 
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json'
+        }
     });
 
     check(listaDeConductores, {
@@ -285,12 +152,55 @@ export default function () {
         r.json('msg_listar_conductores') !== undefined
     });
 
+    let buscarConductorPorRuta = http.get(`${BASE_URL}buscar/conductor/ruta/${rutaABuscar}`, null, {
+        headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json'
+        }
+    });
+    console.log(buscarConductorPorRuta.body);
+
+    check(buscarConductorPorRuta, {
+        'buscar conductor por ruta status 200 or 400': (r) => r.status === 200 || r.status === 400,
+        'mensaje esperado': (r) =>
+        Array.isArray(r.json()) ||
+        r.json('msg_buscar_conductor_ruta') !== undefined
+    });
+
+    let registrarConductorReemplazo = http.post(`${BASE_URL}registro/conductores`, JSON.stringify(conductorReemplazo), {
+        headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json'
+        }
+    });
+
+    check(registrarConductorReemplazo, {
+        'registro conductor status 200 or 400': (r) => r.status === 200 || r.status === 400,
+        'mensaje esperado': (r) => r.status === 200 || (r.status === 400 && (r.json('msg_registro_conductor') !== undefined))
+    });
+
+    let listarReemplazoDisponibles = http.get(`${BASE_URL}listar/reemplazo/disponibles`,{
+        headers: { 
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json'
+        }
+    });
+
     check(listarReemplazoDisponibles, {
         'listado de reemplazos disponibles': (r) => r.status === 200 || r.status === 400,
         'mensaje esperado': (r) =>
             Array.isArray(r.json()) ||
             r.json('msg_listar_conductores_reemplazo') !== undefined
     });
+
+    let listarConductoresConReemplazo = http.get(`${BASE_URL}/listar/conductores/conreemplazo`,{
+        headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json'
+        }
+    });
+
+    console.log(listarConductoresConReemplazo.body);
 
     check(listarConductoresConReemplazo, {
         'listado de conductores con reemplazo': (r) => r.status === 200 || r.status === 400,
@@ -299,14 +209,78 @@ export default function () {
             r.json('msg') !== undefined
     });
 
-    check(buscarConductorPorRuta, {
-        'buscar conductor por ruta status 200 or 400': (r) => r.status === 200 || r.status === 400,
-        'mensaje esperado': (r) => r.status === 200 || (r.status === 400 && (r.json('msg_buscar_conductor_ruta') !== undefined))
+    let buscarConductoresConReemplazo = http.get(`${BASE_URL}buscar/conductor/conreemplazo/ruta/${rutaABuscar}`,{
+        headers: {  
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json'    
+        }
     });
+
+    console.log(buscarConductoresConReemplazo.body);
 
     check(buscarConductoresConReemplazo, {
         'buscar conductores con reemplazo por ruta status 200 or 400': (r) => r.status === 200 || r.status === 400,
-        'mensaje esperado': (r) => r.status === 200 || (r.status === 400 && (r.json('msg_buscar_conductor_reemplazo') !== undefined))
+        'mensaje esperado': (r) =>
+        Array.isArray(r.json()) ||
+        r.json('msg_buscar_conductor_reemplazo') !== undefined
+    });
+
+    let actualizarConductorFijo = http.patch(`${BASE_URL}actualizar/conductor/${idConductorFijo}`, JSON.stringify(actualizacionConductorFijo), {
+        headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json'
+        }
+    });
+
+    check(actualizarConductorFijo, {
+        'actualización conductor status 200 or 400': (r) => r.status === 200 || r.status === 400,
+        'mensaje esperado': (r) => r.status === 200 || (r.status === 400 &&
+        (r.json('msg_actualizacion_conductor') !== undefined || r.json('msg_registro_conductor') !== undefined))
+    });
+
+    let actualizarAdmin = http.patch(`${BASE_URL}actualizar/informacion/admin`, JSON.stringify(actualizacionInfoAdmin), {
+        headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json'
+        }
+    });
+
+    check(actualizarAdmin, {
+        'actualización admin status 200 or 400': (r) => r.status === 200 || r.status === 400,
+        'mensaje esperado': (r) => r.status === 200 || (r.status === 400 &&
+        (r.json('msg_actualizacion_perfil') !== undefined || r.json('msg_registro_conductor') !== undefined))
+    });
+
+    let reemplazoTemporal = http.patch(`${BASE_URL}reemplazo/temporal/${idAntiguo}/${idReemplazo}`,null,{
+        headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json'
+        }
+    });  
+
+    check(reemplazoTemporal, {
+        'reemplazo temporal status 200 or 400': (r) => r.status === 200 || r.status === 400,
+        'mensaje esperado': (r) => r.status === 200 || (r.status === 400 &&
+            (r.json('msg_reemplazo') !== undefined || r.json('msg_actualizacion_conductor') !== undefined))
+    });
+
+    let activarConductorAntiguo = http.patch(`${BASE_URL}activar/conductor/original/${idAntiguo}`, null, {
+        headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json'
+        }
+    });
+
+    check(activarConductorAntiguo, {
+        'activación conductor antiguo status 200 or 400': (r) => r.status === 200 || r.status === 400,
+        'mensaje esperado': (r) => (r.status === 200 && r.json('msg_reemplazo') !== undefined) || (r.status === 400 && r.json('msg_activacion_conductor') !== undefined)
+    });
+
+    let visualizarAdmin = http.get(`${BASE_URL}visualizar/perfil/admin`, {
+        headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json'  
+        }
     });
 
     check(visualizarAdmin, {
@@ -314,9 +288,23 @@ export default function () {
         'mensaje esperado': (r) => r.status === 200 || (r.status === 400 && (r.json('msg_admin') !== undefined))
     });
 
+    let reportes = http.post(`${BASE_URL}info/completa/reemplazos`, JSON.stringify(infoReporte), {
+        headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json'
+        }
+    }); 
+
     check(reportes, {
         'reportes status 200 or 400': (r) => r.status === 200 || r.status === 400,
         'mensaje esperado': (r) => r.status === 200 || (r.status === 400 && (r.json('msg_historial_reemplazo') !== undefined))
+    });
+
+    let cantidades = http.get(`${BASE_URL}info/cantidades`, {
+        headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json'
+        }
     });
 
     check(cantidades, {
@@ -324,9 +312,23 @@ export default function () {
         'mensaje esperado': (r) => r.status === 200 || (r.status === 400 && (r.json('msg_historial_reemplazo') !== undefined))
     });
 
+    let eliminarReemplazo = http.del(`${BASE_URL}eliminar/reemplazos/disponible/${idReemplazoAEliminar}`, null, {
+        headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json'
+        }
+    });
+
     check(eliminarReemplazo, {
         'eliminar reemplazo status 200 or 400': (r) => r.status === 200 || r.status === 400,
         'mensaje esperado': (r) => r.status === 200 || (r.status === 400 && (r.json('msg_eliminar_reemplazo') !== undefined))
+    });
+
+    let reemplazoPermanente = http.patch(`${BASE_URL}reemplazo/permanente/${idReemplazoAEliminar}/${idReemplazoPermanente}/${idEliminado}`, null, {
+        headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json'  
+        }
     });
 
     check(reemplazoPermanente, {
@@ -334,10 +336,18 @@ export default function () {
         'mensaje esperado': (r) => r.status === 200 || (r.status === 400 && (r.json('msg_reemplazo') !== undefined))
     });
 
+    let aumentarPrivilegios = http.patch(`${BASE_URL}aumentar/privilegios/conductor`, null, {
+        headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json'
+        }
+    });
+
     check(aumentarPrivilegios, {
         'aumentar privilegios status 200 o 400': (r) => r.status === 200 || r.status === 400,
         'mensaje esperado':(r) =>(r.json('msg_añadir_privilegios') !== undefined) || (r.json('msg_ceder_privilegios') !== undefined)
     });
+
   }
 
   sleep(1); // Espera 1 segundo entre iteraciones

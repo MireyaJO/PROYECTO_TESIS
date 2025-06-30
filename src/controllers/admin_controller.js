@@ -165,7 +165,7 @@ const  RegistroDeLosConductores = async (req, res) => {
     }catch(error){
         console.log(error); 
         res.status(500).json({
-            msg: "Error al registrar el conductor",
+            msg_registro_conductor: "Error al registrar el conductor",
             error: error.message
         });
     }
