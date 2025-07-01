@@ -158,7 +158,6 @@ export default function () {
             'Content-Type': 'application/json'
         }
     });
-    console.log(buscarConductorPorRuta.body);
 
     check(buscarConductorPorRuta, {
         'buscar conductor por ruta status 200 or 400': (r) => r.status === 200 || r.status === 400,
@@ -200,8 +199,6 @@ export default function () {
         }
     });
 
-    console.log(listarConductoresConReemplazo.body);
-
     check(listarConductoresConReemplazo, {
         'listado de conductores con reemplazo': (r) => r.status === 200 || r.status === 400,
         'mensaje esperado': (r) =>
@@ -215,8 +212,6 @@ export default function () {
             'Content-Type': 'application/json'    
         }
     });
-
-    console.log(buscarConductoresConReemplazo.body);
 
     check(buscarConductoresConReemplazo, {
         'buscar conductores con reemplazo por ruta status 200 or 400': (r) => r.status === 200 || r.status === 400,

@@ -1535,7 +1535,7 @@ const EliminarReemplazosDisponibles = async (req, res) => {
 
         // Validar existencia
         if (!conductorReemplazo) {
-            return res.status(404).json({ msg_eliminar_reemplazo: "No se encontró el conductor de reemplazo disponible" });
+            return res.status(400).json({ msg_eliminar_reemplazo: "No se encontró el conductor de reemplazo disponible" });
         };
 
         // Guardar temporalmente la información del conductor de reemplazo
