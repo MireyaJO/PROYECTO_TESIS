@@ -27,7 +27,7 @@ const RegistroDeLosEstudiantes = async (req, res) => {
 
         //Verificación de que el conductor exista
         if(conductor.esReemplazo === 'Sí') {
-            return res.status(404).json({ msg_conductor_logeado: "El conductor es un reemplazo por lo que no puede realizar esta acción." });
+            return res.status(400).json({ msg_registro_estudiantes: "El conductor es un reemplazo por lo que no puede realizar esta acción." });
         };
 
         // Validar que el enlace sea de Google Maps (acepta enlaces largos y cortos)
@@ -192,11 +192,11 @@ const ActualizarEstudiante = async (req, res) => {
         const conductor = await Conductores.findById(req.user.id); 
 
         //Verificar de que el conductor logeado no sea un reemplazo
-        if (conductor.esReemplazo === 'Sí') return res.status(400).json({ msg: "Lo sentimos, no puedes actualizar los datos del estudiante ya que eres un reemplazo" });
+        if (conductor.esReemplazo === 'Sí') return res.status(400).json({ msg_actualizar_estudiantes: "Lo sentimos, no puedes actualizar los datos del estudiante ya que eres un reemplazo" });
 
         // Verificación de la existencia del estudiante
         const estudiante = await Estudiantes.findOne({_id:id, conductor: conductor._id});
-        if (!estudiante) return res.status(400).json({ msg: "Lo sentimos, el estudiante no se encuentra o no pertenece a la ruta" });
+        if (!estudiante) return res.status(400).json({ msg_actualizar_estudiantes: "Lo sentimos, el estudiante no se encuentra o no pertenece a la ruta" });
     
         //Extraer las coordenadas de la direccion del estudiante
         const coordenadas = await ExtraerCoordenadasLinkGoogleMaps(ubicacionDomicilio);
@@ -238,7 +238,7 @@ const EliminarEstudiante = async (req, res) => {
     const { id } = req.params;
 
     //Datos del admin para el correo de confirmación
-    const admin = await Conductores.findOne({ roles: { $in: ['admin'] } });
+    //const admin = await Conductores.findOne({ roles: { $in: ['admin'] } });
 
 
     try{
@@ -311,7 +311,7 @@ const EliminarEstudiante = async (req, res) => {
         });
     } catch(error){
         console.error(error);
-        return res.status(500).json({ msg_eliminar_estudiante: "Error al eliminar el estudiante" });
+        return res.status(500).json({ msg_eliminacion_estudiante: "Error al eliminar el estudiante" });
     }
 
 }
@@ -389,7 +389,7 @@ const ActualizarPerfil = async (req, res) => {
 
         // Verificación de la existencia del conductor
         const conductor = await Conductores.findById(id);
-        if (!conductor) return res.status(404).json({ msg_actualizacion_perfil: "Lo sentimos, el conductor no se encuentra registrado" });
+        if (!conductor) return res.status(400).json({ msg_actualizacion_perfil: "Lo sentimos, el conductor no se encuentra registrado" });
 
         // Verificar si se envió un archivo de imagen
         if (req.files && req.files.fotografiaDelConductor) {
