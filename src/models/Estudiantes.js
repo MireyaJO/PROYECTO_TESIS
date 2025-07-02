@@ -52,12 +52,12 @@ const paraElRegistroDeLosEstudiantes= new Schema(
             type: String, 
             trim: true
         },
-        latitud:{
+        /*latitud:{
             type: Number
         }, 
         longitud:{
             type: Number
-        }, 
+        },*/
         conductor:{
             type: mongoose.Schema.Types.ObjectId,
             ref: 'Conductores',

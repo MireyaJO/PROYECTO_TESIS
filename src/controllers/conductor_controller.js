@@ -39,9 +39,9 @@ const RegistroDeLosEstudiantes = async (req, res) => {
         }
 
         // Inicializar el array de estudiantes registrados si no está definido
-        if (!conductor.estudiantesRegistrados) {
+        /*if (!conductor.estudiantesRegistrados) {
             conductor.estudiantesRegistrados = [];
-        }
+        }*/
 
         //Validación de que la cedula no este registrada en otro estudiante
         const cedulaExistente = await Estudiantes.findOne({ cedula });
@@ -60,11 +60,11 @@ const RegistroDeLosEstudiantes = async (req, res) => {
         };*/
 
         //Extraer las coordenadas de la direccion del estudiante
-        const coordenadas = await ExtraerCoordenadasLinkGoogleMaps(ubicacionDomicilio);
+        //const coordenadas = await ExtraerCoordenadasLinkGoogleMaps(ubicacionDomicilio);
         //Si existe un error en la extración de las coordenadas se envia un mensaje de error
-        if (coordenadas.msg_extracion_coordenadas_estudiantes) {
+        /*if (coordenadas.msg_extracion_coordenadas_estudiantes) {
             return res.status(400).json({ msg_registro_estudiantes: coordenadas.msg_extracion_coordenadas_estudiantes});
-        }
+        }*/
 
         //Creación de un nuevo estudiante
         const nuevoEstudiante = new Estudiantes({
@@ -78,8 +78,8 @@ const RegistroDeLosEstudiantes = async (req, res) => {
             ubicacionDomicilio,
             institucion: conductor.institucion,
             turno, 
-            latitud: coordenadas.latitud,
-            longitud: coordenadas.longitud,
+            /*latitud: coordenadas.latitud,
+            longitud: coordenadas.longitud,*/
             conductor: conductor._id
         });
 
@@ -197,10 +197,16 @@ const ActualizarEstudiante = async (req, res) => {
         // Verificación de la existencia del estudiante
         const estudiante = await Estudiantes.findOne({_id:id, conductor: conductor._id});
         if (!estudiante) return res.status(400).json({ msg_actualizar_estudiantes: "Lo sentimos, el estudiante no se encuentra o no pertenece a la ruta" });
+
+        // Validar que el enlace sea de Google Maps (acepta enlaces largos y cortos)
+        const esEnlaceGoogleMaps = ubicacionDomicilio && (ubicacionDomicilio.includes("google.com/maps") || ubicacionDomicilio.includes("maps.app.goo.gl"));
+        if (!esEnlaceGoogleMaps) {
+            return res.status(400).json({ msg_registro_estudiantes: "El enlace de ubicación debe ser un enlace válido de Google Maps (largo o corto)." });
+        }
     
         //Extraer las coordenadas de la direccion del estudiante
-        const coordenadas = await ExtraerCoordenadasLinkGoogleMaps(ubicacionDomicilio);
-        if (coordenadas.msg_extracion_coordenadas_estudiantes) return res.status(400).json({ msg_actualizar_estudiantes: coordenadas.msg_extracion_coordenadas_estudiantes });
+        /*const coordenadas = await ExtraerCoordenadasLinkGoogleMaps(ubicacionDomicilio);
+        if (coordenadas.msg_extracion_coordenadas_estudiantes) return res.status(400).json({ msg_actualizar_estudiantes: coordenadas.msg_extracion_coordenadas_estudiantes });*/
 
         // Actualización de los datos del estudiante
         await Estudiantes.findByIdAndUpdate(
@@ -209,9 +215,9 @@ const ActualizarEstudiante = async (req, res) => {
                 nivelEscolar,
                 paralelo,
                 ubicacionDomicilio,
-                turno,
+                turno/*,
                 latitud: coordenadas.latitud,
-                longitud: coordenadas.longitud,
+                longitud: coordenadas.longitud,*/
             },
             // Esta opción devuelve el documento actualizado en lugar del original
             { new: true }
@@ -318,7 +324,7 @@ const EliminarEstudiante = async (req, res) => {
 
 //Funciones para el manejo de ubicaciones 
 //Función que extrae la latitud y longitud de la ubicacion del estudiante
-const ExtraerCoordenadasLinkGoogleMaps = async (url) => {
+/*const ExtraerCoordenadasLinkGoogleMaps = async (url) => {
     try {
         // Realizar una solicitud GET para resolver el enlace
         const response = await axios.get(url, { 
@@ -358,7 +364,7 @@ const ExtraerCoordenadasLinkGoogleMaps = async (url) => {
         console.error(error);
         return { msg_extracion_coordenadas_estudiantes: "Error al resolver el enlace de Google Maps" };
     };
-};
+};*/
 
 const VisuallizarPerfil = async (req, res) => {
     try {
