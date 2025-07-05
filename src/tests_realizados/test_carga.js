@@ -127,7 +127,7 @@ export function adminFlow() {
 
     check(registrarConductorFijo, {
       'registro conductor status 200 or 400': (r) => r.status === 200 || r.status === 400,
-      'mensaje esperado': (r) => r.status === 200 || (r.status === 400 && (r.json('msg_registro_conductor') !== undefined))
+      'mensaje esperado registro conductor fijo': (r) => r.status === 200 || (r.status === 400 && (r.json('msg_registro_conductor') !== undefined))
     });
 
     let listaDeConductores = http.get(`${BASE_URL}listar/conductores`,{
@@ -139,7 +139,7 @@ export function adminFlow() {
 
     check(listaDeConductores, {
         'listado de conductores': (r) => r.status === 200 || r.status === 400,
-        'mensaje esperado': (r) =>
+        'mensaje esperado lista de conductores': (r) =>
         Array.isArray(r.json()) ||
         r.json('msg_listar_conductores') !== undefined
     });
@@ -152,8 +152,8 @@ export function adminFlow() {
     });
 
     check(buscarConductorPorRuta, {
-        'buscar conductor por ruta status 200 or 400': (r) => r.status === 200 || r.status === 400,
-        'mensaje esperado': (r) =>
+        'buscar conductor fijo por ruta status 200 or 400': (r) => r.status === 200 || r.status === 400,
+        'mensaje esperado busqueda conductor fijo por ruta': (r) =>
         Array.isArray(r.json()) ||
         r.json('msg_buscar_conductor_ruta') !== undefined
     });
@@ -167,7 +167,7 @@ export function adminFlow() {
 
     check(registrarConductorReemplazo, {
         'registro conductor status 200 or 400': (r) => r.status === 200 || r.status === 400,
-        'mensaje esperado': (r) => r.status === 200 || (r.status === 400 && (r.json('msg_registro_conductor') !== undefined))
+        'mensaje esperado registro conductor reemplazo': (r) => r.status === 200 || (r.status === 400 && (r.json('msg_registro_conductor') !== undefined))
     });
 
     let listarReemplazoDisponibles = http.get(`${BASE_URL}listar/reemplazo/disponibles`,{
@@ -179,7 +179,7 @@ export function adminFlow() {
 
     check(listarReemplazoDisponibles, {
         'listado de reemplazos disponibles': (r) => r.status === 200 || r.status === 400,
-        'mensaje esperado': (r) =>
+        'mensaje esperado lista de conductores reemplazo disponibles': (r) =>
             Array.isArray(r.json()) ||
             r.json('msg_listar_conductores_reemplazo') !== undefined
     });
@@ -193,7 +193,7 @@ export function adminFlow() {
 
     check(listarConductoresConReemplazo, {
         'listado de conductores con reemplazo': (r) => r.status === 200 || r.status === 400,
-        'mensaje esperado': (r) =>
+        'mensaje esperado lista de codncutores con reemplazo fijo': (r) =>
             Array.isArray(r.json()) ||
             r.json('msg') !== undefined
     });
@@ -207,7 +207,7 @@ export function adminFlow() {
 
     check(buscarConductoresConReemplazo, {
         'buscar conductores con reemplazo por ruta status 200 or 400': (r) => r.status === 200 || r.status === 400,
-        'mensaje esperado': (r) =>
+        'mensaje esperado busqueda de conductores con reemplazo activo por ruta': (r) =>
         Array.isArray(r.json()) ||
         r.json('msg_buscar_conductor_reemplazo') !== undefined
     });
@@ -221,7 +221,7 @@ export function adminFlow() {
 
     check(actualizarConductorFijo, {
         'actualización conductor status 200 or 400': (r) => r.status === 200 || r.status === 400,
-        'mensaje esperado': (r) => r.status === 200 || (r.status === 400 &&
+        'mensaje esperado actualizacion conductor': (r) => r.status === 200 || (r.status === 400 &&
         (r.json('msg_actualizacion_conductor') !== undefined || r.json('msg_registro_conductor') !== undefined))
     });
 
@@ -233,8 +233,8 @@ export function adminFlow() {
     });
 
     check(actualizarAdmin, {
-        'actualización admin status 200 or 400': (r) => r.status === 200 || r.status === 400,
-        'mensaje esperado': (r) => r.status === 200 || (r.status === 400 &&
+        'actualización perfil admin status 200 or 400': (r) => r.status === 200 || r.status === 400,
+        'mensaje esperado actualizacion perfil admin': (r) => r.status === 200 || (r.status === 400 &&
         (r.json('msg_actualizacion_perfil') !== undefined || r.json('msg_registro_conductor') !== undefined))
     });
 
@@ -247,7 +247,7 @@ export function adminFlow() {
 
     check(reemplazoTemporal, {
         'reemplazo temporal status 200 or 400': (r) => r.status === 200 || r.status === 400,
-        'mensaje esperado': (r) => r.status === 200 || (r.status === 400 &&
+        'mensaje esperado reemplazo temporal': (r) => r.status === 200 || (r.status === 400 &&
             (r.json('msg_reemplazo') !== undefined || r.json('msg_actualizacion_conductor') !== undefined))
     });
 
@@ -259,8 +259,8 @@ export function adminFlow() {
     });
 
     check(activarConductorAntiguo, {
-        'activación conductor antiguo status 200 or 400': (r) => r.status === 200 || r.status === 400,
-        'mensaje esperado': (r) => (r.status === 200 && r.json('msg_reemplazo') !== undefined) || (r.status === 400 && r.json('msg_activacion_conductor') !== undefined)
+        'activación conductor fijo status 200 or 400': (r) => r.status === 200 || r.status === 400,
+        'mensaje esperado activacion de un conductor fijo': (r) => (r.status === 200 && r.json('msg_reemplazo') !== undefined) || (r.status === 400 && r.json('msg_activacion_conductor') !== undefined)
     });
 
     let visualizarAdmin = http.get(`${BASE_URL}visualizar/perfil/admin`, {
@@ -271,8 +271,8 @@ export function adminFlow() {
     });
 
     check(visualizarAdmin, {
-        'visualizar admin status 200 or 400': (r) => r.status === 200 || r.status === 400,
-        'mensaje esperado': (r) => r.status === 200 || (r.status === 400 && (r.json('msg_admin') !== undefined))
+        'visualizar perfil admin status 200 or 400': (r) => r.status === 200 || r.status === 400,
+        'mensaje esperado visualizacion perfil admin': (r) => r.status === 200 || (r.status === 400 && (r.json('msg_admin') !== undefined))
     });
 
     let reportes = http.post(`${BASE_URL}info/completa/reemplazos`, JSON.stringify(infoReporte), {
@@ -284,7 +284,7 @@ export function adminFlow() {
 
     check(reportes, {
         'reportes status 200 or 400': (r) => r.status === 200 || r.status === 400,
-        'mensaje esperado': (r) => r.status === 200 || (r.status === 400 && (r.json('msg_historial_reemplazo') !== undefined))
+        'mensaje esperado reportes': (r) => r.status === 200 || (r.status === 400 && (r.json('msg_historial_reemplazo') !== undefined))
     });
 
     let cantidades = http.get(`${BASE_URL}info/cantidades`, {
@@ -296,7 +296,7 @@ export function adminFlow() {
 
     check(cantidades, {
         'cantidades status 200 or 400': (r) => r.status === 200 || r.status === 400,
-        'mensaje esperado': (r) => r.status === 200 || (r.status === 400 && (r.json('msg_historial_reemplazo') !== undefined))
+        'mensaje esperado cantidades imporatantes': (r) => r.status === 200 || (r.status === 400 && (r.json('msg_historial_reemplazo') !== undefined))
     });
 
     let eliminarReemplazo = http.del(`${BASE_URL}eliminar/reemplazos/disponible/${idReemplazoAEliminar}`, null, {
@@ -308,7 +308,7 @@ export function adminFlow() {
 
     check(eliminarReemplazo, {
         'eliminar reemplazo status 200 or 400': (r) => r.status === 200 || r.status === 400,
-        'mensaje esperado': (r) => r.status === 200 || (r.status === 400 && (r.json('msg_eliminar_reemplazo') !== undefined))
+        'mensaje esperado eliminar reemplazos disponibles': (r) => r.status === 200 || (r.status === 400 && (r.json('msg_eliminar_reemplazo') !== undefined))
     });
 
     let reemplazoPermanente = http.patch(`${BASE_URL}reemplazo/permanente/${idEliminado}/${idReemplazoPermanente}`, null,{
@@ -320,7 +320,7 @@ export function adminFlow() {
 
     check(reemplazoPermanente, {
         'reemplazo permanente status 200 or 400': (r) => r.status === 200 || r.status === 400,
-        'mensaje esperado': (r) => r.status === 200 || (r.status === 400 && (r.json('msg_reemplazo') !== undefined))
+        'mensaje esperado reemplazo permanente': (r) => r.status === 200 || (r.status === 400 && (r.json('msg_reemplazo') !== undefined))
     });
 
     let aumentarPrivilegios = http.patch(`${BASE_URL}aumentar/privilegios/conductor`, null, {
@@ -332,7 +332,7 @@ export function adminFlow() {
 
     check(aumentarPrivilegios, {
         'aumentar privilegios status 200 o 400': (r) => r.status === 200 || r.status === 400,
-        'mensaje esperado':(r) =>(r.json('msg_añadir_privilegios') !== undefined) || (r.json('msg_ceder_privilegios') !== undefined)
+        'mensaje esperado aumentar privilegios':(r) =>(r.json('msg_añadir_privilegios') !== undefined) || (r.json('msg_ceder_privilegios') !== undefined)
     });
 
     sleep(1);
@@ -388,7 +388,7 @@ export function conductorFlow() {
 
     check(registroEstudiante, {
       'registro de estudiantes status 200': (r) => r.status === 200 || r.status === 400,
-      'mensaje esperado': (r) => r.status === 200 || (r.status === 400 && (r.json('msg_registro_estudiantes') !== undefined))
+      'mensaje esperado registro estudiantes': (r) => r.status === 200 || (r.status === 400 && (r.json('msg_registro_estudiantes') !== undefined))
     });
 
     // Obtener el id del estudiante recién registrado
@@ -405,7 +405,7 @@ export function conductorFlow() {
 
       check(eliminarEstudiante, {
         'eliminación de estudiante status 200': (r) => r.status === 200 || r.status === 400,
-        'mensaje esperado': (r) => r.status === 200 || (r.status === 400 && (r.json('msg_eliminacion_estudiante') !== undefined))
+        'mensaje esperado eliminacion de estudiantes': (r) => r.status === 200 || (r.status === 400 && (r.json('msg_eliminacion_estudiante') !== undefined))
       });
     }
 
@@ -419,12 +419,12 @@ export function conductorFlow() {
 
     check(visualizarEstudiantes, {
         'visualización de estudiantes status 200': (r) => r.status === 200 || r.status === 400, 
-        'mensaje esperado': (r) => r.status === 200 || (r.status === 400 && (r.json('msg_lista_estudiantes') !== undefined))
+        'mensaje esperado visualizacion de estudiantes': (r) => r.status === 200 || (r.status === 400 && (r.json('msg_lista_estudiantes') !== undefined))
     });
 
     //Buscar estudiante por cédula
     //Array de cédulas de estudiantes para buscar
-    let cedulasEstudiantes = ['1823146799', '1834256700', '1723167899'];
+    let cedulasEstudiantes = ['1726343578', '1724356788', '1768456799'];
     //Selección de cédula aleatoria de estudiantes
     let cedulaAleatoria = cedulasEstudiantes[Math.floor(Math.random() * cedulasEstudiantes.length)];
 
@@ -437,11 +437,11 @@ export function conductorFlow() {
 
     check(buscarEstudianteCedula, {
       'búsqueda de estudiante por cédula status 200': (r) => r.status === 200 || r.status === 400,
-      'mensaje esperado': (r) => r.status === 200 || (r.status === 400 && (r.json('msg_buscar_estudiante') !== undefined))
+      'mensaje esperado busqueda de estudiantes': (r) => r.status === 200 || (r.status === 400 && (r.json('msg_buscar_estudiante') !== undefined))
     });
 
     //Array de ids de estudiantes para actualizar
-    let idsEstudiantes = [ '686388ec03e0e7affe78c206', '686388f803e0e7affe78c20c', '6863890103e0e7affe78c212'];
+    let idsEstudiantes = [ '68674d4d67a54e82fc12d679', '68674d7a67a54e82fc12d67f', '68674d9e67a54e82fc12d685'];
     //Selección de ids aleatorios de estudiantes
     let idsAleatorios = idsEstudiantes[Math.floor(Math.random() * idsEstudiantes.length)];
 
@@ -461,7 +461,7 @@ export function conductorFlow() {
 
     check(actualizarEstudiante, {
       'actualización de estudiante status 200': (r) => r.status === 200 || r.status === 400,
-      'mensaje esperado': (r) => r.status === 200 || (r.status === 400 && (r.json('msg_actualizar_estudiantes') !== undefined))
+      'mensaje esperado actualizacion de estudiantes': (r) => r.status === 200 || (r.status === 400 && (r.json('msg_actualizar_estudiantes') !== undefined))
     });
 
     //Visualizar perfil del conductor
@@ -473,8 +473,8 @@ export function conductorFlow() {
     });
 
     check(visualizarPerfilConductor, {
-      'visualización de perfil status 200': (r) => r.status === 200 || r.status === 400,
-      'mensaje esperado': (r) => r.status === 200 || (r.status === 400 && (r.json('msg_visualizar_perfil') !== undefined))
+      'visualización perfil conductor status 200': (r) => r.status === 200 || r.status === 400,
+      'mensaje esperado visualizacion de perfil conductor': (r) => r.status === 200 || (r.status === 400 && (r.json('msg_visualizar_perfil') !== undefined))
     });
 
     //Actualizar perfil del conductor
@@ -484,16 +484,23 @@ export function conductorFlow() {
         email: 'ejemplotesis02@hotmail.com'
     }
 
-    let actualizarPerfilConductor = http.patch(`${BASE_URL}actualizar/perfil/conductor`, cuerpoDelConductor, {
+    //Actualizar perfil del conductor usando FormData
+    let cuerpoDelConductorForm = {
+        telefono: cuerpoDelConductor.telefono,
+        fotografiaDelConductor: imageNormal,
+        email: cuerpoDelConductor.email
+    };
+
+    let actualizarPerfilConductor = http.patch(`${BASE_URL}actualizar/perfil/conductor`, cuerpoDelConductorForm, {
         headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'multipart/form-data'
+            Authorization: `Bearer ${token}`
+            // No pongas 'Content-Type', k6 lo gestiona automáticamente para multipart
         }
     });
 
     check(actualizarPerfilConductor, {
-      'actualización de perfil status 200': (r) => r.status === 200 || r.status === 400,
-      'mensaje esperado': (r) => r.status === 200 || (r.status === 400 && (r.json('msg_actualizacion_perfil') !== undefined))
+      'actualización perfil conductor status 200 or 400': (r) => r.status === 200 || r.status === 400,
+      'mensaje esperado actualización perfil conductor': (r) => r.status === 200 || (r.status === 400 && (r.json('msg_actualizacion_perfil') !== undefined))
     });
 
     sleep(1);
