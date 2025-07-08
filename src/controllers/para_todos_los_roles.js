@@ -321,46 +321,69 @@ const CambiarPasswordPorEmail = async (req, res) => {
     }
 };
 
-const  DesbloquearConsuctores = async (req, res) => {
-    //Recepcion del token proporcionado por la URL
-    const { token } = req.params;
-
-    // Buscar conductor por token
-    const conductor = await Conductores.findOne({ tokenBloqueoCuenta: token });
-
-    const conductorReemplazo = await Conductores.findOne({ rutaAsignada: conductor.rutaAsignada, esReemplazo: "No",  estado: { $in: ['Inactivo', 'No trabaja como conductor'] } });
-    if (conductor) {
-        // Verificar si el token ha expirado
-        if (conductor.tokenBloqueoCuentaExpiracion <= Date.now()) {
-            return res.status(400).json({ msg: "Lo sentimos, el token ha expirado. Solicite un nuevo cambio de correo." });
-        }; 
-        if (conductor.roles.length === 1 && conductor.roles.includes("conductor")){
-            // Cambiar el estado del conductor a "Activo"
-            conductor.estado = "Activo";
-        } else if (conductor.roles.length === 2 && conductor.roles.includes("admin")) {
-            // Cambiar el estado del conductor a "No trabaja como conductor"
-            conductor.estado = "Trabaja como conductor";
-        } else if (conductor.roles.length === 1 && conductor.roles.includes("admin")) {
-            // Cambiar el estado del conductor a "Trabaja como conductor"
-            conductor.estado = "No trabaja como conductor";
-        } else if (conductor.esReemplazo === "Sí" && conductorReemplazo) {
-            // Cambiar el estado del conductor a "Trabaja como conductor"
-            conductor.estado = "Ocupado";
-        } else if (conductor.esReemplazo === "Sí" && !conductorReemplazo && conductor.numeroEstudiantes === 0) {
-            // Cambiar el estado del conductor a "No trabaja como conductor"
-            conductor.estado = "Disponible";
+const DesbloquearConductor = async (req, res) => {
+    try {
+        //Recepcion del token proporcionado por la URL
+        const { token } = req.params;
+        
+        //Validación de que el token no esté vacío
+        if (!token) {
+            return res.status(400).json({ msg_desbloque: "Lo sentimos, el token se encuentra vacío." });
         }
 
-        // Actualizar el email
+        //Buscar conductor por token
+        const conductor = await Conductores.findOne({ tokenBloqueoCuenta: token });
+            
+        //Verificación de que el conductor existe
+        if (!conductor) {
+            return res.status(404).json({ msg_desbloque: "Lo sentimos, el token no coincide con ningún conductor." });
+        }
+
+        //Verificar si el token ha expirado
+        if (conductor.tokenBloqueoCuentaExpiracion <= Date.now()) {
+            return res.status(400).json({ msg_desbloque: "Lo sentimos, el token ha expirado. Solicite un nuevo desbloqueo." });
+        }
+
+        //Establecer el estado según el rol (solo conductores activos pueden ser bloqueados)
+        if (conductor.roles.length === 1 && conductor.roles.includes("conductor")) {
+            //Cambiar el estado del conductor a "Activo"
+            conductor.estado = "Activo";
+        } else if (conductor.roles.length === 2 && conductor.roles.includes("admin")) {
+            //Cambiar el estado del conductor a "Trabaja como conductor"
+            conductor.estado = "Trabaja como conductor";
+        } else if (conductor.roles.length === 1 && conductor.roles.includes("admin")) {
+            //Cambiar el estado del conductor a "No trabaja como conductor"
+            conductor.estado = "No trabaja como conductor";
+        } else if (conductor.esReemplazo === "Sí") {
+            //Para reemplazos: buscar conductor titular inactivo
+            const conductorTitular = await Conductores.findOne({ 
+                rutaAsignada: conductor.rutaAsignada, 
+                esReemplazo: "No",  
+                estado: { $in: ['Inactivo', 'No trabaja como conductor'] } 
+            });
+            
+            if (conductorTitular) {
+                //Cambiar el estado del conductor a "Ocupado"
+                conductor.estado = "Ocupado";
+            } else if (conductor.numeroEstudiantes === 0) {
+                //Cambiar el estado del conductor a "Disponible"
+                conductor.estado = "Disponible";
+            }
+        }
+
+        //Limpiar tokens de desbloqueo
         conductor.tokenBloqueoCuenta = null;
         conductor.tokenBloqueoCuentaExpiracion = null;
 
-        // Guardar los cambios en la base de datos
+        //Guardar los cambios en la base de datos
         await conductor.save();
         return res.status(200).json({ msg_desbloque: `Se desbloqueó la cuenta del sr/a ${conductor.apellido} ${conductor.nombre}` });
-    }
 
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ msg_desbloque: "Error al desbloquear la cuenta del conductor" });
+    }
 };
 
 // Desbloquear a los conductores que han sido bloqueados por múltiples intentos fallidos
-export { Login, RecuperacionDeContrasenia, ComprobarTokenPassword, NuevaPassword, ConfirmacionCorreoNuevo, CambiarPasswordPorEmail, DesbloquearConsuctores};
+export { Login, RecuperacionDeContrasenia, ComprobarTokenPassword, NuevaPassword, ConfirmacionCorreoNuevo, CambiarPasswordPorEmail, DesbloquearConductor};
