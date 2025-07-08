@@ -105,7 +105,7 @@ const Login = async (req, res) => {
 
     } catch (error) {
         console.error(error);
-        return res.status(500).json({ message: "Error al tratar de logearse" });
+        return res.status(500).json({ msg: "Error al tratar de logearse" });
     }
 };
 
@@ -122,6 +122,9 @@ const RecuperacionDeContrasenia = async (req, res) => {
         const conductor = await Conductores.findOne({email: email});
         //Verificación de que el conductor exista
         if(conductor){
+            if(conductor.requiereCambioContrasenia === true){
+                return res.status(403).json({msg_recuperacion_contrasenia:"Lo sentimos, al ser nuevo usuario, debe cambiar su contraseña, despúes si podrá utilizar este recurso"});
+            }
             //Creación del token para la recuperación de la contraseña
             const token = conductor.crearToken('recuperacion');
             await conductor.save();
