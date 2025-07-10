@@ -238,6 +238,9 @@ const RegistrarNuevoAdmin = async (req,res) =>{
 
         // Si el usuario logeado tiene solo rol "admin" la "asignacionOno" es "No", porque no se tiene niños custodiados
         if (conductorAdmin.roles.includes("admin") && conductorAdmin.roles.length === 1){
+            if (asignacionOno === 'Sí'){
+                return res.status(400).json({ msg_registro_conductor: "Lo sentimos, el administrador no es conductor, así que no tiene estudiantes para asignar" });
+            }
             asignacionVariable = 'No';
         };
 
