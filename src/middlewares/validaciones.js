@@ -362,7 +362,7 @@ const validacionesActualizarConductorNormal = [
         .withMessage('La ruta debe ser un número, no se acepta otro tipo de dato')
     .isInt({ min: 1, max: 12 })
         .withMessage('Solo existen 12 rutas disponibles en la Unidad Educativa Particular Emaús')
-    .customSanitizer(value => (typeof value === 'string' ? value.trim() : value)),
+    .customSanitizer(value => Number(value)),
 
     //Verificación de que el nombre no se encuentre vacío y sea un string
     check(["sectoresRuta"])    
