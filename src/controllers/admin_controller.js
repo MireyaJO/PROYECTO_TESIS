@@ -255,29 +255,24 @@ const RegistrarNuevoAdmin = async (req,res) =>{
         
         // Primera excepciones 
         if (conductorAdmin.roles.includes("conductor") && eliminacionAdminSaliente === 'Sí' && asignacionOno === 'Sí' && trabajaraOno === 'No'){
-            return res.status(400).json({ msg_registro_conductor: "Lo sentimos, si el conductor admin actual será eliminado y se desea la asignación de sus estudiantes, quedan a la deriva, ya que, el nuevo admin" });
+            return res.status(400).json({ msg_registro_conductor: "Lo sentimos, no se puede eliminar del sistema,, ya que, el nuevo administrador no trabajará como conductor y los estudiantes quedarán a la deriva" });
         }; 
 
         // Segunda excepciónes
         if (conductorAdmin.roles.includes("conductor") && eliminacionAdminSaliente === 'Sí' && asignacionOno === 'No' && trabajaraOno === 'No'){
-            return res.status(400).json({ msg_registro_conductor: "Lo sentimos, no puedes eliminar al conductor administrador saliente, ya que, el nuevo administrador no trabajará como conductor y los estudiantes quedarán a la deriva" });
+            return res.status(400).json({ msg_registro_conductor: "Lo sentimos, no se puede eliminar del sistema, ya que, el nuevo administrador no trabajará como conductor y los estudiantes quedarán a la deriva" });
 
         };
         
         // Tercera excepciones
         if (conductorAdmin.roles.includes("conductor") && eliminacionAdminSaliente === 'Sí' && asignacionOno === 'No' && trabajaraOno === 'Sí'){
-            return res.status(400).json({ msg_registro_conductor: "Lo sentimos, no puedes eliminar al conductor administrador saliente, ya que, el nuevo administrador no trabajará como conductor y los estudiantes quedarán a la deriva" });
+            return res.status(400).json({ msg_registro_conductor: "Lo sentimos, se desea eliminar del sistema, pero, no otorgarle sus estudiantes al admin nuevo, no pueden quedar a la deriva" });
         }; 
 
         // Cuarta excepciones
         if (conductorAdmin.roles.includes("conductor") && eliminacionAdminSaliente === 'No' && asignacionOno === 'Sí' && trabajaraOno === 'No'){
-            return res.status(400).json({ msg_registro_conductor: "Lo sentimos, no puedes eliminar al conductor administrador saliente, ya que, el nuevo administrador no trabajará como conductor y los estudiantes quedarán a la deriva" });
+            return res.status(400).json({ msg_registro_conductor: "Lo sentimos, el nuevo administrador no trabajará como conductor y usted desea asignar sus estudiantes, no pueden quedar a la deriva" });
         };
-
-        // Quinta excepciones
-        if (conductorAdmin.roles.includes("admin") &&  asignacionOno === 'Sí' && conductorAdmin.roles.length === 1){
-            return res.status(400).json({ msg_registro_conductor: "Lo sentimos, no puedes asignar estudiantes, pues solo tiene privilegios de administrador, es decir, no tiene estudiantes para asignar" });
-        }
 
         // Crear un nuevo conductor con los datos proporcionados
         const nuevoConductor = new Conductores({
@@ -321,6 +316,13 @@ const RegistrarNuevoAdmin = async (req,res) =>{
         nuevoConductor.password = await nuevoConductor.encrypPassword(randomPassword);
 
         if (asignacionVariable === 'Sí'){
+            // Verificar que el admin logeado tenga estudiantes
+            if (!conductorAdmin.numeroEstudiantes || conductorAdmin.numeroEstudiantes === 0) {
+                return res.status(400).json({
+                    msg_registro_conductor: "No puedes asignar estudiantes al nuevo administrador porque actualmente no tienes estudiantes asignados."
+                });
+            }
+
             //Asignación de campos ruta y sectores del conductor admin saliente 
             nuevoConductor.rutaAsignada = conductorAdmin.rutaAsignada;
             nuevoConductor.sectoresRuta = conductorAdmin.sectoresRuta;
