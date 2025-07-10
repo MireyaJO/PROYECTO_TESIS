@@ -830,6 +830,9 @@ const AsignarPrivilegiosDeAdmin = async (req, res) => {
         
         //Asignación de los privilegios de administrador
         conductor.roles.push("admin");
+
+        // Cambia el estado del nuevo admin
+        conductor.estado = "Trabaja como conductor";
         
         //Guardar los cambios en la base de datos
         await conductor.save();
@@ -859,6 +862,9 @@ const AsignarPrivilegiosDeAdmin = async (req, res) => {
                 if (!conductorAdmin.roles.includes("conductor")) {
                     conductorAdmin.roles.push("conductor");
                 }
+
+                // Cambia el estado del admin saliente
+                conductorAdmin.estado = "Activo"; 
                 await conductorAdmin.save();
             } else {
                 return res.status(400).json({ msg: "Debe indicar si desea eliminar el documento del admin saliente ('Sí' o 'No')" });
@@ -869,6 +875,9 @@ const AsignarPrivilegiosDeAdmin = async (req, res) => {
             if (index > -1) {
                 conductorAdmin.roles.splice(index, 1);
             }
+
+            // Cambia el estado del admin saliente
+            conductorAdmin.estado = "Activo"; 
             await conductorAdmin.save();
         }
 
