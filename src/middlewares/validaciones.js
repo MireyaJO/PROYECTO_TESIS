@@ -313,9 +313,7 @@ const validacionesAdmin = [
 //Validaciones para la actualizacion de un conductor
 const validacionesActualizarConductorNormal = [
     //Verificación de que el nombre no se encuentre vacío y sea un string
-    check(["nombre"])
-    .notEmpty()
-        .withMessage('El campo "nombre" no puede estar vacío')      
+    check(["nombre"]) 
     .notEmpty()
         .withMessage('El campo "nombre" no puede estar vacío')  
     .matches(/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/)
@@ -338,6 +336,8 @@ const validacionesActualizarConductorNormal = [
 
     // Verificar que el número de cédula tenga 10 dígitos
     check("cedula")  
+    .notEmpty()
+        .withMessage('El campo "cedula" no puede estar vacío') 
     .isLength({ min: 10, max: 10 })
         .withMessage('La cedula debe ser de 10 digitos')
     .matches(/^\d{10}$/)
