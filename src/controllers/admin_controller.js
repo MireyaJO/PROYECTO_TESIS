@@ -853,6 +853,9 @@ const AsignarPrivilegiosDeAdmin = async (req, res) => {
                 }
                 // Eliminar documento del admin actual
                 await Conductores.findByIdAndDelete(id);
+
+                // Mensaje de éxito
+                return res.status(200).json({ msg: "Los privilegios de administrador han sido asignados al conductor exitosamente y el admin saliente ha sido eliminado." });
             } else if (eliminacionAdminSaliente === 'No') {
                 // Quitar el rol admin y añadir rol conductor
                 const index = conductorAdmin.roles.indexOf("admin");
