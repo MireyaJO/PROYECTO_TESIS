@@ -926,6 +926,12 @@ const ReemplazoTemporal = async (req, res) => {
         //Verificar si los conductores existen 
         const conductorAntiguo = await Conductores.findById({_id: idAntiguo, estado: { $in: ["Activo", "Trabaja como conductor"] }});
         const conductorReemplazo = await Conductores.findById({_id: idReemplazo, estado: 'Disponible'});
+
+        //El conductor antiguo existe
+        if(!conductorAntiguo) return res.status(400).json({msg_reemplazo:`El conductor ${conductorAntiguo.nombre} ${conductorAntiguo.apellido} no se encuentra registrado o esta inactivo`});
+
+        //El conductor de reemplazo existe
+        if(!conductorReemplazo) return res.status(400).json({msg_reemplazo:`El conductor ${conductorReemplazo.nombre} ${conductorReemplazo.apellido} no se encuentra registrado o esta inactivo`});
         
         //El conductor antiguo no tiene estudiantes asignados
         if(conductorAntiguo.numeroEstudiantes === 0) return res.status(400).json({msg_reemplazo:`El conductor ${conductorAntiguo.nombre} ${conductorAntiguo.apellido} no tiene estudiantes asignados por lo que no se puede realizar el reemplazo`});
