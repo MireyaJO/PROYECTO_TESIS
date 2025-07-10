@@ -233,11 +233,22 @@ const RegistrarNuevoAdmin = async (req,res) =>{
         const conductorAdmin = await Conductores.findById(req.user.id);
         if (!conductorAdmin) return res.status(404).json({ msg_registro_conductor: "Lo sentimos, el conductor no se encuentra registrado" });
 
-        // Si el usuario logeado tiene solo rol "admin" la "asignacionOno" es "No", porque no se tiene niños custodiados
+        // Determinar el valor de asignacionVariable según los roles del admin logeado
         let asignacionVariable = asignacionOno;
+
+        // Si el usuario logeado tiene solo rol "admin" la "asignacionOno" es "No", porque no se tiene niños custodiados
         if (conductorAdmin.roles.includes("admin") && conductorAdmin.roles.length === 1){
             asignacionVariable = 'No';
-        }; 
+        };
+
+        // Si el usuario logeado tiene ambos roles ("admin" y "conductor"), la asignación es obligatoria y debe ser "Sí" o "No"
+        if (conductorAdmin.roles.includes("conductor") &&  conductorAdmin.roles.length === 2 ){
+            if (!asignacionOno || (asignacionOno !== "Sí" && asignacionOno !== "No")) {
+                return res.status(400).json({
+                    msg_registro_conductor: "Lo sentimos, el administrador también es conductor, entonces, debe colocar si asignará o no a sus estudiantes (Sí o No)"
+                });
+            }
+        }
         
         // Primera excepciones 
         if (conductorAdmin.roles.includes("conductor") && eliminacionAdminSaliente === 'Sí' && asignacionOno === 'Sí' && trabajaraOno === 'No'){

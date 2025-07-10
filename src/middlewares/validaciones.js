@@ -241,16 +241,6 @@ const validacionesAdmin = [
     .isIn(["Sí", "No"])
         .withMessage('Solo se admiten los valores "Sí" o "No" para afirmar si el conductor admin actual será eliminado') 
     .customSanitizer(value => value?.trim()),
-    
-    check("asignacionOno")
-    .if(({ req }) => req.body.roles?.includes("admin"))
-    .exists()
-        .withMessage('El campo "asignacionOno" es obligatorio')
-    .notEmpty()
-        .withMessage('El campo "asignacionOno" no puede estar vacío')  
-    .isIn(["Sí", "No"])
-        .withMessage('Solo se admiten los valores "Sí" o "No" para afirmar si los estudiantes del conductor admin actual serán asignados al nuevo conductor admin')
-    .customSanitizer(value => value?.trim()),
 
     check("trabajaraOno")
     .exists()
