@@ -191,11 +191,11 @@ paraElRegistroDeLosConductores.methods.crearToken = function(tipo){
     }else if(tipo === 'confirmacionCorreo'){
         this.tokenEmail = tokenGenerado; 
         //Tiempo en el token es válido
-        this.tokenEmailExpiracion = Date.now() + 7200000;
+        this.tokenEmailExpiracion = Date.now() + 3600000;
     }else if(tipo === 'bloqueoDeCuenta'){
         this.tokenBloqueoCuenta = tokenGenerado; 
         //Tiempo en el token es válido
-        this.tokenBloqueoCuentaExpiracion = Date.now() + 7200000;
+        this.tokenBloqueoCuentaExpiracion = Date.now() + 3600000;
     };
     return tokenGenerado;
 }
