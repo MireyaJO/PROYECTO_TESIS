@@ -1,69 +1,57 @@
 ![image](https://github.com/user-attachments/assets/27888262-fa25-400d-a1be-78bf451c268f)
 
+# Desarrollo de un Sistema Administrativo de Gestión de Rutas para el Transporte Escolar de la “Unidad Educativa Particular EMAÚS”.
 
-
-
-
-#  Desarrollo de un sistema de alertas para notificar a los representantes de estudiantes sobre la llegada del bus escolar "Cooperativa Ciudad de Quito" de la "Unidad Educativa Particular EMAÚS" 
-
-
-
-
+Este sistema está enfocado exclusivamente en la gestión administrativa del transporte escolar, con el objetivo de mejorar el orden, la eficiencia operativa y la calidad del servicio prestado.
 
 ## Herramientas
-Este proyecto de tesis solo se enfoca en la parte de backend por el momento en la cual se implementó las siguientes herramientas:
 - Express.js
-- Librerias NPM
-- MongoDB Compass y Atlas 
-- Vercel para el Despliegue final
+- MongoDB (Compass y Atlas)
+- Vercel (Despliegue)
+- Cloudinary (Imágenes)
+- Nodemailer (Correos)
+- Thunder Client
 - Git
-- Cloudinary para la carga de imagenes 
-- Thunder Client 
-- Nodemailer para el envio de correo
+- Librerías NPM
 
-Esto se expandirá a futuro para la implementación de un Front-end y Móvil, lo cual las Herramientas utilizadas sé irá actualizando conforme se lo implemente.
+## Estructura y roles
+- **Administrador**: 
+  - Gestion completa de los conductores ya sean normales como reemplazo.
+- **Conductor**:
+  - Gestión de los estudiantes a los que prestarán servicio de transporte.
+- **Ambos roles**:
+  - Iniciar sesión.
+  - Recuperar contraseña.
+  - Cambio forzado de contraseña en el primeer inicio de sesión.
+  - Gestión de su información.
 
-## Estructura
+## Lógica principal del sistema
+- **Privilegios y roles**: Los roles se asignan y modifican dinámicamente. El admin puede ser solo admin o también conductor. Los privilegios se transfieren y eliminan según reglas de negocio.
+- **Reemplazos**: Se gestionan reemplazos temporales y permanentes de conductores, con transferencia de estudiantes y rutas.
+- **Estudiantes**: Los conductores pueden registrar, actualizar y eliminar estudiantes de su ruta.
+- **Validaciones**: Todos los endpoints validan unicidad de datos (cédula, email, placa, teléfono), formato de campos y privilegios del usuario logeado.
+- **Notificaciones**: Se envían correos en cambios de privilegios, registro, eliminación y actualización de datos relevantes.
+- **Historial**: Se registra el historial de reemplazos, activaciones y cambios para reportes.
 
-Roles:
+## Cómo clonar y ejecutar el proyecto
 
-- Administrador
-- Conductor
-- Padre de familia 
+1. Clona el repositorio:
+   ```bash
+   git clone https://github.com/MireyaJO/PROYECTO_TESIS.git
+   ```
+2. Ingresa a la carpeta del proyecto:
+   ```bash
+   cd PROYECTO_TESIS
+   ```
+3. Instala las dependencias:
+   ```bash
+   npm install
+   ```
+4. Configura las variables de entorno necesarias (solicita el archivo `.env` al correo electronico: mireya.garcia@epn.edu.ec).
+5. Ejecuta el servidor:
+   ```bash
+   npm start
+   ```
 
-## Rutas privadas y publicas de cada rol en el proyecto 
-
-Administrador
-
-
-![image](https://github.com/user-attachments/assets/03f8c1aa-f488-4ccd-b881-9618d3c53d81)
-
-
-Conductor
-
-
-
-![image](https://github.com/user-attachments/assets/5642b2c6-654c-4514-90b1-0f6c6e111f17)
-
-
-
-Padres de familia
-
-
-![image](https://github.com/user-attachments/assets/cf443083-32bb-4416-9385-1f35f80372b5)
-
-
-Rutas públicas
-
-![image](https://github.com/user-attachments/assets/0c862f26-1ded-4166-9b85-c6a62eeb114c)
-
-
-
-
-
-
-## Autores
-
-- Walter Cobacango
-- Francis Aconda
+## Autora
 - Mireya Garcia
