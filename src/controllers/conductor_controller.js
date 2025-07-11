@@ -203,25 +203,53 @@ const ActualizarEstudiante = async (req, res) => {
         if (!esEnlaceGoogleMaps) {
             return res.status(400).json({ msg_registro_estudiantes: "El enlace de ubicación debe ser un enlace válido de Google Maps (largo o corto)." });
         }
+
+        // Variable para identificar cambios y objeto para los nuevos valores
+        let cambiosActualizados = false;
+
+        if (nivelEscolar !== undefined && nivelEscolar !== estudiante.nivelEscolar) {
+            estudiante.nivelEscolar = nivelEscolar;
+            cambiosActualizados = true;
+        }
+        if (paralelo !== undefined && paralelo !== estudiante.paralelo) {
+            estudiante.paralelo = paralelo;
+            cambiosActualizados = true;
+        }
+        if (ubicacionDomicilio !== undefined && ubicacionDomicilio !== estudiante.ubicacionDomicilio) {
+            estudiante.ubicacionDomicilio = ubicacionDomicilio;
+            cambiosActualizados = true;
+        }
+        if (turno !== undefined && turno !== estudiante.turno) {
+            estudiante.turno = turno;
+            cambiosActualizados = true;
+        }
+
+        // Si no hay cambios, no actualizar
+        if (!cambiosActualizados) {
+            return res.status(400).json({ msg_actualizar_estudiantes: "No se han realizado cambios en los datos del estudiante" });
+        }
+
+        // Guardar los cambios en la base de datos
+        await estudiante.save();
     
         //Extraer las coordenadas de la direccion del estudiante
         /*const coordenadas = await ExtraerCoordenadasLinkGoogleMaps(ubicacionDomicilio);
         if (coordenadas.msg_extracion_coordenadas_estudiantes) return res.status(400).json({ msg_actualizar_estudiantes: coordenadas.msg_extracion_coordenadas_estudiantes });*/
 
         // Actualización de los datos del estudiante
-        await Estudiantes.findByIdAndUpdate(
+        /*await Estudiantes.findByIdAndUpdate(
             {_id:id},
             {
                 nivelEscolar,
                 paralelo,
                 ubicacionDomicilio,
-                turno/*,
+                turno,
                 latitud: coordenadas.latitud,
-                longitud: coordenadas.longitud,*/
+                longitud: coordenadas.longitud,
             },
             // Esta opción devuelve el documento actualizado en lugar del original
             { new: true }
-        );
+        );*/
 
         // Actualización en el array del conductor
         /*const estudianteParaListado = {nombreEstudiante: estudianteActualizado.nombre, apellidoEstudiante: estudianteActualizado.apellido, nivelEscolarEstudiante: estudianteActualizado.nivelEscolar, paraleloEstudiante: estudianteActualizado.paralelo, cedulaEstudiante: estudianteActualizado.cedula}
