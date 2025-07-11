@@ -610,17 +610,12 @@ const validacionesEstudiantes = [
 ]
 
 const validacionesActualizarEstudiante = [
-    // Verificar que se encuentren los campos obligatorios y no estén vacíos
-    check(["nivelEscolar", "paralelo",  "ubicacionDomicilio", "turno"
-    ])
-    .exists()
-        .withMessage('Los campos "nivelEscolar", "paralelo", "ubicacionDomicilio" y/o "turno"  son obligatorios')
-    .notEmpty()
-        .withMessage('Los campos "nivelEscolar", "paralelo", "ubicacionDomicilio" y/o "turno"  no pueden estar vacíos')
-    .customSanitizer(value => value?.trim()),
-
     // Verificar que el campo "nivelEscolar" sea uno de los valores permitidos
     check("nivelEscolar")
+    .exists()
+        .withMessage('Los campos "nivelEscolar" son obligatorios')
+    .notEmpty()
+        .withMessage('Los campos "nivelEscolar" no pueden estar vacíos')
     .isIn(["Nocional", "Inicial 1", "Inicial 2", "Primero de básica", "Segundo de básica", "Tercero de básica", "Cuarto de básica", "Quinto de básica", 
         "Sexto de básica", "Séptimo de básica", "Octavo de básica", "Noveno de básica", "Décimo de básica", "Primero de bachillerato", "Segundo de bachillerato", "Tercero de bachillerato"])
         .withMessage('Lo sentimos, el nivel escolar debe ser Educación Inicial, Educación General Básica o Educación Media (Bachillerato)') 
@@ -628,12 +623,28 @@ const validacionesActualizarEstudiante = [
 
     // Verificar que el campo "paralelo" sea uno de los valores permitidos
     check("paralelo")
+    .exists()
+        .withMessage('Los campos "paralelo" son obligatorios')
+    .notEmpty()
+        .withMessage('Los campos "paralelo" no pueden estar vacíos')
     .isIn(["A", "B", "C"])
         .withMessage('Lo sentimos, el paralelo debe ser de la A a la C')
     .customSanitizer(value => value?.trim()),
 
+    //Verificar la ubicación del domicilio
+    check("ubicacionDomicilio")
+    .exists()
+        .withMessage('Los campos "ubicacionDomicilio" son obligatorios')
+    .notEmpty()
+        .withMessage('Los campos "ubicacionDomicilio" no pueden estar vacíos')
+    .customSanitizer(value => value?.trim()),
+
     // Verificar que el "turno" sea uno de los valores permitidos
     check("turno")
+    .exists()
+        .withMessage('Los campos  "turno"  son obligatorios')
+    .notEmpty()
+        .withMessage('Los campos  "turno"  no pueden estar vacíos')
     .isIn(["Mañana", "Tarde", "Completo"])
         .withMessage('El turno debe ser "Mañana", "Tarde" o "Completo"')
     .customSanitizer(value => value?.trim()), 
