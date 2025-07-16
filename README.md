@@ -33,6 +33,9 @@ Este sistema está enfocado exclusivamente en la gestión administrativa del tra
 - **Notificaciones**: Se envían correos en cambios de privilegios, registro, eliminación y actualización de datos relevantes.
 - **Historial**: Se registra el historial de reemplazos, activaciones y cambios para reportes.
 
+## Manual de usuario
+🎥 **Video tutorial del sistema**: [Ver manual de usuario](https://drive.google.com/file/d/1-xPhv9IZxcj6Lkrf7eLMLV8NL7jcYQR2/view?usp=sharing)
+
 ## Cómo clonar y ejecutar el proyecto
 
 1. Clona el repositorio:
