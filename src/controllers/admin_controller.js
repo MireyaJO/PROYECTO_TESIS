@@ -1124,7 +1124,7 @@ const ReemplazoPermanente = async (req, res) => {
         //Desactivar al conductor si solo si es un conductor que tiene privilegios de admin y conductor
         if (conductorAntiguo.roles.includes("admin") && conductorAntiguo.roles.length === 2){     
             //Quitar los privilegios de administrador
-            const index = conductorAntiguo.roles.indexOf("admin");
+            const index = conductorAntiguo.roles.indexOf("conductor");
             
             //Eliminar el rol de administrador
             if (index > -1) {
